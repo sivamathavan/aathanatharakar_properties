@@ -44,7 +44,7 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 w-full bg-navy-900 border-b border-navy-800 text-white transition-all duration-300">
-        <div className="container mx-auto px-4 flex items-center justify-between h-14 md:h-[60px] lg:h-[68px]">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14 md:h-[60px] lg:h-[68px]">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0 z-50 group" onClick={closeMobileMenu}>
             <LogoIcon className="w-7 h-7 md:w-8 md:h-8 shrink-0 group-hover:scale-105 transition-transform" />
