@@ -2,6 +2,8 @@ import { MetadataRoute } from 'next';
 import { prisma } from '@/lib/prisma';
 import { PropertyStatus } from '@prisma/client';
 
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Base URL from environment or fallback
   const baseUrl = process.env.NEXTAUTH_URL || 'https://www.aadanatharakar.com';
