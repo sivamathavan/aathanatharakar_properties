@@ -46,9 +46,9 @@ export function Header() {
       <header className="sticky top-0 z-50 w-full bg-navy-900 border-b border-navy-800 text-white transition-all duration-300">
         <div className="container mx-auto px-4 flex items-center justify-between h-14 md:h-[60px] lg:h-[68px]">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 md:space-x-3 shrink-0 z-50 group" onClick={closeMobileMenu}>
-            <LogoIcon className="w-7 h-7 md:w-9 md:h-9 group-hover:scale-105 transition-transform" />
-            <span className="font-tamil font-bold text-xl md:text-2xl text-white tracking-wide pt-1">
+          <Link href="/" className="flex items-center gap-2 shrink-0 z-50 group" onClick={closeMobileMenu}>
+            <LogoIcon className="w-7 h-7 md:w-8 md:h-8 shrink-0 group-hover:scale-105 transition-transform" />
+            <span className="font-sans font-bold text-lg md:text-xl text-white leading-none tracking-wide">
               Aadana<span className="text-gold-500">Tharakar</span>
             </span>
           </Link>
