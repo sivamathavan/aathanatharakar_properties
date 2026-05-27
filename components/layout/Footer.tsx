@@ -3,6 +3,7 @@ import { TN_CITIES } from "@/lib/constants";
 import { Heart } from "lucide-react";
 
 import { LogoIcon } from "@/components/brand/LogoIcon";
+import { MonogramIcon } from "@/components/brand/MonogramIcon";
 
 export function Footer() {
   return (
@@ -14,8 +15,8 @@ export function Footer() {
         <div className="hidden md:block pb-8 border-b border-navy-800 mb-10">
           <div className="flex justify-between items-center">
             <div>
-              <div className="flex items-center space-x-2">
-                <LogoIcon className="w-8 h-8" />
+              <div className="flex items-center space-x-3">
+                <MonogramIcon className="w-10 h-10" />
                 <span className="font-tamil font-bold text-2xl text-white tracking-wide">
                   Aadana<span className="text-gold-500">Tharakar</span>
                 </span>
@@ -58,8 +59,8 @@ export function Footer() {
           
           {/* Mobile top stacked section */}
           <div className="md:hidden space-y-4 text-center">
-            <div className="flex items-center justify-center space-x-2">
-              <LogoIcon className="w-6 h-6" />
+            <div className="flex flex-col items-center justify-center space-y-2">
+              <MonogramIcon className="w-12 h-12" />
               <span className="font-tamil font-bold text-xl text-white tracking-wide">
                 Aadana<span className="text-gold-500">Tharakar</span>
               </span>
