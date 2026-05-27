@@ -1,5 +1,5 @@
 import { PrismaClient, UserRole, AccountStatus, VendorCategory, PropertyType, ListingType, PriceUnit, PropertyStatus, LeadStatus, LeadSource, CommissionType, CommissionStatus } from '@prisma/client'
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcryptjs'
 
 import { prisma } from '../lib/prisma'
 
