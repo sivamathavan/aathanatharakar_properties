@@ -8,6 +8,8 @@ export const metadata = {
   title: "Admin Dashboard | Aadana Tharakar",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboardPage() {
   const [
     totalUsers,
