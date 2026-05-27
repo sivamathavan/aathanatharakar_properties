@@ -60,7 +60,7 @@ export default async function HomePage() {
               ஆதனத் தரகர்
             </span>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tight leading-tight tamil max-w-4xl text-gold-50 drop-shadow-md animate-fade-up-delay-1">
-              உங்கள் கனவு சொத்தை கண்டுபிடியுங்கள்
+              உங்களுக்கான இடத்தை தேர்வு செய்யுங்கள்
             </h1>
             <p className="text-sm sm:text-base md:text-lg lg:text-xl font-sans font-medium text-gold-300 tracking-wide max-w-2xl mx-auto drop-shadow-sm animate-fade-up-delay-2">
               Find Your Dream Property in Tamil Nadu
