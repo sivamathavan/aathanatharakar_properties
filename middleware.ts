@@ -1,6 +1,5 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import { UserRole } from "@prisma/client";
 
 export default withAuth(
   function middleware(req) {
@@ -11,9 +10,9 @@ export default withAuth(
 
     if (isAuthPage) {
       if (isAuth) {
-        if (role === UserRole.ADMIN && req.nextUrl.pathname.startsWith("/admin/login")) {
+        if (role === "ADMIN" && req.nextUrl.pathname.startsWith("/admin/login")) {
           return NextResponse.redirect(new URL("/admin", req.url));
-        } else if (role !== UserRole.ADMIN && req.nextUrl.pathname.startsWith("/login")) {
+        } else if (role !== "ADMIN" && req.nextUrl.pathname.startsWith("/login")) {
           return NextResponse.redirect(new URL("/dashboard", req.url));
         }
       }
@@ -24,7 +23,7 @@ export default withAuth(
       return NextResponse.redirect(new URL("/admin/login", req.url));
     }
 
-    if (isAuth && isAdminRoute && role !== UserRole.ADMIN) {
+    if (isAuth && isAdminRoute && role !== "ADMIN") {
       return NextResponse.redirect(new URL("/login", req.url)); // or redirect to unauthorized
     }
 
