@@ -44,20 +44,20 @@ export async function POST(req: Request) {
             reraNumber: agentDetails.reraNumber || null,
             officeAddress: agentDetails.officeAddress || "Not Provided",
             operatingCities: agentDetails.operatingCities || [],
-            experience: parseInt(agentDetails.experienceYears) || 0,
+            experience: parseInt(agentDetails.experienceYears || "0") || 0,
             bio: agentDetails.bio || null,
           }
         } : undefined,
         vendorProfile: role === UserRole.VENDOR && vendorDetails ? {
           create: {
-            businessName: vendorDetails.businessName,
+            businessName: vendorDetails.businessName || name,
             ownerName: name,
             mobile: phone,
-            email: email,
-            category: vendorDetails.category,
+            email: normalizedEmail,
+            category: vendorDetails.category || "CIVIL_CONTRACTOR",
             description: vendorDetails.description || "",
             serviceAreas: vendorDetails.operatingCities || [],
-            yearsInBusiness: parseInt(vendorDetails.experienceYears) || 0,
+            yearsInBusiness: parseInt(vendorDetails.experienceYears || "0") || 0,
             websiteUrl: vendorDetails.websiteUrl || null,
           }
         } : undefined,

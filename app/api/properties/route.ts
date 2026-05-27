@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     
     // Ensure all required Prisma fields are correctly structured and types are correct
-    const { price, title, description, type, listingType, area, bedrooms, bathrooms, address, city, locality, amenities, priceUnit } = body;
+    const { price, title, description, type, listingType, area, bedrooms, bathrooms, address, city, locality, amenities, priceUnit, latitude, longitude } = body;
 
     const property = await prisma.property.create({
       data: {
@@ -38,6 +38,8 @@ export async function POST(req: Request) {
         locality,
         district: body.district || city || "Tamil Nadu",
         pincode: body.pincode || null,
+        latitude: latitude ? parseFloat(latitude) : null,
+        longitude: longitude ? parseFloat(longitude) : null,
         amenities: Array.isArray(amenities) ? amenities : [],
         postedById: session.user.id,
         status: PropertyStatus.PENDING, // Always pending until admin approves

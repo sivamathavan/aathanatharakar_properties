@@ -44,10 +44,10 @@ export function CloudinaryUpload({ onUpload, maxFiles = 10, existingMedia = [] }
         formData.append("file", file);
         formData.append("upload_preset", uploadPreset);
 
-        // Determine resource type based on file type
+        // Determine resource type for our state, but use 'auto' for Cloudinary
         const resourceType = file.type.startsWith("video/") ? "video" : "image";
 
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
           method: "POST",
           body: formData,
         });
@@ -59,6 +59,8 @@ export function CloudinaryUpload({ onUpload, maxFiles = 10, existingMedia = [] }
             url: data.secure_url,
             type: resourceType === "video" ? "VIDEO" : "IMAGE",
           });
+        } else {
+          console.error("Cloudinary error:", data);
         }
       }
 

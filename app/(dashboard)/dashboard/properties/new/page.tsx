@@ -29,6 +29,8 @@ export default function NewPropertyPage() {
     address: "",
     city: "",
     locality: "",
+    latitude: "",
+    longitude: "",
     amenities: "", // comma separated string for simple UI
     media: [] as { url: string; type: "IMAGE" | "VIDEO" }[],
   });
@@ -46,6 +48,8 @@ export default function NewPropertyPage() {
       area: parseFloat(formData.area),
       bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
       bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
+      latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+      longitude: formData.longitude ? parseFloat(formData.longitude) : null,
       amenities: amenitiesArray,
       media: formData.media,
     };
@@ -189,6 +193,20 @@ export default function NewPropertyPage() {
                   <Textarea 
                     id="address" value={formData.address} rows={2}
                     onChange={e => setFormData({...formData, address: e.target.value})} required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="latitude">Google Map Latitude (Optional)</Label>
+                  <Input 
+                    id="latitude" type="number" step="any" value={formData.latitude} 
+                    onChange={e => setFormData({...formData, latitude: e.target.value})} placeholder="e.g. 11.0168"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="longitude">Google Map Longitude (Optional)</Label>
+                  <Input 
+                    id="longitude" type="number" step="any" value={formData.longitude} 
+                    onChange={e => setFormData({...formData, longitude: e.target.value})} placeholder="e.g. 76.9558"
                   />
                 </div>
               </div>

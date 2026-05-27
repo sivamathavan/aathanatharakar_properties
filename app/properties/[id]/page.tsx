@@ -210,7 +210,7 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
                     style={{ border: 0 }}
                     loading="lazy"
                     allowFullScreen
-                    src={`https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${addressQuery}`}
+                    src={`https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${property.latitude && property.longitude ? `${property.latitude},${property.longitude}` : addressQuery}`}
                   ></iframe>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm font-sans">
@@ -236,11 +236,18 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
                   <Button variant="outline" className="w-full border-navy-700 text-navy-800 hover:bg-navy-50 h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2">
                     <Calendar className="w-4 h-4 text-gold-500" /> Book Free Site Visit
                   </Button>
-                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                    <Button variant="default" className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2 shadow-sm border-none">
-                      <FaWhatsapp className="w-5 h-5" /> Chat on WhatsApp
-                    </Button>
-                  </a>
+                  <div className="flex gap-2">
+                    <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="w-1/2">
+                      <Button variant="default" className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2 shadow-sm border-none">
+                        <FaWhatsapp className="w-4 h-4" /> WhatsApp
+                      </Button>
+                    </a>
+                    <a href={`tel:${whatsappNumber}`} className="w-1/2">
+                      <Button variant="default" className="w-full bg-gold-600 hover:bg-gold-700 text-white h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2 shadow-sm border-none">
+                        📞 Call Now
+                      </Button>
+                    </a>
+                  </div>
                   <SharePropertyButton title={property.title} url={propertyUrl} />
                   <div className="mt-3 p-3 bg-navy-50 rounded-btn border border-navy-100 flex items-start gap-2.5">
                     <ShieldCheck className="w-5 h-5 text-gold-600 shrink-0 mt-0.5" />
@@ -261,21 +268,6 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
 
       {/* Floating Bottom Sticky Bar on Mobile (with Safe bottom padding) */}
       <StickyEnquiryBar propertyId={property.id} />
-
-      {/* Floating Desktop WhatsApp Button (Hidden on Mobile, shown on Desktop) */}
-      <a 
-        href={whatsappUrl} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="hidden md:flex fixed bottom-8 right-8 bg-[#25D366] text-white w-14 h-14 rounded-full shadow-lg items-center justify-center hover:scale-110 hover:shadow-xl transition-all z-50 group"
-        aria-label="Chat on WhatsApp"
-      >
-        <FaWhatsapp className="w-7 h-7" />
-        <span className="absolute right-16 bg-white text-navy-900 text-xs font-bold py-1.5 px-3 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-[#E8E0D0]">
-          Chat with us!
-        </span>
-      </a>
-
     </div>
   );
 }
