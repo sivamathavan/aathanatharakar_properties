@@ -5,7 +5,6 @@ import { SessionProvider } from "@/components/providers/session-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { WhatsAppFloat } from "@/components/layout/WhatsAppFloat";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 
 const playfair = Playfair_Display({
@@ -54,7 +53,6 @@ export default function RootLayout({
           </main>
           <Footer />
           <MobileBottomNav />
-          <WhatsAppFloat />
           <Toaster position="bottom-right" />
         </SessionProvider>
       </body>
