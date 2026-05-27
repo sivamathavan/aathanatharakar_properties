@@ -25,8 +25,25 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     notFound();
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "image": post.coverImageUrl ? [post.coverImageUrl] : [],
+    "datePublished": (post.publishedAt || post.createdAt).toISOString(),
+    "dateModified": post.updatedAt.toISOString(),
+    "author": [{
+      "@type": "Person",
+      "name": post.author.name
+    }]
+  };
+
   return (
     <div className="bg-[#FDF6EC] min-h-screen py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="container mx-auto px-4 max-w-4xl">
         <Link href="/blog">
           <Button variant="ghost" className="mb-6 -ml-4 text-gray-600 hover:text-[#E85D24]">

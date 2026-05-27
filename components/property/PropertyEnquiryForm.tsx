@@ -7,13 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 
-export function EnquiryForm({ propertyId }: { propertyId: string }) {
+export function PropertyEnquiryForm({ propertyId, propertyTitle }: { propertyId: string, propertyTitle: string }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
-    message: "I am interested in this property. Please share more details.",
+    message: `Hi, I am interested in "${propertyTitle}". Please contact me with more details.`,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,10 +27,10 @@ export function EnquiryForm({ propertyId }: { propertyId: string }) {
       });
 
       if (res.ok) {
-        toast.success("Enquiry submitted successfully! We will contact you soon.");
-        setFormData({ name: "", email: "", phone: "", message: "" });
+        toast.success("Enquiry sent successfully! The property owner will contact you soon.");
+        setFormData({ ...formData, message: "" });
       } else {
-        toast.error("Failed to submit enquiry. Please try again.");
+        toast.error("Failed to send enquiry. Please try again.");
       }
     } catch (error) {
       toast.error("An error occurred");
@@ -40,20 +40,21 @@ export function EnquiryForm({ propertyId }: { propertyId: string }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 font-sans">
       <div className="space-y-2">
-        <Label htmlFor="name">Your Name</Label>
+        <Label htmlFor="name" className="text-xs font-semibold text-navy-800">Your Name</Label>
         <Input 
           id="name"
           value={formData.name} 
           onChange={(e) => setFormData({...formData, name: e.target.value})}
           required 
           placeholder="John Doe"
+          className="h-10 text-sm"
         />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="email">Email Address</Label>
+        <Label htmlFor="email" className="text-xs font-semibold text-navy-800">Email Address</Label>
         <Input 
           id="email"
           type="email" 
@@ -61,11 +62,12 @@ export function EnquiryForm({ propertyId }: { propertyId: string }) {
           onChange={(e) => setFormData({...formData, email: e.target.value})}
           required 
           placeholder="john@example.com"
+          className="h-10 text-sm"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number</Label>
+        <Label htmlFor="phone" className="text-xs font-semibold text-navy-800">Phone Number</Label>
         <Input 
           id="phone"
           type="tel" 
@@ -73,27 +75,25 @@ export function EnquiryForm({ propertyId }: { propertyId: string }) {
           onChange={(e) => setFormData({...formData, phone: e.target.value})}
           required 
           placeholder="+91 98765 43210"
+          className="h-10 text-sm"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="message">Message</Label>
+        <Label htmlFor="message" className="text-xs font-semibold text-navy-800">Message</Label>
         <Textarea 
           id="message"
           value={formData.message} 
           onChange={(e) => setFormData({...formData, message: e.target.value})}
           required 
-          rows={4}
+          rows={3}
+          className="text-sm resize-none"
         />
       </div>
 
-      <Button type="submit" className="w-full bg-[#E85D24] hover:bg-[#d6521e]" disabled={loading}>
-        {loading ? "Submitting..." : "Submit Enquiry"}
+      <Button type="submit" className="w-full h-11 bg-gold-500 text-navy-900 hover:bg-gold-400 font-bold shadow-sm transition-colors" disabled={loading}>
+        {loading ? "Sending Enquiry..." : "Send Enquiry"}
       </Button>
-      
-      <p className="text-xs text-center text-gray-500 mt-2">
-        By submitting, you agree to our Terms of Service.
-      </p>
     </form>
   );
 }

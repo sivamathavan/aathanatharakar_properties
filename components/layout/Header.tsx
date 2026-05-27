@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { UserRole } from "@prisma/client";
 import { Menu, X, Home, Briefcase, FileText, Info, LogIn, LayoutDashboard } from "lucide-react";
 
+import { LogoIcon } from "@/components/brand/LogoIcon";
+
 export function Header() {
   const { data: session } = useSession();
   const pathname = usePathname();
@@ -44,10 +46,13 @@ export function Header() {
       <header className="sticky top-0 z-50 w-full bg-navy-900 border-b border-navy-800 text-white transition-all duration-300">
         <div className="container mx-auto px-4 flex items-center justify-between h-14 md:h-[60px] lg:h-[68px]">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 shrink-0 z-50" onClick={closeMobileMenu}>
-            <span className="font-tamil font-bold text-base md:text-lg lg:text-xl text-gold-500 tracking-wide">
-              ஆதனத் தரகர்
-            </span>
+          <Link href="/" className="flex items-center space-x-2 shrink-0 z-50 group" onClick={closeMobileMenu}>
+            <LogoIcon className="w-6 h-6 md:w-8 md:h-8 group-hover:scale-105 transition-transform" />
+            <div className="flex flex-col">
+              <span className="font-tamil font-bold text-base md:text-lg lg:text-xl text-white tracking-wide">
+                Aadana<span className="text-gold-500">Tharakar</span>
+              </span>
+            </div>
           </Link>
 
           {/* Desktop & Tablet Navigation Link Options (768px+) */}

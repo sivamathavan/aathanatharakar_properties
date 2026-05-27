@@ -27,8 +27,8 @@ const notoTamil = Noto_Sans_Tamil({
 });
 
 export const metadata: Metadata = {
-  title: "ஆதனத் தரகர் | Tamil Nadu Real Estate Broker Platform",
-  description: "Find Your Dream Property in Tamil Nadu",
+  title: "Aadana Tharakar | ஆதனத் தரகர்",
+  description: "TAMIL NADU'S TRUSTED PROPERTY MARKETPLACE",
 };
 
 export default function RootLayout({

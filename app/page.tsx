@@ -7,6 +7,8 @@ import { Building, Map, Store, Warehouse, Trees, Briefcase, Sparkles, ShieldChec
 import { PROPERTY_TYPES, VENDOR_CATEGORIES } from "@/lib/constants";
 import { HomeSearch } from "@/components/home/HomeSearch";
 import { PropertyCard } from "@/components/property/PropertyCard";
+import { AnimatedStats } from "@/components/home/AnimatedStats";
+import { Testimonials } from "@/components/home/Testimonials";
 
 export const dynamic = "force-dynamic";
 
@@ -76,24 +78,7 @@ export default async function HomePage() {
       </section>
 
       {/* Stats Bar (PWA safe notch responsive layout) */}
-      <section className="bg-navy-950 text-white py-5 border-b border-[#1E3278] shadow-md relative z-10">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-3 gap-2 text-center items-center divide-x divide-navy-800">
-            <div className="px-1">
-              <p className="text-xl sm:text-3xl font-display font-bold text-gold-500">500+</p>
-              <p className="text-[9px] sm:text-xs opacity-75 font-sans uppercase tracking-wider mt-0.5">Properties</p>
-            </div>
-            <div className="px-1">
-              <p className="text-xl sm:text-3xl font-display font-bold text-gold-500">38</p>
-              <p className="text-[9px] sm:text-xs opacity-75 font-sans uppercase tracking-wider mt-0.5">Districts</p>
-            </div>
-            <div className="px-1">
-              <p className="text-xl sm:text-3xl font-display font-bold text-gold-500">200+</p>
-              <p className="text-[9px] sm:text-xs opacity-75 font-sans uppercase tracking-wider mt-0.5">Happy Clients</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <AnimatedStats />
 
       {/* Property Types Quick Links */}
       <section className="py-16 bg-cream-50">
@@ -134,6 +119,9 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* Testimonials */}
+      <Testimonials />
 
       {/* Allied Services */}
       <section className="py-16 bg-cream-50">

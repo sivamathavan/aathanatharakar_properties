@@ -10,14 +10,49 @@ import { PropertyGallery } from "@/components/property/PropertyGallery";
 import { StickyEnquiryBar } from "@/components/property/StickyEnquiryBar";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const property = await prisma.property.findUnique({ where: { id: params.id } });
+  const property = await prisma.property.findUnique({ 
+    where: { id: params.id },
+    include: { media: { orderBy: { order: 'asc' }, take: 1 } }
+  });
   
   if (!property) return { title: 'Property Not Found' };
 
+  const title = `${property.bedrooms ? property.bedrooms + 'BHK ' : ''}${property.type.replace('_', ' ')} for ${property.listingType} in ${property.locality}, ${property.city} — ₹${Number(property.price).toLocaleString('en-IN')} | Aadana Tharakar`;
+  const description = property.description.substring(0, 160) + (property.description.length > 160 ? "..." : "");
+  
+  const ogImage = property.media && property.media.length > 0 
+    ? property.media[0].url 
+    : "https://aadanatharakar.in/og-image.jpg"; // Fallback image (if exists)
+
   return {
-    title: `${property.bedrooms ? property.bedrooms + 'BHK ' : ''}${property.type.replace('_', ' ')} for ${property.listingType} in ${property.locality}, ${property.city} — ₹${Number(property.price).toLocaleString('en-IN')} | Aadana Tharakar`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://aadanatharakar.in/properties/${property.id}`,
+      siteName: "Aadana Tharakar",
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+        },
+      ],
+      locale: "en_US",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
+    },
   };
 }
+
+import { SharePropertyButton } from "@/components/property/SharePropertyButton";
+import { EmiCalculator } from "@/components/property/EmiCalculator";
 
 export default async function PropertyDetailPage({ params }: { params: { id: string } }) {
   const property = await prisma.property.findUnique({
@@ -64,6 +99,7 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/[^0-9]/g, "") || "916381169124";
   const whatsappMessage = encodeURIComponent(`Hi, I'm interested in "${property.title}" (ID: ${property.id}) on Aadana Tharakar. Please share more details.`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+  const propertyUrl = `https://aadanatharakar.in/properties/${property.id}`;
 
   return (
     <div className="bg-warm-cream min-h-screen py-6 md:py-10 pb-24 md:pb-12">
@@ -205,9 +241,7 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
                       <FaWhatsapp className="w-5 h-5" /> Chat on WhatsApp
                     </Button>
                   </a>
-                  <Button variant="outline" className="w-full border-[#E8E0D0] text-navy-700 hover:bg-navy-50 h-11 text-xs font-medium rounded-btn flex items-center justify-center gap-2">
-                    <Share2 className="w-4 h-4" /> Share This Property
-                  </Button>
+                  <SharePropertyButton title={property.title} url={propertyUrl} />
                   <div className="mt-3 p-3 bg-navy-50 rounded-btn border border-navy-100 flex items-start gap-2.5">
                     <ShieldCheck className="w-5 h-5 text-gold-600 shrink-0 mt-0.5" />
                     <p className="text-[10px] text-navy-800 leading-normal font-medium">
@@ -217,6 +251,9 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
                 </div>
               </CardContent>
             </Card>
+
+            {/* EMI Calculator */}
+            <EmiCalculator propertyPrice={Number(property.price)} />
           </div>
 
         </div>

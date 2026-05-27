@@ -16,14 +16,20 @@ export default async function AdminDashboardPage() {
     pendingUsers,
     totalProperties,
     pendingProperties,
-    totalLeads
+    totalLeads,
+    viewsResult
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { accountStatus: "PENDING" } }),
     prisma.property.count(),
     prisma.property.count({ where: { status: "PENDING" } }),
     prisma.lead.count(),
+    prisma.property.aggregate({
+      _sum: { viewCount: true }
+    })
   ]);
+
+  const totalViews = viewsResult._sum.viewCount || 0;
 
   return (
     <div className="space-y-6 font-sans">
@@ -64,7 +70,7 @@ export default async function AdminDashboardPage() {
       )}
 
       {/* Metrics Grid Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
         
         {/* Total Properties */}
         <Card className="border-[#E8E0D0] bg-white rounded-card shadow-2xs hover:shadow-xs transition-shadow">
@@ -88,6 +94,19 @@ export default async function AdminDashboardPage() {
             </div>
             <div className="w-10 h-10 bg-navy-50 text-gold-600 rounded-full flex items-center justify-center border border-navy-100/50">
               <Users className="w-5 h-5" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Total Views */}
+        <Card className="border-[#E8E0D0] bg-white rounded-card shadow-2xs hover:shadow-xs transition-shadow">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold text-navy-750 uppercase tracking-wider mb-1">Total Property Views</p>
+              <h3 className="text-2xl font-bold text-navy-900 font-display">{totalViews}</h3>
+            </div>
+            <div className="w-10 h-10 bg-navy-50 text-gold-600 rounded-full flex items-center justify-center border border-navy-100/50">
+              <Building className="w-5 h-5" />
             </div>
           </CardContent>
         </Card>

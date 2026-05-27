@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { VendorPortfolioUpload } from "@/components/profile/VendorPortfolioUpload";
 
 export const metadata = {
   title: "My Profile | Aadana Tharakar",
@@ -21,7 +22,9 @@ export default async function ProfilePage() {
     where: { id: session.user.id },
     include: {
       agentProfile: true,
-      vendorProfile: true,
+      vendorProfile: {
+        include: { portfolioMedia: true }
+      },
     }
   });
 
@@ -90,6 +93,23 @@ export default async function ProfilePage() {
             </div>
             
             <p className="text-xs text-gray-500 italic mt-4">To update these details, please contact administrator support.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {user.vendorProfile && (
+        <Card>
+          <CardHeader>
+            <CardTitle>My Portfolio</CardTitle>
+            <p className="text-sm text-gray-500">Upload photos of your past projects to showcase on your public profile.</p>
+          </CardHeader>
+          <CardContent>
+            <VendorPortfolioUpload 
+              initialMedia={user.vendorProfile.portfolioMedia.map(m => ({ 
+                url: m.url, 
+                type: m.type as "IMAGE" | "VIDEO" 
+              }))} 
+            />
           </CardContent>
         </Card>
       )}

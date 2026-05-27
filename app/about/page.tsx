@@ -93,13 +93,36 @@ export default function AboutPage() {
       </section>
 
       {/* Contact CTA */}
-      <section className="py-20 px-4 text-center">
+      <section className="py-20 px-4 text-center bg-white border-t border-[#E8E0D0]">
         <div className="max-w-2xl mx-auto space-y-6">
-          <h2 className="text-3xl font-display font-bold text-navy-900">Get in Touch</h2>
-          <p className="text-navy-700">Have questions or need assistance? Our support team is always here to help you navigate your real estate journey.</p>
-          <a href="mailto:aadanatharakar@gmail.com" className="inline-block px-8 py-3 bg-gold-500 text-navy-900 font-bold rounded-lg hover:bg-gold-400 transition-colors shadow-sm">
-            Contact Support
-          </a>
+          <h2 className="text-3xl font-display font-bold text-navy-900">Contact Us</h2>
+          <p className="text-navy-700">Have questions or need assistance? Reach out to our founder directly.</p>
+          
+          <div className="bg-[#FDF6EC] p-8 rounded-2xl max-w-md mx-auto text-left border border-[#E8E0D0] shadow-sm">
+            <h3 className="font-bold text-navy-900 text-lg">Tamilarasan</h3>
+            <p className="text-sm text-gold-600 font-semibold mb-4 uppercase tracking-wider">Founder</p>
+            
+            <div className="space-y-3 text-navy-800 text-sm">
+              <p className="flex items-center gap-3">
+                <span>📍</span> Vadavalli, Coimbatore - 641041, Tamil Nadu
+              </p>
+              <p className="flex items-center gap-3">
+                <span>📞</span> <a href="tel:+916382987874" className="hover:text-gold-600">63829 87874</a>
+              </p>
+              <p className="flex items-center gap-3">
+                <span>📞</span> <a href="tel:+916381169124" className="hover:text-gold-600">63811 69124</a>
+              </p>
+              <p className="flex items-center gap-3">
+                <span>✉️</span> <a href="mailto:aadanatharakarproperty@gmail.com" className="hover:text-gold-600 break-all">aadanatharakarproperty@gmail.com</a>
+              </p>
+            </div>
+          </div>
+          
+          <div className="pt-4">
+            <a href="mailto:aadanatharakarproperty@gmail.com" className="inline-block px-8 py-3 bg-gold-500 text-navy-900 font-bold rounded-lg hover:bg-gold-400 transition-colors shadow-sm">
+              Email Us Now
+            </a>
+          </div>
         </div>
       </section>
     </div>

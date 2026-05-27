@@ -2,6 +2,8 @@ import Link from "next/link";
 import { TN_CITIES } from "@/lib/constants";
 import { Heart } from "lucide-react";
 
+import { LogoIcon } from "@/components/brand/LogoIcon";
+
 export function Footer() {
   return (
     <footer className="bg-navy-900 text-white border-t border-navy-800">
@@ -12,8 +14,13 @@ export function Footer() {
         <div className="hidden md:block pb-8 border-b border-navy-800 mb-10">
           <div className="flex justify-between items-center">
             <div>
-              <span className="font-tamil font-bold text-2xl text-gold-500 tracking-wide">ஆதனத் தரகர்</span>
-              <p className="text-xs text-gray-400 mt-1">Find Your Dream Property in Tamil Nadu</p>
+              <div className="flex items-center space-x-2">
+                <LogoIcon className="w-8 h-8" />
+                <span className="font-tamil font-bold text-2xl text-white tracking-wide">
+                  Aadana<span className="text-gold-500">Tharakar</span>
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1 pl-10">Find Your Dream Property in Tamil Nadu</p>
             </div>
             <div className="flex gap-4">
               {/* Custom SVG Facebook */}
@@ -51,7 +58,12 @@ export function Footer() {
           
           {/* Mobile top stacked section */}
           <div className="md:hidden space-y-4 text-center">
-            <span className="font-tamil font-bold text-xl text-gold-500 tracking-wide">ஆதனத் தரகர்</span>
+            <div className="flex items-center justify-center space-x-2">
+              <LogoIcon className="w-6 h-6" />
+              <span className="font-tamil font-bold text-xl text-white tracking-wide">
+                Aadana<span className="text-gold-500">Tharakar</span>
+              </span>
+            </div>
             <p className="text-xs text-gray-400">
               உங்கள் கனவு சொத்தை கண்டுபிடியுங்கள் — Find Your Dream Property in Tamil Nadu.
             </p>
@@ -104,18 +116,34 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Column 4: Legal & Policies */}
+          {/* Column 4: Contact Us */}
           <div className="border-t border-navy-800 pt-6 mt-6 md:border-t-0 md:pt-0 md:mt-0">
-            <h4 className="font-display font-semibold text-gold-500 text-sm md:text-base mb-4 uppercase tracking-wider">Policies</h4>
-            <ul className="grid grid-cols-2 md:grid-cols-1 gap-2.5 text-sm text-gray-400">
-              <li><Link href="/privacy" className="hover:text-gold-500 transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-gold-500 transition-colors">Terms of Service</Link></li>
-            </ul>
+            <h4 className="font-display font-semibold text-gold-500 text-sm md:text-base mb-4 uppercase tracking-wider">Contact Us</h4>
+            <div className="text-sm text-gray-400 space-y-3">
+              <p className="leading-relaxed">
+                <strong className="text-gray-200 block mb-1">Tamilarasan (Founder)</strong>
+                Vadavalli, Coimbatore - 641041<br/>
+                Tamil Nadu
+              </p>
+              <p className="leading-relaxed">
+                <a href="tel:+916382987874" className="hover:text-gold-500 transition-colors block">📞 +91 63829 87874</a>
+                <a href="tel:+916381169124" className="hover:text-gold-500 transition-colors block">📞 +91 63811 69124</a>
+              </p>
+              <p className="leading-relaxed">
+                <a href="mailto:aadanatharakarproperty@gmail.com" className="hover:text-gold-500 transition-colors break-all">
+                  ✉️ aadanatharakarproperty@gmail.com
+                </a>
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Bottom copyright row */}
         <div className="mt-8 md:mt-12 pt-6 md:pt-8 border-t border-navy-800 text-center text-xs text-gray-500 font-sans flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex gap-4">
+            <Link href="/privacy" className="hover:text-gold-500 transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-gold-500 transition-colors">Terms of Service</Link>
+          </div>
           <p>© {new Date().getFullYear()} Aadana Tharakar. All rights reserved.</p>
           <p className="flex items-center gap-1.5">
             Made with <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" /> in Tamil Nadu

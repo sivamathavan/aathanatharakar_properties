@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 export default async function VendorDetailPage({ params }: { params: { id: string } }) {
   const vendor = await prisma.vendorProfile.findUnique({
     where: { id: params.id },
-    include: { user: true },
+    include: { user: true, portfolioMedia: true },
   });
 
   if (!vendor || vendor.user.accountStatus !== "ACTIVE") {
@@ -95,6 +95,32 @@ export default async function VendorDetailPage({ params }: { params: { id: strin
                 <li>End-to-end execution</li>
               </ul>
             </div>
+
+            {vendor.portfolioMedia && vendor.portfolioMedia.length > 0 && (
+              <div className="bg-white p-6 rounded-card border border-[#E8E0D0] shadow-xs">
+                <h3 className="font-display font-semibold text-base text-navy-900 mb-4">Portfolio / Past Work</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {vendor.portfolioMedia.map((media) => (
+                    <div key={media.id} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200">
+                      {media.type === "IMAGE" ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img 
+                          src={media.url} 
+                          alt="Portfolio image" 
+                          className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <video 
+                          src={media.url} 
+                          className="object-cover w-full h-full"
+                          controls
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sidebar Contact */}

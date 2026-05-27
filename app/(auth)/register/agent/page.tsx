@@ -243,17 +243,9 @@ export default function AgentRegistration() {
                   </div>
                 </div>
 
-                {/* Verification Info Alert */}
-                <div className="bg-navy-50 p-4 rounded-btn border border-navy-100 flex items-start gap-3">
-                  <ShieldAlert className="w-5 h-5 text-gold-600 shrink-0 mt-0.5" />
-                  <p className="text-xs text-navy-800 leading-normal font-medium">
-                    Your agent application will be submitted for administrative verification. You will receive an email confirmation once approved.
-                  </p>
-                </div>
-
                 <Button type="submit" className="w-full h-11 bg-navy-900 text-gold-500 hover:bg-navy-950 hover:text-gold-400 font-sans font-bold shadow-sm rounded-btn transition-colors" disabled={loading}>
                   {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                  {loading ? "Submitting..." : "Submit Registration Request"}
+                  {loading ? "Submitting..." : "Register & Sign In"}
                 </Button>
               </form>
             ) : (

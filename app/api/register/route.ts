@@ -11,24 +11,29 @@ export async function POST(req: Request) {
       return new NextResponse("Missing required fields", { status: 400 });
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
-      return new NextResponse("Email already registered", { status: 400 });
+      if (existingUser.accountStatus === AccountStatus.SUSPENDED) {
+        // Delete suspended user to allow re-registration
+        await prisma.user.delete({ where: { id: existingUser.id } });
+      } else {
+        return new NextResponse("Email already registered", { status: 400 });
+      }
     }
 
-    // Create user. For PROPERTY_LISTER, status is ACTIVE. For others, PENDING.
-    const initialStatus = role === UserRole.PROPERTY_LISTER 
-      ? AccountStatus.ACTIVE 
-      : AccountStatus.PENDING;
+    // Create user. All users are ACTIVE immediately.
+    const initialStatus = AccountStatus.ACTIVE;
 
     const user = await prisma.user.create({
       data: {
         name,
-        email,
+        email: normalizedEmail,
         phone,
         role,
         accountStatus: initialStatus,
@@ -68,7 +73,7 @@ export async function POST(req: Request) {
           html: `
             <h3>New User Registration</h3>
             <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Email:</strong> ${normalizedEmail}</p>
             <p><strong>Phone:</strong> ${phone}</p>
             <p><strong>Role:</strong> ${role}</p>
             <p><strong>Status:</strong> ${initialStatus}</p>

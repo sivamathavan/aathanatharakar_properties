@@ -86,7 +86,7 @@ export function CloudinaryUpload({ onUpload, maxFiles = 10, existingMedia = [] }
     <div className="w-full space-y-4">
       
       {/* Upload Button Area */}
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 flex flex-col items-center justify-center text-center relative hover:bg-gray-100 transition-colors">
+      <label className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 flex flex-col items-center justify-center text-center relative hover:bg-gray-100 transition-colors cursor-pointer w-full">
         <UploadCloud className="w-10 h-10 text-gray-400 mb-2" />
         <h3 className="text-sm font-semibold text-gray-700">Click to upload or drag and drop</h3>
         <p className="text-xs text-gray-500 mt-1">SVG, PNG, JPG or GIF (max. {maxFiles} files)</p>
@@ -95,18 +95,18 @@ export function CloudinaryUpload({ onUpload, maxFiles = 10, existingMedia = [] }
           type="file" 
           multiple 
           accept="image/*,video/*" 
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          className="hidden"
           onChange={handleFileChange}
           disabled={uploading}
         />
         
         {uploading && (
-          <div className="absolute inset-0 bg-white/80 flex items-center justify-center backdrop-blur-sm z-10 rounded-lg">
-            <Loader2 className="w-6 h-6 animate-spin text-gold-500 mr-2" />
-            <span className="font-medium text-navy-800">Uploading...</span>
+          <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center backdrop-blur-sm z-10 rounded-lg">
+            <Loader2 className="w-6 h-6 animate-spin text-gold-500 mb-2" />
+            <span className="font-medium text-navy-800 text-sm">Uploading files...</span>
           </div>
         )}
-      </div>
+      </label>
 
       {/* Previews */}
       {mediaList.length > 0 && (

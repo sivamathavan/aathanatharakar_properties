@@ -10,6 +10,8 @@ import Link from "next/link";
 export default function AdminPropertiesPage() {
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   useEffect(() => {
     fetchProperties();
@@ -45,6 +47,41 @@ export default function AdminPropertiesPage() {
     }
   };
 
+  const handleBulkStatusChange = async (status: string) => {
+    if (selectedIds.length === 0) return;
+    setBulkLoading(true);
+    try {
+      const res = await fetch(`/api/admin/properties/bulk`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ propertyIds: selectedIds, status }),
+      });
+      if (res.ok) {
+        toast.success(`${selectedIds.length} properties marked as ${status}`);
+        setSelectedIds([]);
+        fetchProperties();
+      } else {
+        toast.error("Failed to update status in bulk");
+      }
+    } catch (error) {
+      toast.error("An error occurred during bulk update");
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
+  };
+
+  const toggleAll = () => {
+    if (selectedIds.length === properties.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(properties.map(p => p.id));
+    }
+  };
+
   const getListingBadgeClass = (type: string) => {
     switch(type) {
       case 'BUY': return 'bg-gold-500 text-navy-900 border-gold-600';
@@ -59,9 +96,23 @@ export default function AdminPropertiesPage() {
     <div className="space-y-6 pb-12 font-sans">
       
       {/* Page Title */}
-      <div className="border-b border-[#E8E0D0] pb-4">
-        <h1 className="font-display font-bold text-xl md:text-2xl text-navy-900 leading-snug">Properties Management</h1>
-        <p className="text-xs text-navy-700 mt-0.5">Approve property listings, review agent draft posts, and moderate active inventory.</p>
+      {/* Page Title & Bulk Actions */}
+      <div className="border-b border-[#E8E0D0] pb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div>
+          <h1 className="font-display font-bold text-xl md:text-2xl text-navy-900 leading-snug">Properties Management</h1>
+          <p className="text-xs text-navy-700 mt-0.5">Approve property listings, review agent draft posts, and moderate active inventory.</p>
+        </div>
+        {selectedIds.length > 0 && (
+          <div className="flex gap-2 bg-navy-50 p-2 rounded-btn border border-navy-100">
+            <span className="text-xs text-navy-800 font-bold self-center px-2">{selectedIds.length} selected</span>
+            <Button size="sm" onClick={() => handleBulkStatusChange("ACTIVE")} disabled={bulkLoading} className="bg-[#1D6A3A] hover:bg-[#15502c] text-white text-[10px] h-8 px-2.5 font-bold rounded-btn">
+              Approve All
+            </Button>
+            <Button size="sm" onClick={() => handleBulkStatusChange("REJECTED")} disabled={bulkLoading} variant="outline" className="border-red-200 text-red-700 hover:bg-red-50 text-[10px] h-8 px-2.5 font-semibold rounded-btn">
+              Reject All
+            </Button>
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -131,6 +182,9 @@ export default function AdminPropertiesPage() {
                 <table className="w-full text-left">
                   <thead className="bg-navy-50/60 border-b border-[#E8E0D0]/80">
                     <tr>
+                      <th className="px-6 py-4 w-12">
+                        <input type="checkbox" className="rounded border-gray-300" checked={properties.length > 0 && selectedIds.length === properties.length} onChange={toggleAll} />
+                      </th>
                       <th className="px-6 py-4 font-semibold text-navy-900 text-xs uppercase tracking-wider">Property Details</th>
                       <th className="px-6 py-4 font-semibold text-navy-900 text-xs uppercase tracking-wider">Posted By</th>
                       <th className="px-6 py-4 font-semibold text-navy-900 text-xs uppercase tracking-wider">Created</th>
@@ -141,6 +195,9 @@ export default function AdminPropertiesPage() {
                   <tbody className="divide-y divide-[#E8E0D0]/50">
                     {properties.map(property => (
                       <tr key={property.id} className="hover:bg-navy-50/20 transition-colors">
+                        <td className="px-6 py-4">
+                          <input type="checkbox" className="rounded border-gray-300" checked={selectedIds.includes(property.id)} onChange={() => toggleSelection(property.id)} />
+                        </td>
                         <td className="px-6 py-4">
                           <div className="font-semibold text-navy-900 text-sm">{property.title}</div>
                           <div className="text-xs text-navy-700 mt-1 flex items-center gap-1.5 flex-wrap">
@@ -207,7 +264,7 @@ export default function AdminPropertiesPage() {
                     ))}
                     {properties.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="text-center py-10 text-xs text-navy-700 italic">No properties found</td>
+                        <td colSpan={6} className="text-center py-10 text-xs text-navy-700 italic">No properties found</td>
                       </tr>
                     )}
                   </tbody>

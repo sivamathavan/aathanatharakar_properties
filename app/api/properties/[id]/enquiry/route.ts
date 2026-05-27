@@ -5,7 +5,7 @@ import { sendEmail } from "@/lib/mail";
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
     const body = await req.json();
-    const { name, email, message } = body;
+    const { name, email, phone, message } = body;
 
     if (!name || !email || !message) {
       return new NextResponse("Missing required fields", { status: 400 });
@@ -20,11 +20,13 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       return new NextResponse("Property not found", { status: 404 });
     }
 
+    const fullMessage = phone ? `Phone: ${phone}\n\nMessage: ${message}` : message;
+
     const lead = await prisma.lead.create({
       data: {
         name: name,
         email: email,
-        message: message,
+        message: fullMessage,
         propertyId: property.id,
       }
     });
@@ -38,6 +40,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       <ul>
         <li><strong>Name:</strong> ${name}</li>
         <li><strong>Email:</strong> ${email}</li>
+        ${phone ? `<li><strong>Phone:</strong> ${phone}</li>` : ''}
       </ul>
       <h3>Message:</h3>
       <p><em>${message}</em></p>
