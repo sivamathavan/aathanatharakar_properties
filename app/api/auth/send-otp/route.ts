@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     });
 
     // Send email via Nodemailer
-    if (process.env.NODE_ENV !== 'production' || process.env.SMTP_USER === 'yourgmail@gmail.com') {
+    if (!process.env.SMTP_USER || process.env.SMTP_USER === 'yourgmail@gmail.com') {
       console.log(`\n======================================================`);
       console.log(`OTP Code for ${email}: ${otp}`);
       console.log(`======================================================\n`);
