@@ -1,27 +1,231 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Noto+Sans+Tamil:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════
+   CSS VARIABLES — THEME B: NAVY & GOLD
+═══════════════════════════════════════ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand */
+  --color-primary:       #0D1B2A;   /* deep navy — hero bg, sidebar */
+  --color-primary-mid:   #1E3278;   /* mid navy — hover states */
+  --color-primary-light: #E8EDF5;   /* light navy — tinted surfaces */
+  --color-accent:        #D4A017;   /* antique gold — CTAs, highlights */
+  --color-accent-light:  #FDF8E8;   /* pale gold — badge bg */
+  --color-accent-dark:   #7D5A05;   /* dark gold — badge text */
+
+  /* Backgrounds */
+  --bg-page:    #FDF8E8;   /* warm cream — main page bg */
+  --bg-surface: #FFFFFF;   /* card surface */
+  --bg-muted:   #F5F0E8;   /* subtle tint for sections */
+  --bg-navy:    #0D1B2A;   /* hero, sidebar, footer */
+  --bg-admin:   #1A2744;   /* admin sidebar */
+
+  /* Text */
+  --text-primary:   #0D1B2A;   /* main text — navy */
+  --text-secondary: #4A5568;   /* muted text */
+  --text-tertiary:  #8A95A3;   /* placeholder, labels */
+  --text-on-dark:   #FFFFFF;   /* text on navy bg */
+  --text-gold:      #D4A017;   /* gold text on dark */
+  --text-gold-dark: #7D5A05;   /* gold text on light */
+
+  /* Borders */
+  --border-light:  #E8E0D0;
+  --border-medium: #C8BCA8;
+  --border-navy:   #2C4490;
+
+  /* Listing type badge colors */
+  --badge-buy:   #D4A017;   /* gold */
+  --badge-rent:  #1A5276;   /* deep blue */
+  --badge-lease: #6C3483;   /* purple */
+  --badge-sell:  #1E8449;   /* green */
+
+  /* Shadows */
+  --shadow-card:   0 1px 3px rgba(13,27,42,0.08), 0 1px 2px rgba(13,27,42,0.05);
+  --shadow-hover:  0 4px 12px rgba(13,27,42,0.12);
+  --shadow-gold:   0 2px 8px rgba(212,160,23,0.25);
+
+  /* Transitions */
+  --transition: all 0.2s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ═══════════════════════════════════════
+   BASE RESET & TYPOGRAPHY
+═══════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+/* Tamil text */
+.tamil {
+  font-family: 'Noto Sans Tamil', 'DM Sans', system-ui, sans-serif;
+}
+
+/* Display headings */
+h1, h2, h3, .font-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* ═══════════════════════════════════════
+   UTILITY CLASSES — THEME B
+═══════════════════════════════════════ */
+@layer components {
+
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-btn
+           font-sans font-medium text-sm
+           bg-gold-500 text-navy-900
+           hover:bg-gold-400 active:bg-gold-600
+           transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-gold-400 focus:ring-offset-2;
   }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-btn
+           font-sans font-medium text-sm
+           border border-navy-900 text-navy-900 bg-transparent
+           hover:bg-navy-50 active:bg-navy-100
+           transition-all duration-200;
+  }
+
+  .btn-outline-gold {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-btn
+           font-sans font-medium text-sm
+           border border-gold-500 text-gold-700 bg-transparent
+           hover:bg-gold-50 active:bg-gold-100
+           transition-all duration-200;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-btn
+           font-sans font-medium text-sm text-navy-700
+           hover:bg-navy-50 transition-all duration-200;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white rounded-card border border-[#E8E0D0] shadow-sm
+           transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply card hover:shadow-md hover:-translate-y-0.5;
+  }
+
+  /* Property listing type badges */
+  .badge-buy {
+    @apply text-xs font-medium px-2.5 py-0.5 rounded-pill
+           bg-gold-500 text-navy-900;
+  }
+  .badge-rent {
+    @apply text-xs font-medium px-2.5 py-0.5 rounded-pill
+           bg-info text-white;
+  }
+  .badge-lease {
+    @apply text-xs font-medium px-2.5 py-0.5 rounded-pill
+           bg-purple-600 text-white;
+  }
+  .badge-sell {
+    @apply text-xs font-medium px-2.5 py-0.5 rounded-pill
+           bg-success text-white;
+  }
+
+  /* Section headings */
+  .section-title {
+    @apply font-display font-semibold text-navy-900
+           text-2xl sm:text-3xl md:text-4xl;
+  }
+
+  .section-subtitle {
+    @apply text-base text-[#4A5568] mt-2 max-w-xl;
+  }
+
+  /* Input fields */
+  .input-field {
+    @apply w-full px-4 py-2.5 rounded-btn text-sm
+           border border-[#E8E0D0] bg-white text-navy-900
+           placeholder:text-[#8A95A3]
+           focus:outline-none focus:ring-2 focus:ring-gold-400 focus:border-gold-400
+           transition-all duration-200;
+  }
+
+  /* Gold divider accent */
+  .gold-divider {
+    @apply w-12 h-1 bg-gold-500 rounded-full;
+  }
+}
+
+/* ═══════════════════════════════════════
+   MOBILE SAFE AREA SUPPORT (iPhone notch)
+═══════════════════════════════════════ */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+.pt-safe {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+/* ═══════════════════════════════════════
+   SCROLLBAR STYLING
+═══════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-muted); }
+::-webkit-scrollbar-thumb { background: #9FAFD4; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3D57A4; }
+
+/* ═══════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.5s ease forwards;
+}
+.animate-fade-up-delay-1 { animation-delay: 0.1s; opacity: 0; animation-fill-mode: forwards; animation-name: fadeUp; animation-duration: 0.5s; }
+.animate-fade-up-delay-2 { animation-delay: 0.2s; opacity: 0; animation-fill-mode: forwards; animation-name: fadeUp; animation-duration: 0.5s; }
+.animate-fade-up-delay-3 { animation-delay: 0.3s; opacity: 0; animation-fill-mode: forwards; animation-name: fadeUp; animation-duration: 0.5s; }
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, #E8E0D0 25%, #F5F0E8 50%, #E8E0D0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+/* ═══════════════════════════════════════
+   SCROLLBAR HIDE UTILITY
+═══════════════════════════════════════ */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

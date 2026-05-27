@@ -1,0 +1,17 @@
+{
+  "name": "ஆதனத் தரகர் - Aadana Tharakar",
+  "short_name": "Aadana Tharakar",
+  "description": "Tamil Nadu's trusted property marketplace",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDF8E8",
+  "theme_color": "#0D1B2A",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable any" }
+  ],
+  "categories": ["real estate", "property", "business"],
+  "lang": "ta",
+  "dir": "ltr"
+}

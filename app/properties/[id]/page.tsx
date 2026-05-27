@@ -1,0 +1,220 @@
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
+import { Metadata } from "next";
+import { MapPin, Bed, Bath, Layers, Square, Share2, Calendar, PhoneCall, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { EnquiryForm } from "@/components/property/EnquiryForm";
+import { PropertyGallery } from "@/components/property/PropertyGallery";
+import { StickyEnquiryBar } from "@/components/property/StickyEnquiryBar";
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const property = await prisma.property.findUnique({ where: { id: params.id } });
+  
+  if (!property) return { title: 'Property Not Found' };
+
+  return {
+    title: `${property.bedrooms ? property.bedrooms + 'BHK ' : ''}${property.type.replace('_', ' ')} for ${property.listingType} in ${property.locality}, ${property.city} — ₹${Number(property.price).toLocaleString('en-IN')} | Aadana Tharakar`,
+  };
+}
+
+export default async function PropertyDetailPage({ params }: { params: { id: string } }) {
+  const property = await prisma.property.findUnique({
+    where: { id: params.id },
+    include: { media: true },
+  });
+
+  if (!property || property.status !== "ACTIVE") {
+    notFound();
+  }
+
+  // Update view count (fire and forget)
+  prisma.property.update({
+    where: { id: params.id },
+    data: { viewCount: { increment: 1 } }
+  }).catch(() => {});
+
+  const priceFormatted = new Intl.NumberFormat('en-IN', { 
+    style: 'currency', 
+    currency: 'INR', 
+    maximumSignificantDigits: 3 
+  }).format(Number(property.price));
+
+  const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const addressQuery = encodeURIComponent(`${property.address}, ${property.city}, Tamil Nadu`);
+
+  const mediaItems = property.media.map(m => ({
+    id: m.id,
+    url: m.url,
+    thumbnailUrl: m.thumbnailUrl,
+    type: m.type as "IMAGE" | "VIDEO"
+  }));
+
+  const getListingBadgeClass = (type: string) => {
+    switch(type) {
+      case 'BUY': return 'bg-gold-500 text-navy-900 border-gold-600';
+      case 'RENT': return 'bg-[#1D6A3A] text-white';
+      case 'LEASE': return 'bg-purple-600 text-white';
+      case 'SELL': return 'bg-navy-600 text-white';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className="bg-warm-cream min-h-screen py-6 md:py-10 pb-24 md:pb-12">
+      <div className="container mx-auto px-4 max-w-7xl">
+        
+        {/* Breadcrumb / Navigation helper */}
+        <div className="mb-4 text-xs font-sans text-navy-700 flex items-center gap-2">
+          <a href="/" className="hover:underline hover:text-gold-600">Home</a>
+          <span>/</span>
+          <a href="/properties" className="hover:underline hover:text-gold-600">Properties</a>
+          <span>/</span>
+          <span className="text-navy-900 font-medium truncate max-w-xs">{property.title}</span>
+        </div>
+
+        {/* Gallery Section */}
+        <div className="mb-6 md:mb-8">
+          <PropertyGallery media={mediaItems} title={property.title} />
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-8">
+          
+          {/* Main Info */}
+          <div className="w-full lg:w-2/3 space-y-6 md:space-y-8">
+            <div className="bg-white p-6 rounded-card border border-[#E8E0D0] shadow-xs">
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+                <div>
+                  <div className={`inline-block px-3 py-1 text-[10px] font-bold rounded-pill mb-3 uppercase tracking-wider ${getListingBadgeClass(property.listingType)}`}>
+                    For {property.listingType === 'BUY' ? 'Sale' : property.listingType}
+                  </div>
+                  <h1 className="text-xl md:text-2xl font-display font-semibold text-navy-900 leading-snug">{property.title}</h1>
+                  <p className="text-navy-700 text-xs font-sans mt-2 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-gold-500 shrink-0" /> {property.address}, {property.city}</p>
+                </div>
+                <div className="sm:text-right shrink-0">
+                  <div className="text-2xl md:text-3xl font-display font-bold text-navy-900">{priceFormatted}</div>
+                  <div className="text-xs text-navy-700 font-sans mt-0.5 uppercase tracking-wider">{property.priceUnit.replace('_', ' ')}</div>
+                </div>
+              </div>
+
+              {/* Property Attributes Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-5 border-y border-[#E8E0D0] my-6 font-sans">
+                <div className="flex items-center gap-3 bg-warm-cream/50 p-3 rounded-btn border border-[#E8E0D0]/30">
+                  <Square className="w-5 h-5 text-gold-600 shrink-0" />
+                  <div>
+                    <div className="text-[10px] text-navy-750 uppercase font-semibold">Area</div>
+                    <div className="font-bold text-sm text-navy-900">{property.area} Sq.Ft</div>
+                  </div>
+                </div>
+                {property.bedrooms && (
+                  <div className="flex items-center gap-3 bg-warm-cream/50 p-3 rounded-btn border border-[#E8E0D0]/30">
+                    <Bed className="w-5 h-5 text-gold-600 shrink-0" />
+                    <div>
+                      <div className="text-[10px] text-navy-750 uppercase font-semibold">Bedrooms</div>
+                      <div className="font-bold text-sm text-navy-900">{property.bedrooms} BHK</div>
+                    </div>
+                  </div>
+                )}
+                {property.bathrooms && (
+                  <div className="flex items-center gap-3 bg-warm-cream/50 p-3 rounded-btn border border-[#E8E0D0]/30">
+                    <Bath className="w-5 h-5 text-gold-600 shrink-0" />
+                    <div>
+                      <div className="text-[10px] text-navy-750 uppercase font-semibold">Bathrooms</div>
+                      <div className="font-bold text-sm text-navy-900">{property.bathrooms}</div>
+                    </div>
+                  </div>
+                )}
+                {property.floors && (
+                  <div className="flex items-center gap-3 bg-warm-cream/50 p-3 rounded-btn border border-[#E8E0D0]/30">
+                    <Layers className="w-5 h-5 text-gold-600 shrink-0" />
+                    <div>
+                      <div className="text-[10px] text-navy-750 uppercase font-semibold">Floors</div>
+                      <div className="font-bold text-sm text-navy-900">{property.floors}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <h3 className="text-base font-display font-semibold text-navy-900 mb-3">Description</h3>
+                <p className="text-navy-800 font-sans text-sm whitespace-pre-wrap leading-relaxed">
+                  {property.description}
+                </p>
+              </div>
+            </div>
+
+            {/* Amenities Section */}
+            {property.amenities && property.amenities.length > 0 && (
+              <div className="bg-white p-6 rounded-card border border-[#E8E0D0] shadow-xs">
+                <h3 className="text-base font-display font-semibold text-navy-900 mb-4">Amenities</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {property.amenities.map(amenity => (
+                    <div key={amenity} className="flex items-center text-navy-800 text-sm font-sans">
+                      <span className="w-1.5 h-1.5 bg-[#D4A017] rounded-full mr-2.5 shrink-0"></span>
+                      {amenity}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Google Map */}
+            <div className="bg-white p-6 rounded-card border border-[#E8E0D0] shadow-xs">
+              <h3 className="text-base font-display font-semibold text-navy-900 mb-4">Location Map</h3>
+              <div className="w-full h-80 bg-navy-50 rounded-lg overflow-hidden border border-[#E8E0D0]">
+                {mapsApiKey ? (
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    src={`https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${addressQuery}`}
+                  ></iframe>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm font-sans">
+                    Google Maps location placeholder for: {property.address}, {property.city}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Sidebar (Hidden on Mobile screens < 1024px) */}
+          <div className="hidden lg:block lg:w-1/3 space-y-6">
+            <Card className="border-[#E8E0D0] bg-white rounded-card shadow-sm sticky top-24">
+              <CardContent className="p-6">
+                <h3 className="font-display font-bold text-lg text-navy-900 mb-2">Interested in this property?</h3>
+                <p className="text-xs text-navy-700 font-sans mb-6">
+                  Submit an enquiry and our dedicated team will reach out to you within 24 hours to organize a site visit.
+                </p>
+                
+                <EnquiryForm propertyId={property.id} />
+                
+                <div className="mt-6 pt-5 border-t border-[#E8E0D0] flex flex-col gap-3 font-sans">
+                  <Button variant="outline" className="w-full border-navy-700 text-navy-800 hover:bg-navy-50 h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2">
+                    <Calendar className="w-4 h-4 text-gold-500" /> Book Free Site Visit
+                  </Button>
+                  <Button variant="outline" className="w-full border-[#E8E0D0] text-navy-700 hover:bg-navy-50 h-11 text-xs font-medium rounded-btn flex items-center justify-center gap-2">
+                    <Share2 className="w-4 h-4" /> Share This Property
+                  </Button>
+                  <div className="mt-3 p-3 bg-navy-50 rounded-btn border border-navy-100 flex items-start gap-2.5">
+                    <ShieldCheck className="w-5 h-5 text-gold-600 shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-navy-800 leading-normal font-medium">
+                      Your data is secure. We never share your details or show public phone numbers.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Floating Bottom Sticky Bar on Mobile (with Safe bottom padding) */}
+      <StickyEnquiryBar propertyId={property.id} />
+
+    </div>
+  );
+}

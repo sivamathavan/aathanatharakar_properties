@@ -1,101 +1,187 @@
-import Image from "next/image";
+import { prisma } from "@/lib/prisma";
+import { PropertyStatus } from "@prisma/client";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Building, Map, Store, Warehouse, Trees, Briefcase, Sparkles, ShieldCheck, Heart } from "lucide-react";
+import { PROPERTY_TYPES, VENDOR_CATEGORIES } from "@/lib/constants";
+import { HomeSearch } from "@/components/home/HomeSearch";
+import { PropertyCard } from "@/components/property/PropertyCard";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const featuredProperties = await prisma.property.findMany({
+    where: { status: PropertyStatus.ACTIVE, isFeatured: true },
+    take: 6,
+    orderBy: { createdAt: "desc" },
+    include: { media: true },
+  });
+  
+  const propertiesToShow = featuredProperties.length > 0 
+    ? featuredProperties 
+    : await prisma.property.findMany({
+        where: { status: PropertyStatus.ACTIVE },
+        take: 6,
+        orderBy: { createdAt: "desc" },
+        include: { media: true },
+      });
+
+  const propertyTypeIcons: Record<string, React.ReactNode> = {
+    APARTMENT: <Building className="w-8 h-8" />,
+    VILLA: <Briefcase className="w-8 h-8" />, // fallback home
+    HOUSE: <Briefcase className="w-8 h-8" />,
+    PLOT: <Map className="w-8 h-8" />,
+    COMMERCIAL: <Store className="w-8 h-8" />,
+    WAREHOUSE: <Warehouse className="w-8 h-8" />,
+    FARM_LAND: <Trees className="w-8 h-8" />,
+    PG_HOSTEL: <Building className="w-8 h-8" />,
+  };
+
+  // Convert BigInt prices to numbers for components compatibility
+  const serializedProperties = propertiesToShow.map(p => ({
+    ...p,
+    price: Number(p.price)
+  }));
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="flex flex-col w-full bg-[#FDF8E8]">
+      {/* Hero Section (Theme B Deep Navy bg, min-h-100svh on mobile) */}
+      <section className="relative w-full bg-navy-900 text-white min-h-[75vh] sm:min-h-[80vh] flex items-center justify-center py-16 md:py-24 px-4 overflow-hidden border-b border-navy-800">
+        {/* Subtle decorative overlays */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gold-900/10 via-transparent to-transparent z-0"></div>
+        <div className="absolute inset-0 bg-black/10 z-0"></div>
+        
+        <div className="container mx-auto max-w-5xl relative z-10 flex flex-col items-center text-center space-y-6 md:space-y-8">
+          <div className="space-y-3">
+            <span className="text-gold-500 font-sans font-bold text-xs md:text-sm uppercase tracking-widest block animate-fade-up">
+              ஆதனத் தரகர்
+            </span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tight leading-tight tamil max-w-4xl text-gold-50 drop-shadow-md animate-fade-up-delay-1">
+              உங்கள் கனவு சொத்தை கண்டுபிடியுங்கள்
+            </h1>
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl font-sans font-medium text-gold-300 tracking-wide max-w-2xl mx-auto drop-shadow-sm animate-fade-up-delay-2">
+              Find Your Dream Property in Tamil Nadu
+            </p>
+          </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          {/* Large Gold Divider */}
+          <div className="gold-divider mx-auto my-1 animate-fade-up-delay-2" />
+
+          {/* Search Bar Component */}
+          <div className="w-full flex justify-center pt-4 md:pt-6 animate-fade-up-delay-3">
+            <HomeSearch />
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      {/* Stats Bar (PWA safe notch responsive layout) */}
+      <section className="bg-navy-950 text-white py-5 border-b border-[#1E3278] shadow-md relative z-10">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-3 gap-2 text-center items-center divide-x divide-navy-800">
+            <div className="px-1">
+              <p className="text-xl sm:text-3xl font-display font-bold text-gold-500">500+</p>
+              <p className="text-[9px] sm:text-xs opacity-75 font-sans uppercase tracking-wider mt-0.5">Properties</p>
+            </div>
+            <div className="px-1">
+              <p className="text-xl sm:text-3xl font-display font-bold text-gold-500">38</p>
+              <p className="text-[9px] sm:text-xs opacity-75 font-sans uppercase tracking-wider mt-0.5">Districts</p>
+            </div>
+            <div className="px-1">
+              <p className="text-xl sm:text-3xl font-display font-bold text-gold-500">200+</p>
+              <p className="text-[9px] sm:text-xs opacity-75 font-sans uppercase tracking-wider mt-0.5">Happy Clients</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Property Types Quick Links */}
+      <section className="py-16 bg-cream-50">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="section-title mb-2">Explore Property Types</h2>
+          <p className="text-gray-500 text-xs sm:text-sm max-w-md mx-auto mb-8">Filter residential and agricultural assets across the region</p>
+          
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+            {PROPERTY_TYPES.map((type) => (
+              <Link key={type} href={`/properties?type=${type}`}>
+                <Card className="hover:shadow-md hover:border-gold-400 hover:-translate-y-0.5 transition-all cursor-pointer border-[#E8E0D0] w-24 h-24 sm:w-28 sm:h-28 flex flex-col items-center justify-center bg-white group rounded-card">
+                  <div className="text-navy-900 group-hover:text-gold-600 transition-colors mb-2">
+                    {propertyTypeIcons[type] || <Building className="w-6 h-6 sm:w-8 sm:h-8" />}
+                  </div>
+                  <span className="text-[10px] sm:text-xs font-bold text-navy-800 text-center px-1 font-sans capitalize">{type.replace('_', ' ').toLowerCase()}</span>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Properties */}
+      <section className="py-16 container mx-auto px-4 max-w-6xl">
+        <div className="flex justify-between items-end mb-8">
+          <div>
+            <h2 className="section-title">Featured Properties</h2>
+            <p className="section-subtitle">Handpicked luxury assets in top localities</p>
+          </div>
+          <Link href="/properties" className="text-gold-700 font-sans font-bold text-xs sm:text-sm hover:text-gold-600 flex items-center gap-1">
+            View All Properties &rarr;
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {serializedProperties.map((property) => (
+            <PropertyCard key={property.id} property={property} />
+          ))}
+        </div>
+      </section>
+
+      {/* Allied Services */}
+      <section className="py-16 bg-cream-50">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="text-center mb-10">
+            <h2 className="section-title">Find Trusted Professionals</h2>
+            <p className="section-subtitle mx-auto">Get quotes from verified builders, interior designers, and service professionals across Tamil Nadu.</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            {VENDOR_CATEGORIES.map((cat) => (
+              <Link key={cat} href={`/services?category=${cat}`}>
+                <Card className="p-4 text-center hover:border-gold-400 hover:shadow-xs transition-all group cursor-pointer h-full flex flex-col items-center justify-center bg-white rounded-card border-[#E8E0D0]">
+                  <Briefcase className="w-6 h-6 sm:w-8 sm:h-8 text-navy-900 mb-2 group-hover:scale-105 transition-transform" />
+                  <span className="font-semibold text-xs text-navy-800 capitalize">{cat.replace(/_/g, ' ').toLowerCase()}</span>
+                </Card>
+              </Link>
+            ))}
+          </div>
+          
+          <div className="text-center mt-8">
+            <Link href="/services">
+              <Button className="btn-secondary h-11 text-xs">
+                Browse All Services
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Banner */}
+      <section className="py-16 bg-navy-900 text-white text-center border-t border-navy-800 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-gold-900/10 via-transparent to-transparent z-0"></div>
+        
+        <div className="container mx-auto px-4 relative z-10 space-y-5">
+          <h2 className="font-display font-bold text-2xl sm:text-3xl lg:text-4xl text-gold-100 leading-snug">Want to sell or rent your property?</h2>
+          <p className="text-xs sm:text-sm text-gray-300 max-w-xl mx-auto font-sans leading-relaxed">
+            List your residential, plot, or farm land assets for free on Aadana Tharakar and reach thousands of verified buyers and tenants across Tamil Nadu.
+          </p>
+          <div className="pt-2">
+            <Link href="/sell-your-property">
+              <Button size="lg" className="btn-primary h-12 text-sm px-8 shadow-lg font-bold">
+                List Your Property Free
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
