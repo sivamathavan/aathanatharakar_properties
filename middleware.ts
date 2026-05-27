@@ -30,10 +30,6 @@ export default withAuth(
     if (!isAuth && req.nextUrl.pathname.startsWith("/dashboard")) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
-    
-    if (!isAuth && req.nextUrl.pathname.startsWith("/sell-your-property")) {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
 
     return NextResponse.next();
   },
@@ -51,6 +47,5 @@ export const config = {
     "/admin/login",
     "/register/:path*",
     "/dashboard/:path*",
-    "/sell-your-property",
   ],
 };
