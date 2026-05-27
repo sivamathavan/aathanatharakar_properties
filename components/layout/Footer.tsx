@@ -88,7 +88,7 @@ export function Footer() {
               <li><Link href="/properties" className="hover:text-gold-500 transition-colors">Properties</Link></li>
               <li><Link href="/services" className="hover:text-gold-500 transition-colors">Allied Services</Link></li>
               <li><Link href="/blog" className="hover:text-gold-500 transition-colors">Blog</Link></li>
-              <li><Link href="/sell-your-property" className="hover:text-gold-500 transition-colors">About Us</Link></li>
+              <li><Link href="/about" className="hover:text-gold-500 transition-colors">About Us</Link></li>
             </ul>
           </div>
 
@@ -108,8 +108,8 @@ export function Footer() {
           <div className="border-t border-navy-800 pt-6 mt-6 md:border-t-0 md:pt-0 md:mt-0">
             <h4 className="font-display font-semibold text-gold-500 text-sm md:text-base mb-4 uppercase tracking-wider">Policies</h4>
             <ul className="grid grid-cols-2 md:grid-cols-1 gap-2.5 text-sm text-gray-400">
-              <li><Link href="/sell-your-property" className="hover:text-gold-500 transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/sell-your-property" className="hover:text-gold-500 transition-colors">Terms of Service</Link></li>
+              <li><Link href="/privacy" className="hover:text-gold-500 transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-gold-500 transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
         </div>

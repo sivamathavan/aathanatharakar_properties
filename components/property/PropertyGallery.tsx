@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
+import { getOptimizedCloudinaryUrl } from "@/lib/utils";
 
 interface MediaItem {
   id: string;
@@ -62,7 +63,7 @@ export function PropertyGallery({ media, title }: PropertyGalleryProps) {
           {items.map((item, idx) => (
             <div key={item.id || idx} className="w-full h-full flex-shrink-0 snap-center relative">
               <Image
-                src={item.url}
+                src={getOptimizedCloudinaryUrl(item.url)}
                 alt={`${title} - view ${idx + 1}`}
                 fill
                 priority={idx === 0}
@@ -111,7 +112,7 @@ export function PropertyGallery({ media, title }: PropertyGalleryProps) {
               }`}
             >
               <Image
-                src={item.thumbnailUrl || item.url}
+                src={getOptimizedCloudinaryUrl(item.thumbnailUrl || item.url)}
                 alt={`Thumbnail ${idx + 1}`}
                 fill
                 className="object-cover"

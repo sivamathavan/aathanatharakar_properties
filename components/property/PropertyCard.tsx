@@ -1,7 +1,9 @@
 "use client";
 
-import { MapPin } from "lucide-react";
+import { MapPin, Heart } from "lucide-react";
 import Image from "next/image";
+import { useState, useEffect } from "react";
+import { getOptimizedCloudinaryUrl } from "@/lib/utils";
 
 interface PropertyCardProps {
   property: {
@@ -23,6 +25,30 @@ interface PropertyCardProps {
 }
 
 export function PropertyCard({ property }: PropertyCardProps) {
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("saved_properties") || "[]");
+    setIsSaved(saved.includes(property.id));
+  }, [property.id]);
+
+  const toggleSave = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const saved = JSON.parse(localStorage.getItem("saved_properties") || "[]");
+    
+    let newSaved;
+    if (saved.includes(property.id)) {
+      newSaved = saved.filter((id: string) => id !== property.id);
+      setIsSaved(false);
+    } else {
+      newSaved = [...saved, property.id];
+      setIsSaved(true);
+    }
+    
+    localStorage.setItem("saved_properties", JSON.stringify(newSaved));
+  };
+
   const formatIndianPrice = (num: number) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -46,7 +72,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
       {/* Image Container */}
       <div className="relative h-48 sm:h-52 overflow-hidden bg-navy-50 flex-shrink-0">
         <Image
-          src={property.media?.[0]?.thumbnailUrl || property.media?.[0]?.url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=600&q=80'}
+          src={getOptimizedCloudinaryUrl(property.media?.[0]?.thumbnailUrl || property.media?.[0]?.url)}
           alt={property.title}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -62,9 +88,18 @@ export function PropertyCard({ property }: PropertyCardProps) {
           </span>
         </div>
         
+        {/* Save Button */}
+        <button 
+          onClick={toggleSave}
+          className="absolute top-3 right-3 z-20 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors"
+          aria-label="Save Property"
+        >
+          <Heart className={`w-4 h-4 ${isSaved ? "fill-red-500 text-red-500" : "text-navy-900"}`} />
+        </button>
+        
         {/* Featured Ribbon */}
         {property.isFeatured && (
-          <div className="absolute top-3 right-3 z-10">
+          <div className="absolute top-12 right-3 z-10">
             <span className="text-[10px] font-bold px-2.5 py-1 rounded-pill bg-[#D4A017] text-navy-900 shadow-xs uppercase tracking-wide">
               Featured
             </span>

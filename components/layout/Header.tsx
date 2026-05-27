@@ -65,7 +65,7 @@ export function Header() {
                 Blog
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold-500 transition-all duration-300 group-hover:w-full" />
               </Link>
-              <Link href="/sell-your-property" className="relative py-2 group hover:text-gold-500 transition-colors">
+              <Link href="/about" className="relative py-2 group hover:text-gold-500 transition-colors">
                 About
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold-500 transition-all duration-300 group-hover:w-full" />
               </Link>
@@ -159,7 +159,7 @@ export function Header() {
             </Link>
 
             <Link 
-              href="/sell-your-property" 
+              href="/about" 
               onClick={closeMobileMenu}
               className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
             >

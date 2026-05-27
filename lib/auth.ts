@@ -13,50 +13,75 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
-    maxAge: 8 * 60 * 60, // 8 hours for admin
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: "/login",
     error: "/login", // Error code passed in query string as ?error=
   },
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-    }),
-    EmailProvider({
-      server: {
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD,
-        },
+    CredentialsProvider({
+      id: "otp",
+      name: "OTP Login",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        code: { label: "Code", type: "text" },
       },
-      from: process.env.SMTP_USER,
-      async sendVerificationRequest({ identifier, url, provider }) {
-        if (process.env.NODE_ENV !== 'production' || process.env.SMTP_USER === 'yourgmail@gmail.com') {
-          console.log(`\n======================================================`);
-          console.log(`Login link for ${identifier}:`);
-          console.log(`${url}`);
-          console.log(`======================================================\n`);
-          return;
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.code) {
+          throw new Error("Missing email or code");
         }
-        
-        const { createTransport } = require("nodemailer")
-        const transport = createTransport(provider.server)
-        const result = await transport.sendMail({
-          to: identifier,
-          from: provider.from,
-          subject: `Sign in to Aadana Tharakar`,
-          text: `Sign in here: ${url}`,
-          html: `<p>Click <a href="${url}">here</a> to sign in.</p>`,
-        })
-        const failed = result.rejected.concat(result.pending).filter(Boolean)
-        if (failed.length) {
-          throw new Error(`Email(s) (${failed.join(", ")}) could not be sent`)
+
+        const email = credentials.email.toLowerCase().trim();
+        const { code } = credentials;
+
+        // Check lock status
+        const attempts = failedAttempts.get(email);
+        if (attempts && attempts.count >= 5 && Date.now() < attempts.lockUntil) {
+          throw new Error("Too many failed attempts. Account temporarily locked out.");
         }
-      }
+
+        // Find token
+        const tokenRecord = await prisma.verificationToken.findFirst({
+          where: { identifier: email, token: code },
+        });
+
+        if (!tokenRecord) {
+          // Increment failed attempts
+          const count = (attempts?.count || 0) + 1;
+          const lockUntil = count >= 5 ? Date.now() + 15 * 60 * 1000 : 0;
+          failedAttempts.set(email, { count, lockUntil });
+          throw new Error("Invalid or expired code");
+        }
+
+        if (tokenRecord.expires < new Date()) {
+          throw new Error("Code has expired");
+        }
+
+        // Delete token after successful use
+        await prisma.verificationToken.delete({
+          where: { identifier_token: { identifier: email, token: code } },
+        });
+
+        // Find user
+        const user = await prisma.user.findUnique({
+          where: { email },
+        });
+
+        if (!user) {
+          throw new Error("No account found with this email");
+        }
+
+        // Clear failed attempts
+        failedAttempts.delete(email);
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        };
+      },
     }),
     CredentialsProvider({
       name: "Admin Login",

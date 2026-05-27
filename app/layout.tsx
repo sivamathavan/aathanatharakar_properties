@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppFloat } from "@/components/layout/WhatsAppFloat";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -48,10 +49,11 @@ export default function RootLayout({
       <body className="font-sans antialiased min-h-screen flex flex-col text-[#0D1B2A] bg-[#FDF8E8]">
         <SessionProvider>
           <Header />
-          <main className="flex-1">
+          <main className="flex-1 pb-16 md:pb-0">
             {children}
           </main>
           <Footer />
+          <MobileBottomNav />
           <WhatsAppFloat />
           <Toaster position="bottom-right" />
         </SessionProvider>

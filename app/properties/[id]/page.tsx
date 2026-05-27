@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { MapPin, Bed, Bath, Layers, Square, Share2, Calendar, PhoneCall, ShieldCheck } from "lucide-react";
+import { MapPin, Bed, Bath, Layers, Square, Share2, Calendar, ShieldCheck } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EnquiryForm } from "@/components/property/EnquiryForm";
@@ -59,6 +60,10 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/[^0-9]/g, "") || "916381169124";
+  const whatsappMessage = encodeURIComponent(`Hi, I'm interested in "${property.title}" (ID: ${property.id}) on Aadana Tharakar. Please share more details.`);
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
 
   return (
     <div className="bg-warm-cream min-h-screen py-6 md:py-10 pb-24 md:pb-12">
@@ -195,6 +200,11 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
                   <Button variant="outline" className="w-full border-navy-700 text-navy-800 hover:bg-navy-50 h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2">
                     <Calendar className="w-4 h-4 text-gold-500" /> Book Free Site Visit
                   </Button>
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                    <Button variant="default" className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2 shadow-sm border-none">
+                      <FaWhatsapp className="w-5 h-5" /> Chat on WhatsApp
+                    </Button>
+                  </a>
                   <Button variant="outline" className="w-full border-[#E8E0D0] text-navy-700 hover:bg-navy-50 h-11 text-xs font-medium rounded-btn flex items-center justify-center gap-2">
                     <Share2 className="w-4 h-4" /> Share This Property
                   </Button>
@@ -214,6 +224,20 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
 
       {/* Floating Bottom Sticky Bar on Mobile (with Safe bottom padding) */}
       <StickyEnquiryBar propertyId={property.id} />
+
+      {/* Floating Desktop WhatsApp Button (Hidden on Mobile, shown on Desktop) */}
+      <a 
+        href={whatsappUrl} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="hidden md:flex fixed bottom-8 right-8 bg-[#25D366] text-white w-14 h-14 rounded-full shadow-lg items-center justify-center hover:scale-110 hover:shadow-xl transition-all z-50 group"
+        aria-label="Chat on WhatsApp"
+      >
+        <FaWhatsapp className="w-7 h-7" />
+        <span className="absolute right-16 bg-white text-navy-900 text-xs font-bold py-1.5 px-3 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-[#E8E0D0]">
+          Chat with us!
+        </span>
+      </a>
 
     </div>
   );
