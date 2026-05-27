@@ -93,7 +93,9 @@ export default async function MyPropertiesPage() {
                       <Link href={`/properties/${property.id}`} target="_blank">
                         <Button variant="ghost" size="icon" className="text-gray-500 hover:text-[#1D6A3A]"><Eye className="w-4 h-4" /></Button>
                       </Link>
-                      <Button variant="ghost" size="icon" className="text-gray-500 hover:text-blue-600"><Edit className="w-4 h-4" /></Button>
+                      <Link href={`/dashboard/properties/${property.id}/edit`}>
+                        <Button variant="ghost" size="icon" className="text-gray-500 hover:text-blue-600"><Edit className="w-4 h-4" /></Button>
+                      </Link>
                       <Button variant="ghost" size="icon" className="text-gray-500 hover:text-red-600"><Trash2 className="w-4 h-4" /></Button>
                     </div>
                   </td>

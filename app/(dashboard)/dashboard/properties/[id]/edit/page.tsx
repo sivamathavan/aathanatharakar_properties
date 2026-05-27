@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,12 +10,13 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { TN_CITIES, PROPERTY_TYPES, LISTING_TYPES } from "@/lib/constants";
 import { CloudinaryUpload } from "@/components/ui/CloudinaryUpload";
+import { Loader2 } from "lucide-react";
 
-export default function NewPropertyPage() {
+export default function EditPropertyPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
   
-  // Real implementation would handle multiple file uploads to Cloudinary, etc.
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -29,15 +30,49 @@ export default function NewPropertyPage() {
     address: "",
     city: "",
     locality: "",
-    amenities: "", // comma separated string for simple UI
+    amenities: "", 
     media: [] as { url: string; type: "IMAGE" | "VIDEO" }[],
   });
+
+  useEffect(() => {
+    const fetchProperty = async () => {
+      try {
+        const res = await fetch(`/api/properties/${params.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setFormData({
+            title: data.title || "",
+            description: data.description || "",
+            type: data.type || "",
+            listingType: data.listingType || "",
+            price: data.price || "",
+            priceUnit: data.priceUnit || "TOTAL",
+            area: data.area || "",
+            bedrooms: data.bedrooms || "",
+            bathrooms: data.bathrooms || "",
+            address: data.address || "",
+            city: data.city || "",
+            locality: data.locality || "",
+            amenities: Array.isArray(data.amenities) ? data.amenities.join(", ") : "",
+            media: data.media || [],
+          });
+        } else {
+          toast.error("Failed to load property");
+          router.push("/dashboard/properties");
+        }
+      } catch (error) {
+        toast.error("Error loading property");
+      } finally {
+        setInitialLoad(false);
+      }
+    };
+    fetchProperty();
+  }, [params.id, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    // Split amenities by comma and clean up
     const amenitiesArray = formData.amenities.split(',').map(a => a.trim()).filter(a => a);
     
     const payload = {
@@ -51,18 +86,18 @@ export default function NewPropertyPage() {
     };
 
     try {
-      const res = await fetch("/api/properties", {
-        method: "POST",
+      const res = await fetch(`/api/properties/${params.id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        toast.success("Property submitted successfully! Pending admin approval.");
+        toast.success("Property updated successfully!");
         router.push("/dashboard/properties");
       } else {
         const error = await res.text();
-        toast.error(error || "Submission failed");
+        toast.error(error || "Update failed");
       }
     } catch (error) {
       toast.error("An error occurred");
@@ -71,11 +106,19 @@ export default function NewPropertyPage() {
     }
   };
 
+  if (initialLoad) {
+    return (
+      <div className="flex justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-gold-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
       <div>
-        <h1 className="text-2xl font-bold text-[#1A1A1A]">Add New Property</h1>
-        <p className="text-gray-500">Create a new listing. It will be reviewed by admin before going live.</p>
+        <h1 className="text-2xl font-bold text-[#1A1A1A]">Edit Property</h1>
+        <p className="text-gray-500">Update your listing details below.</p>
       </div>
 
       <Card>
@@ -91,7 +134,7 @@ export default function NewPropertyPage() {
                   <Input 
                     id="title" value={formData.title} 
                     onChange={e => setFormData({...formData, title: e.target.value})} 
-                    placeholder="e.g. Spacious 3BHK Apartment in RS Puram" required 
+                    required 
                   />
                 </div>
                 <div className="space-y-2">
@@ -210,7 +253,6 @@ export default function NewPropertyPage() {
                   <Input 
                     id="amenities" value={formData.amenities} 
                     onChange={e => setFormData({...formData, amenities: e.target.value})} 
-                    placeholder="e.g. Gym, Swimming Pool, 24/7 Security"
                   />
                 </div>
               </div>
@@ -220,16 +262,17 @@ export default function NewPropertyPage() {
             <div>
               <h2 className="text-lg font-bold mb-4 pb-2 border-b">Photos & Videos</h2>
               <div className="space-y-2">
-                <Label>Upload Property Images</Label>
+                <Label>Update Property Images</Label>
                 <CloudinaryUpload 
                   onUpload={(media) => setFormData({...formData, media})} 
+                  existingMedia={formData.media}
                   maxFiles={15} 
                 />
               </div>
             </div>
 
             <Button type="submit" className="w-full bg-[#1D6A3A] hover:bg-[#15502c]" disabled={loading}>
-              {loading ? "Submitting..." : "Submit Property Listing"}
+               {loading ? "Updating..." : "Update Property"}
             </Button>
           </form>
         </CardContent>

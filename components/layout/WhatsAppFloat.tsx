@@ -1,6 +1,14 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+
 export function WhatsAppFloat() {
+  const pathname = usePathname();
+  
+  if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   const number = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919000000000").replace(/\D/g, "");
   const msg = encodeURIComponent("Hi, I found your platform Aadana Tharakar and I'm interested in properties.");
 

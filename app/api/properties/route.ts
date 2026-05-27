@@ -41,7 +41,16 @@ export async function POST(req: Request) {
         amenities: Array.isArray(amenities) ? amenities : [],
         postedById: session.user.id,
         status: PropertyStatus.PENDING, // Always pending until admin approves
+        media: {
+          create: Array.isArray(body.media) ? body.media.map((m: any, index: number) => ({
+            url: m.url,
+            type: m.type || "IMAGE",
+            publicId: m.url.split('/').pop() || "unknown", // Simple fallback
+            order: index
+          })) : []
+        }
       },
+      include: { media: true }
     });
 
     // We need to convert BigInt to string/number for JSON response
