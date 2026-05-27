@@ -7,7 +7,7 @@ import { UserRole } from "@prisma/client";
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== UserRole.ADMIN) {
+    if (!session || session.user.role !== "ADMIN") {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
