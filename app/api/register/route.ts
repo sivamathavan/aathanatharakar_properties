@@ -59,6 +59,25 @@ export async function POST(req: Request) {
       },
     });
 
+    // Send admin notification
+    if (process.env.ADMIN_EMAIL) {
+      import('@/lib/mail').then(({ sendEmail }) => {
+        sendEmail({
+          to: process.env.ADMIN_EMAIL as string,
+          subject: `New ${role} Registration: ${name}`,
+          html: `
+            <h3>New User Registration</h3>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Phone:</strong> ${phone}</p>
+            <p><strong>Role:</strong> ${role}</p>
+            <p><strong>Status:</strong> ${initialStatus}</p>
+            <p>Please log in to the admin dashboard to review this account.</p>
+          `
+        }).catch(console.error);
+      });
+    }
+
     return NextResponse.json(user);
   } catch (error) {
     console.error("[REGISTER_ERROR]", error);

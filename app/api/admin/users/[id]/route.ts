@@ -19,6 +19,24 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       data: { accountStatus },
     });
 
+    if (accountStatus === 'ACTIVE' || accountStatus === 'REJECTED') {
+      import('@/lib/mail').then(({ sendEmail }) => {
+        sendEmail({
+          to: user.email,
+          subject: accountStatus === 'ACTIVE' 
+            ? 'Your Aadana Tharakar Account is Approved!' 
+            : 'Update on your Aadana Tharakar Application',
+          html: `
+            <h3>Hello ${user.name},</h3>
+            <p>Your account status has been updated to: <strong>${accountStatus}</strong>.</p>
+            ${accountStatus === 'ACTIVE' ? '<p>You can now log in to access your dashboard and start using the platform.</p>' : ''}
+            <br/>
+            <p>Regards,<br/>Aadana Tharakar Team</p>
+          `
+        }).catch(console.error);
+      });
+    }
+
     return NextResponse.json(user);
   } catch (error) {
     return new NextResponse("Internal Error", { status: 500 });
