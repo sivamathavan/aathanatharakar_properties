@@ -107,14 +107,26 @@ export function PropertyCard({ property }: PropertyCardProps) {
   return (
     <div className="overflow-hidden group flex flex-col justify-between bg-white rounded-card border border-[#E8E0D0] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
       {/* Image */}
-      <div className="relative h-48 sm:h-52 overflow-hidden bg-navy-50 flex-shrink-0">
+      <div className="relative h-48 sm:h-52 overflow-hidden bg-navy-950 flex-shrink-0">
+        {/* Blurred Background to prevent cuts */}
+        {property.media?.[0]?.url && (
+          <Image
+            src={getOptimizedCloudinaryUrl(
+              property.media?.[0]?.thumbnailUrl || property.media?.[0]?.url
+            )}
+            alt=""
+            fill
+            className="object-cover blur-md opacity-30 scale-110 pointer-events-none"
+            sizes="10vw"
+          />
+        )}
         <Image
           src={getOptimizedCloudinaryUrl(
             property.media?.[0]?.thumbnailUrl || property.media?.[0]?.url
           )}
           alt={property.title}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          className="object-contain group-hover:scale-102 transition-transform duration-300 z-10"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
 

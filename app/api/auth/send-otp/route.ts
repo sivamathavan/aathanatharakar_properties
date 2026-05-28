@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import nodemailer from "nodemailer";
+import { sendEmail } from "@/lib/mail";
 import { hashOtp } from "@/lib/auth";
 
 // Per-IP / per-email in-memory rate limit. Serverless-instance-scoped only
@@ -55,10 +55,14 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.findUnique({ where: { email: normalized } });
 
-    // Silently bail (no enumeration) if user missing or suspended/rejected.
-    if (!user) return GENERIC_OK;
-    if (user.accountStatus === "SUSPENDED" || user.accountStatus === "REJECTED") {
-      return GENERIC_OK;
+    if (!user) {
+      return new NextResponse("This email is not registered. Please register first.", { status: 404 });
+    }
+    if (user.accountStatus === "SUSPENDED") {
+      return new NextResponse("Your account has been suspended. Please contact support.", { status: 403 });
+    }
+    if (user.accountStatus === "REJECTED") {
+      return new NextResponse("Your registration application was not approved. Please contact support.", { status: 403 });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -86,18 +90,7 @@ export async function POST(req: Request) {
     }
 
     try {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        secure: Number(process.env.SMTP_PORT) === 465,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD,
-        },
-      });
-
-      await transporter.sendMail({
-        from: `"Aadana Tharakar" <${process.env.SMTP_USER}>`,
+      await sendEmail({
         to: normalized,
         subject: `Your Aadana Tharakar Login Code`,
         html: `

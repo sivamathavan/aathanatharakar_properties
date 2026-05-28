@@ -6,7 +6,7 @@ import { MonogramIcon } from "@/components/brand/MonogramIcon";
 export function Footer() {
   return (
     <footer className="bg-navy-900 text-white border-t border-navy-800">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-10 md:py-16 max-w-7xl mx-auto">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pt-10 pb-28 md:py-16 max-w-7xl mx-auto">
 
         {/* Desktop logo row */}
         <div className="hidden md:flex justify-between items-center pb-8 border-b border-navy-800 mb-10">
