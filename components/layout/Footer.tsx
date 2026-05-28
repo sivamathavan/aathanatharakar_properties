@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { TN_CITIES } from "@/lib/constants";
-import { Heart } from "lucide-react";
+import { Heart, ShieldCheck } from "lucide-react";
 import { MonogramIcon } from "@/components/brand/MonogramIcon";
 
 export function Footer() {
@@ -119,8 +119,13 @@ export function Footer() {
           </div>
         </div>
 
+        <div className="mt-8 pt-6 border-t border-navy-800 flex items-center justify-center gap-2 text-[11px] text-gray-400">
+          <ShieldCheck className="w-3.5 h-3.5 text-gold-500" />
+          All buyer enquiries are managed by Aadana Tharakar — owner contact details are kept private.
+        </div>
+
         {/* Bottom bar */}
-        <div className="mt-10 pt-6 border-t border-navy-800 text-xs text-gray-500 font-sans flex flex-col sm:flex-row justify-between items-center gap-3 text-center">
+        <div className="mt-6 pt-6 border-t border-navy-800 text-xs text-gray-500 font-sans flex flex-col sm:flex-row justify-between items-center gap-3 text-center">
           <p>© {new Date().getFullYear()} Aadana Tharakar. All rights reserved.</p>
           <p className="flex items-center gap-1.5">
             Made with <Heart className="w-3 h-3 text-red-500 fill-red-500" /> in Tamil Nadu

@@ -56,22 +56,31 @@ export function Header() {
           {/* Desktop & Tablet Navigation Link Options (768px+) */}
           {!isAdminRoute && (
             <nav className="hidden md:flex items-center space-x-5 lg:space-x-8 text-sm font-sans font-medium">
-              <Link href="/properties" className="relative py-2 group hover:text-gold-500 transition-colors">
-                Properties
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold-500 transition-all duration-300 group-hover:w-full" />
-              </Link>
-              <Link href="/services" className="relative py-2 group hover:text-gold-500 transition-colors">
-                Services
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold-500 transition-all duration-300 group-hover:w-full" />
-              </Link>
-              <Link href="/blog" className="relative py-2 group hover:text-gold-500 transition-colors">
-                Blog
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold-500 transition-all duration-300 group-hover:w-full" />
-              </Link>
-              <Link href="/about" className="relative py-2 group hover:text-gold-500 transition-colors">
-                About
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold-500 transition-all duration-300 group-hover:w-full" />
-              </Link>
+              {[
+                { href: "/properties", label: "Properties" },
+                { href: "/services", label: "Services" },
+                { href: "/blog", label: "Blog" },
+                { href: "/about", label: "About" },
+              ].map((item) => {
+                const active = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    className={`relative py-2 group transition-colors ${
+                      active ? "text-gold-500" : "hover:text-gold-500"
+                    }`}
+                  >
+                    {item.label}
+                    <span
+                      className={`absolute bottom-0 left-0 h-0.5 bg-gold-500 transition-all duration-300 ${
+                        active ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
+                  </Link>
+                );
+              })}
             </nav>
           )}
 

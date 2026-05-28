@@ -77,10 +77,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FDF6EC] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-warm-cream p-4">
       <Card className="w-full max-w-md border-[#E8E0D0] bg-white shadow-sm font-sans">
         <CardHeader className="text-center space-y-1">
-          <CardTitle className="text-3xl font-display font-bold tracking-tight text-[#E85D24]">
+          <CardTitle className="text-3xl font-display font-bold tracking-tight text-navy-900">
             ஆதனத் தரகர்
           </CardTitle>
           <CardDescription className="font-sans">
@@ -137,7 +137,7 @@ export default function LoginPage() {
 
           <div className="text-center text-sm text-muted-foreground mt-4 border-t border-[#E8E0D0]/50 pt-4">
             Don't have an account?{" "}
-            <Link href="/register" className="text-[#E85D24] font-bold hover:underline underline-offset-4">
+            <Link href="/register" className="text-gold-700 font-bold hover:underline underline-offset-4">
               Register here
             </Link>
           </div>

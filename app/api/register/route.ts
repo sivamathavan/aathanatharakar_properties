@@ -2,6 +2,15 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { AccountStatus, UserRole } from "@prisma/client";
 
+const ALLOWED_ROLES: UserRole[] = [
+  UserRole.PROPERTY_LISTER,
+  UserRole.AGENT,
+  UserRole.VENDOR,
+];
+
+const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+const isValidPhone = (s: string) => /^[0-9+\-\s()]{7,20}$/.test(s);
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -11,79 +20,122 @@ export async function POST(req: Request) {
       return new NextResponse("Missing required fields", { status: 400 });
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
+    if (!isValidEmail(email)) {
+      return new NextResponse("Invalid email address", { status: 400 });
+    }
 
-    // Check if user already exists
+    if (!isValidPhone(phone)) {
+      return new NextResponse("Invalid phone number", { status: 400 });
+    }
+
+    if (!ALLOWED_ROLES.includes(role)) {
+      return new NextResponse("Invalid role", { status: 400 });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const trimmedName = String(name).trim().slice(0, 120);
+    const trimmedPhone = String(phone).trim().slice(0, 20);
+
     const existingUser = await prisma.user.findUnique({
       where: { email: normalizedEmail },
     });
 
     if (existingUser) {
       if (existingUser.accountStatus === AccountStatus.SUSPENDED) {
-        // Delete suspended user to allow re-registration
-        await prisma.user.delete({ where: { id: existingUser.id } });
-      } else {
-        return new NextResponse("Email already registered", { status: 400 });
+        return new NextResponse(
+          "This account has been suspended. Please contact support.",
+          { status: 403 }
+        );
       }
+      return new NextResponse("Email already registered", { status: 400 });
     }
 
-    // Create user. All users are ACTIVE immediately.
-    const initialStatus = AccountStatus.ACTIVE;
+    // New accounts require admin approval before going live (broker-vetted model)
+    const initialStatus =
+      role === UserRole.PROPERTY_LISTER
+        ? AccountStatus.ACTIVE
+        : AccountStatus.PENDING;
 
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email: normalizedEmail,
-        phone,
-        role,
-        accountStatus: initialStatus,
-        agentProfile: role === UserRole.AGENT && agentDetails ? {
-          create: {
-            fullName: name,
-            mobile: phone,
-            reraNumber: agentDetails.reraNumber || null,
-            officeAddress: agentDetails.officeAddress || "Not Provided",
-            operatingCities: agentDetails.operatingCities || [],
-            experience: parseInt(agentDetails.experienceYears || "0") || 0,
-            bio: agentDetails.bio || null,
-          }
-        } : undefined,
-        vendorProfile: role === UserRole.VENDOR && vendorDetails ? {
-          create: {
-            businessName: vendorDetails.businessName || name,
-            ownerName: name,
-            mobile: phone,
-            email: normalizedEmail,
-            category: vendorDetails.category || "CIVIL_CONTRACTOR",
-            description: vendorDetails.description || "",
-            serviceAreas: vendorDetails.operatingCities || [],
-            yearsInBusiness: parseInt(vendorDetails.experienceYears || "0") || 0,
-            websiteUrl: vendorDetails.websiteUrl || null,
-          }
-        } : undefined,
-      },
+    const user = await prisma.$transaction(async (tx) => {
+      return tx.user.create({
+        data: {
+          name: trimmedName,
+          email: normalizedEmail,
+          phone: trimmedPhone,
+          role,
+          accountStatus: initialStatus,
+          agentProfile:
+            role === UserRole.AGENT && agentDetails
+              ? {
+                  create: {
+                    fullName: trimmedName,
+                    mobile: trimmedPhone,
+                    reraNumber: agentDetails.reraNumber || null,
+                    officeAddress:
+                      agentDetails.officeAddress ||
+                      agentDetails.agencyName ||
+                      "Not Provided",
+                    operatingCities: Array.isArray(agentDetails.operatingCities)
+                      ? agentDetails.operatingCities
+                      : [],
+                    experience:
+                      parseInt(String(agentDetails.experienceYears ?? "0")) ||
+                      0,
+                    bio: agentDetails.bio || null,
+                  },
+                }
+              : undefined,
+          vendorProfile:
+            role === UserRole.VENDOR && vendorDetails
+              ? {
+                  create: {
+                    businessName: vendorDetails.businessName || trimmedName,
+                    ownerName: trimmedName,
+                    mobile: trimmedPhone,
+                    email: normalizedEmail,
+                    category: vendorDetails.category || "CIVIL_CONTRACTOR",
+                    description: vendorDetails.description || "",
+                    serviceAreas: Array.isArray(vendorDetails.operatingCities)
+                      ? vendorDetails.operatingCities
+                      : [],
+                    yearsInBusiness:
+                      parseInt(String(vendorDetails.experienceYears ?? "0")) ||
+                      0,
+                    websiteUrl: vendorDetails.websiteUrl || null,
+                  },
+                }
+              : undefined,
+        },
+      });
     });
 
-    // Send admin notification
     if (process.env.ADMIN_EMAIL) {
-      import('@/lib/mail').then(({ sendEmail }) => {
-        sendEmail({
-          to: process.env.ADMIN_EMAIL as string,
-          subject: `New ${role} Registration: ${name}`,
-          html: `
-            <h3>New User Registration</h3>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${normalizedEmail}</p>
-            <p><strong>Phone:</strong> ${phone}</p>
-            <p><strong>Role:</strong> ${role}</p>
-            <p><strong>Status:</strong> ${initialStatus}</p>
-            <p>Please log in to the admin dashboard to review this account.</p>
-          `
-        }).catch(console.error);
-      });
+      import("@/lib/mail")
+        .then(({ sendEmail }) => {
+          sendEmail({
+            to: process.env.ADMIN_EMAIL as string,
+            subject: `New ${role} Registration: ${trimmedName}`,
+            html: `
+              <h3>New User Registration</h3>
+              <p><strong>Name:</strong> ${trimmedName}</p>
+              <p><strong>Email:</strong> ${normalizedEmail}</p>
+              <p><strong>Phone:</strong> ${trimmedPhone}</p>
+              <p><strong>Role:</strong> ${role}</p>
+              <p><strong>Status:</strong> ${initialStatus}</p>
+              <p>Please log in to the admin dashboard to review this account.</p>
+            `,
+          }).catch(console.error);
+        })
+        .catch(console.error);
     }
 
-    return NextResponse.json(user);
+    // Only return non-sensitive fields
+    return NextResponse.json({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      accountStatus: user.accountStatus,
+    });
   } catch (error) {
     console.error("[REGISTER_ERROR]", error);
     return new NextResponse("Internal Error", { status: 500 });

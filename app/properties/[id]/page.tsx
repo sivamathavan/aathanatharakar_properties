@@ -8,6 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EnquiryForm } from "@/components/property/EnquiryForm";
 import { PropertyGallery } from "@/components/property/PropertyGallery";
 import { StickyEnquiryBar } from "@/components/property/StickyEnquiryBar";
+import { ViewPing } from "@/components/property/ViewPing";
+import { SITE_URL } from "@/lib/site";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const property = await prisma.property.findUnique({ 
@@ -20,9 +22,10 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   const title = `${property.bedrooms ? property.bedrooms + 'BHK ' : ''}${property.type.replace('_', ' ')} for ${property.listingType} in ${property.locality}, ${property.city} — ₹${Number(property.price).toLocaleString('en-IN')} | Aadana Tharakar`;
   const description = property.description.substring(0, 160) + (property.description.length > 160 ? "..." : "");
   
-  const ogImage = property.media && property.media.length > 0 
-    ? property.media[0].url 
-    : "https://aadanatharakar.in/og-image.jpg"; // Fallback image (if exists)
+  const ogImage =
+    property.media && property.media.length > 0
+      ? property.media[0].url
+      : `${SITE_URL}/icons/icon.svg`;
 
   return {
     title,
@@ -30,7 +33,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     openGraph: {
       title,
       description,
-      url: `https://aadanatharakar.in/properties/${property.id}`,
+      url: `${SITE_URL}/properties/${property.id}`,
       siteName: "Aadana Tharakar",
       images: [
         {
@@ -39,7 +42,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
           height: 630,
         },
       ],
-      locale: "en_US",
+      locale: "en_IN",
       type: "website",
     },
     twitter: {
@@ -64,11 +67,8 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
     notFound();
   }
 
-  // Update view count (fire and forget)
-  prisma.property.update({
-    where: { id: params.id },
-    data: { viewCount: { increment: 1 } }
-  }).catch(() => {});
+  // View count is incremented client-side via <ViewPing /> below, so we
+  // don't double-count refreshes and bot traffic.
 
   const priceFormatted = new Intl.NumberFormat('en-IN', { 
     style: 'currency', 
@@ -89,7 +89,7 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
   const getListingBadgeClass = (type: string) => {
     switch(type) {
       case 'BUY': return 'bg-gold-500 text-navy-900 border-gold-600';
-      case 'RENT': return 'bg-[#1D6A3A] text-white';
+      case 'RENT': return 'bg-navy-700 text-white';
       case 'LEASE': return 'bg-purple-600 text-white';
       case 'SELL': return 'bg-navy-600 text-white';
       default: return 'bg-gray-100 text-gray-800';
@@ -99,7 +99,7 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/[^0-9]/g, "") || "916381169124";
   const whatsappMessage = encodeURIComponent(`Hi, I'm interested in "${property.title}" (ID: ${property.id}) on Aadana Tharakar. Please share more details.`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
-  const propertyUrl = `https://aadanatharakar.in/properties/${property.id}`;
+  const propertyUrl = `${SITE_URL}/properties/${property.id}`;
 
   return (
     <div className="bg-warm-cream min-h-screen py-6 md:py-10 pb-24 md:pb-12">
@@ -221,6 +221,32 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
             </div>
           </div>
 
+          {/* Mobile-only: EMI + Share + Site visit (sidebar features
+              that would otherwise be hidden below 1024px). The
+              StickyEnquiryBar at the bottom handles the main CTA. */}
+          <div className="lg:hidden space-y-4">
+            <EmiCalculator propertyPrice={Number(property.price)} />
+
+            <div className="bg-white p-5 rounded-card border border-[#E8E0D0] shadow-xs space-y-3">
+              <h3 className="font-display font-bold text-base text-navy-900">More options</h3>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full border border-navy-700 text-navy-800 hover:bg-navy-50 h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2 transition-colors"
+              >
+                <Calendar className="w-4 h-4 text-gold-500" /> Book Free Site Visit via Broker
+              </a>
+              <SharePropertyButton title={property.title} url={propertyUrl} />
+              <div className="p-3 bg-navy-50 rounded-btn border border-navy-100 flex items-start gap-2.5">
+                <ShieldCheck className="w-5 h-5 text-gold-600 shrink-0 mt-0.5" />
+                <p className="text-[11px] text-navy-800 leading-normal font-medium">
+                  Your data is secure. All enquiries go through Aadana Tharakar — owner contact is never shared publicly.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Desktop Sidebar (Hidden on Mobile screens < 1024px) */}
           <div className="hidden lg:block lg:w-1/3 space-y-6">
             <Card className="border-[#E8E0D0] bg-white rounded-card shadow-sm sticky top-24">
@@ -268,6 +294,7 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
 
       {/* Floating Bottom Sticky Bar on Mobile (with Safe bottom padding) */}
       <StickyEnquiryBar propertyId={property.id} />
+      <ViewPing propertyId={property.id} />
     </div>
   );
 }

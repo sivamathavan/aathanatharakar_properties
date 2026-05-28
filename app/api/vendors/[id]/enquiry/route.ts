@@ -2,55 +2,122 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/mail";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+
+const ipBuckets = new Map<string, { count: number; resetAt: number }>();
+const WINDOW_MS = 60 * 1000;
+const IP_LIMIT = 5;
+
+function limited(key: string) {
+  const now = Date.now();
+  const bucket = ipBuckets.get(key);
+  if (!bucket || bucket.resetAt < now) {
+    ipBuckets.set(key, { count: 1, resetAt: now + WINDOW_MS });
+    return false;
+  }
+  bucket.count += 1;
+  return bucket.count > IP_LIMIT;
+}
+
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
+
+    if (limited(ip)) {
+      return new NextResponse("Too many requests. Please try again later.", {
+        status: 429,
+      });
+    }
+
     const body = await req.json();
-    const { name, email, message } = body;
+    const name = String(body.name || "").trim().slice(0, 120);
+    const email = String(body.email || "").trim().slice(0, 160).toLowerCase();
+    const phone = String(body.phone || "").trim().slice(0, 20);
+    const message = String(body.message || "").trim().slice(0, 2000);
 
     if (!name || !email || !message) {
       return new NextResponse("Missing required fields", { status: 400 });
     }
 
+    if (!isValidEmail(email)) {
+      return new NextResponse("Invalid email address", { status: 400 });
+    }
+
     const vendorProfile = await prisma.vendorProfile.findUnique({
       where: { id: params.id },
-      include: { user: true }
+      select: {
+        id: true,
+        businessName: true,
+        category: true,
+        user: { select: { email: true, name: true } },
+      },
     });
 
     if (!vendorProfile) {
       return new NextResponse("Vendor not found", { status: 404 });
     }
 
+    const fullMessage = phone ? `Phone: ${phone}\n\nMessage: ${message}` : message;
+
     const lead = await prisma.vendorEnquiry.create({
       data: {
-        name: name,
-        email: email,
-        message: message,
+        name,
+        email,
+        message: fullMessage,
         vendorId: vendorProfile.id,
-      }
+      },
+      select: { id: true, createdAt: true },
     });
 
-    // Send email notification to vendor
-    const emailHtml = `
-      <h2>New Service Enquiry!</h2>
-      <p>Hello ${vendorProfile.businessName},</p>
-      <p>You have received a new service enquiry from Aadana Tharakar.</p>
-      <h3>Enquirer Details:</h3>
-      <ul>
-        <li><strong>Name:</strong> ${name}</li>
-        <li><strong>Email:</strong> ${email}</li>
-      </ul>
-      <h3>Message:</h3>
-      <p><em>${message}</em></p>
-      <p>Log in to your dashboard to view more details and respond.</p>
-    `;
+    // Broker-only model — all customer enquiries are routed via the broker.
+    const adminEmail = process.env.ADMIN_EMAIL;
 
-    await sendEmail({
-      to: vendorProfile.user.email,
-      subject: `New Service Enquiry - Aadana Tharakar`,
-      html: emailHtml,
-    });
+    if (adminEmail) {
+      sendEmail({
+        to: adminEmail,
+        subject: `New Service Lead — ${vendorProfile.businessName}`,
+        html: `
+          <h2>New Service Enquiry</h2>
+          <h3>Vendor</h3>
+          <ul>
+            <li><strong>Business:</strong> ${vendorProfile.businessName}</li>
+            <li><strong>Category:</strong> ${vendorProfile.category}</li>
+          </ul>
+          <h3>Customer (broker-confidential)</h3>
+          <ul>
+            <li><strong>Name:</strong> ${name}</li>
+            <li><strong>Email:</strong> ${email}</li>
+            ${phone ? `<li><strong>Phone:</strong> ${phone}</li>` : ""}
+          </ul>
+          <h3>Message</h3>
+          <p><em>${message}</em></p>
+        `,
+      }).catch((err) => console.error("[BROKER_VENDOR_EMAIL_ERR]", err));
+    }
 
-    return NextResponse.json(lead);
+    // Notify vendor without exposing customer contact details.
+    if (vendorProfile.user?.email) {
+      sendEmail({
+        to: vendorProfile.user.email,
+        subject: `New service lead for ${vendorProfile.businessName} — Aadana Tharakar`,
+        html: `
+          <p>Hello ${vendorProfile.user.name || vendorProfile.businessName},</p>
+          <p>You have received a new service enquiry on Aadana Tharakar.</p>
+          <p>Our broker team will reach out to the customer and coordinate next steps with you shortly.
+             Customer contact details are kept confidential and managed by Aadana Tharakar.</p>
+          <br/>
+          <p>Regards,<br/>Aadana Tharakar Team</p>
+        `,
+      }).catch((err) => console.error("[VENDOR_EMAIL_ERR]", err));
+    }
+
+    return NextResponse.json({ id: lead.id, createdAt: lead.createdAt });
   } catch (error) {
     console.error("[VENDOR_ENQUIRY_POST]", error);
     return new NextResponse("Internal Error", { status: 500 });

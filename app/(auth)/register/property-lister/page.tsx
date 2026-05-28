@@ -23,15 +23,26 @@ export default function PropertyListerRegistration() {
     phone: "",
   });
 
+  const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+  const isValidPhone = (s: string) => /^[0-9+\-\s()]{7,20}$/.test(s);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name.trim()) return toast.error("Please enter your full name");
+    if (!isValidEmail(formData.email)) return toast.error("Please enter a valid email");
+    if (!isValidPhone(formData.phone)) return toast.error("Please enter a valid phone number");
     setLoading(true);
     try {
+      const cleaned = {
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        phone: formData.phone.trim(),
+      };
       // 1. Register User
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, role: UserRole.PROPERTY_LISTER }),
+        body: JSON.stringify({ ...cleaned, role: UserRole.PROPERTY_LISTER }),
       });
 
       if (!res.ok) {

@@ -13,17 +13,27 @@ export default function SavedPropertiesPage() {
   useEffect(() => {
     const fetchSaved = async () => {
       try {
-        const saved = JSON.parse(localStorage.getItem("saved_properties") || "[]");
-        if (saved.length === 0) {
+        const raw = localStorage.getItem("saved_properties") || "[]";
+        const saved = JSON.parse(raw);
+        const ids = Array.isArray(saved) ? saved.filter((id) => typeof id === "string") : [];
+        if (ids.length === 0) {
           setProperties([]);
           setLoading(false);
           return;
         }
 
-        const res = await fetch(`/api/properties/batch?ids=${saved.join(",")}`);
+        const res = await fetch(`/api/properties/batch?ids=${encodeURIComponent(ids.join(","))}`);
         if (res.ok) {
           const data = await res.json();
-          setProperties(data.properties);
+          setProperties(Array.isArray(data.properties) ? data.properties : []);
+          // Drop any IDs that have been removed/deactivated to keep storage clean.
+          const stillExist = new Set(
+            (data.properties || []).map((p: any) => p.id)
+          );
+          const cleaned = ids.filter((id) => stillExist.has(id));
+          if (cleaned.length !== ids.length) {
+            localStorage.setItem("saved_properties", JSON.stringify(cleaned));
+          }
         }
       } catch (error) {
         console.error("Failed to load saved properties:", error);

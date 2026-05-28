@@ -23,10 +23,14 @@ export default function AgentRegistration() {
     email: "",
     phone: "",
     agencyName: "",
+    officeAddress: "",
     experienceYears: "",
     reraNumber: "",
     operatingCities: [] as string[],
   });
+
+  const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+  const isValidPhone = (s: string) => /^[0-9+\-\s()]{7,20}$/.test(s);
 
   const handleCityToggle = (city: string) => {
     setFormData(prev => {
@@ -42,23 +46,30 @@ export default function AgentRegistration() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name.trim()) return toast.error("Please enter your full name");
+    if (!isValidEmail(formData.email)) return toast.error("Please enter a valid email");
+    if (!isValidPhone(formData.phone)) return toast.error("Please enter a valid mobile number");
+    if (!formData.agencyName.trim()) return toast.error("Please enter your agency / company name");
     if (formData.operatingCities.length === 0) {
       return toast.error("Please select at least one operating city");
     }
     setLoading(true);
-    
+
     try {
       const payload = {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        phone: formData.phone.trim(),
         role: UserRole.AGENT,
         agentDetails: {
-          agencyName: formData.agencyName,
+          // Schema stores officeAddress; combine agency + address into a single field.
+          officeAddress: [formData.agencyName.trim(), formData.officeAddress.trim()]
+            .filter(Boolean)
+            .join(" — "),
           experienceYears: parseInt(formData.experienceYears) || 0,
-          reraNumber: formData.reraNumber,
+          reraNumber: formData.reraNumber.trim(),
           operatingCities: formData.operatingCities,
-        }
+        },
       };
 
       const res = await fetch("/api/register", {
@@ -215,12 +226,22 @@ export default function AgentRegistration() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="reraNumber" className="text-xs font-semibold text-navy-800 uppercase tracking-wider">RERA Registration Number (Optional)</Label>
-                    <Input 
-                      id="reraNumber" 
-                      value={formData.reraNumber} 
-                      onChange={(e) => setFormData({...formData, reraNumber: e.target.value})} 
+                    <Input
+                      id="reraNumber"
+                      value={formData.reraNumber}
+                      onChange={(e) => setFormData({...formData, reraNumber: e.target.value})}
                       className="h-11 border-[#E8E0D0] focus:ring-1 focus:ring-gold-500 focus:border-gold-500 rounded-btn text-navy-900"
                       placeholder="e.g. TN/01/Agent/..."
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="officeAddress" className="text-xs font-semibold text-navy-800 uppercase tracking-wider">Office Address</Label>
+                    <Input
+                      id="officeAddress"
+                      value={formData.officeAddress}
+                      onChange={(e) => setFormData({...formData, officeAddress: e.target.value})}
+                      className="h-11 border-[#E8E0D0] focus:ring-1 focus:ring-gold-500 focus:border-gold-500 rounded-btn text-navy-900"
+                      placeholder="Street, Locality, City"
                     />
                   </div>
                 </div>
@@ -243,7 +264,15 @@ export default function AgentRegistration() {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full h-11 bg-navy-900 text-gold-500 hover:bg-navy-950 hover:text-gold-400 font-sans font-bold shadow-sm rounded-btn transition-colors" disabled={loading}>
+                <div className="bg-navy-50 border border-navy-100 rounded-btn p-3 flex items-start gap-2 text-[11px] leading-relaxed text-navy-800">
+                  <ShieldAlert className="w-4 h-4 text-gold-600 shrink-0 mt-0.5" />
+                  <span>
+                    Agent accounts are reviewed by our broker team before going live.
+                    You can log in and prepare your profile while approval is pending.
+                  </span>
+                </div>
+
+                <Button type="submit" className="w-full h-11 bg-navy-900 text-gold-500 hover:bg-navy-950 hover:text-gold-400 font-sans font-bold shadow-sm rounded-btn transition-colors disabled:opacity-60" disabled={loading}>
                   {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                   {loading ? "Submitting..." : "Register & Sign In"}
                 </Button>

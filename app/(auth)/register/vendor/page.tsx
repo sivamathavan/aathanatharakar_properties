@@ -42,27 +42,32 @@ export default function VendorRegistration() {
     });
   };
 
+  const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+  const isValidPhone = (s: string) => /^[0-9+\-\s()]{7,20}$/.test(s);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name.trim()) return toast.error("Please enter your full name");
+    if (!isValidEmail(formData.email)) return toast.error("Please enter a valid email");
+    if (!isValidPhone(formData.phone)) return toast.error("Please enter a valid mobile number");
+    if (!formData.businessName.trim()) return toast.error("Please enter your business name");
+    if (!formData.category) return toast.error("Please select your service category");
     if (formData.operatingCities.length === 0) {
       return toast.error("Please select at least one operating city");
     }
-    if (!formData.category) {
-      return toast.error("Please select your service category");
-    }
     setLoading(true);
-    
+
     try {
       const payload = {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        phone: formData.phone.trim(),
         role: UserRole.VENDOR,
         vendorDetails: {
-          businessName: formData.businessName,
+          businessName: formData.businessName.trim(),
           category: formData.category,
           experienceYears: parseInt(formData.experienceYears) || 0,
-          description: formData.description,
+          description: formData.description.trim(),
           operatingCities: formData.operatingCities,
         }
       };

@@ -13,21 +13,27 @@ import { Testimonials } from "@/components/home/Testimonials";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const featuredProperties = await prisma.property.findMany({
-    where: { status: PropertyStatus.ACTIVE, isFeatured: true },
-    take: 6,
-    orderBy: { createdAt: "desc" },
-    include: { media: true },
-  });
-  
-  const propertiesToShow = featuredProperties.length > 0 
-    ? featuredProperties 
-    : await prisma.property.findMany({
-        where: { status: PropertyStatus.ACTIVE },
-        take: 6,
-        orderBy: { createdAt: "desc" },
-        include: { media: true },
-      });
+  // Show up to 3 featured + newest active to fill 6 cards, deduped.
+  const [featuredProperties, latestProperties] = await Promise.all([
+    prisma.property.findMany({
+      where: { status: PropertyStatus.ACTIVE, isFeatured: true },
+      take: 3,
+      orderBy: { createdAt: "desc" },
+      include: { media: true },
+    }),
+    prisma.property.findMany({
+      where: { status: PropertyStatus.ACTIVE },
+      take: 9,
+      orderBy: { createdAt: "desc" },
+      include: { media: true },
+    }),
+  ]);
+
+  const seen = new Set(featuredProperties.map((p) => p.id));
+  const propertiesToShow = [
+    ...featuredProperties,
+    ...latestProperties.filter((p) => !seen.has(p.id)),
+  ].slice(0, 6);
 
   const propertyTypeIcons: Record<string, React.ReactNode> = {
     APARTMENT: <Building className="w-8 h-8" />,

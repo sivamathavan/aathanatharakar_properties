@@ -246,7 +246,7 @@ export default function NewPropertyPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-[#1D6A3A] hover:bg-[#15502c]" disabled={loading}>
+            <Button type="submit" className="w-full h-11 bg-navy-900 text-gold-500 hover:bg-navy-950 hover:text-gold-400 font-bold rounded-btn shadow-sm disabled:opacity-60" disabled={loading}>
               {loading ? "Submitting..." : "Submit Property Listing"}
             </Button>
           </form>

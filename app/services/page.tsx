@@ -156,7 +156,7 @@ export default async function ServicesPage({
                             {vendor.category.replace('_', ' ')}
                           </span>
                           {vendor.isVerified && (
-                            <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-[#1D6A3A] text-white uppercase tracking-wide">
+                            <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-navy-800 text-gold-500 uppercase tracking-wide">
                               Verified
                             </span>
                           )}
