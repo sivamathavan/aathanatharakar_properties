@@ -85,7 +85,7 @@ export function CloudinaryUpload({
 
     setUploading(true);
     const uploaded: UploadedMedia[] = [];
-    let failures = 0;
+    const failureMessages: string[] = [];
 
     try {
       for (const file of files) {
@@ -100,11 +100,26 @@ export function CloudinaryUpload({
             `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
             { method: "POST", body: formData }
           );
-          const data = await res.json();
 
-          if (!res.ok || !data.secure_url) {
-            console.error("Cloudinary error:", data);
-            failures += 1;
+          // Cloudinary returns JSON for both success and 4xx errors.
+          let data: any = null;
+          try {
+            data = await res.json();
+          } catch {
+            /* not JSON */
+          }
+
+          if (!res.ok || !data?.secure_url) {
+            const reason: string =
+              data?.error?.message ||
+              data?.message ||
+              `HTTP ${res.status}`;
+            console.error(
+              `[CloudinaryUpload] ${file.name} failed:`,
+              reason,
+              data
+            );
+            failureMessages.push(`${file.name}: ${reason}`);
             continue;
           }
 
@@ -116,9 +131,10 @@ export function CloudinaryUpload({
               ? data.secure_url.replace(/\.(mp4|mov|webm)$/i, ".jpg")
               : null,
           });
-        } catch (uploadErr) {
-          console.error("Upload failed for", file.name, uploadErr);
-          failures += 1;
+        } catch (uploadErr: any) {
+          const reason = uploadErr?.message || "Network error";
+          console.error("[CloudinaryUpload] network error:", file.name, uploadErr);
+          failureMessages.push(`${file.name}: ${reason}`);
         }
       }
 
@@ -130,10 +146,15 @@ export function CloudinaryUpload({
           `${uploaded.length} file${uploaded.length === 1 ? "" : "s"} uploaded.`
         );
       }
-      if (failures > 0) {
-        toast.error(
-          `${failures} file${failures === 1 ? "" : "s"} failed to upload.`
-        );
+      if (failureMessages.length > 0) {
+        // Surface the actual Cloudinary error so misconfiguration is fixable.
+        toast.error(failureMessages[0], {
+          description:
+            failureMessages.length > 1
+              ? `${failureMessages.length - 1} more failure${failureMessages.length - 1 === 1 ? "" : "s"} — see browser console.`
+              : "Check Cloudinary upload preset is unsigned and allows this file type.",
+          duration: 8000,
+        });
       }
     } finally {
       setUploading(false);
