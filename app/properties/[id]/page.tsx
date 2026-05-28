@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { MapPin, Bed, Bath, Layers, Square, Share2, Calendar, ShieldCheck } from "lucide-react";
+import { MapPin, Bed, Bath, Layers, Square, Share2, Calendar, ShieldCheck, Phone } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -225,6 +225,34 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
               that would otherwise be hidden below 1024px). The
               StickyEnquiryBar at the bottom handles the main CTA. */}
           <div className="lg:hidden space-y-4">
+            {/* Quick broker contact — primary action on mobile */}
+            <div className="bg-white p-5 rounded-card border border-[#E8E0D0] shadow-xs space-y-3">
+              <h3 className="font-display font-bold text-base text-navy-900">
+                Contact our broker
+              </h3>
+              <p className="text-xs text-navy-700 leading-relaxed">
+                Aadana Tharakar handles every conversation — your details stay private.
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-[#25D366] hover:bg-[#1ebe5c] active:bg-[#128C7E] text-white h-12 text-xs font-bold rounded-btn flex items-center justify-center gap-2 shadow-sm transition-colors"
+                  aria-label="Contact broker on WhatsApp"
+                >
+                  <FaWhatsapp className="w-4 h-4" /> WhatsApp
+                </a>
+                <a
+                  href={`tel:+${whatsappNumber}`}
+                  className="w-full bg-navy-900 hover:bg-navy-950 active:bg-black text-gold-500 h-12 text-xs font-bold rounded-btn flex items-center justify-center gap-2 shadow-sm transition-colors"
+                  aria-label="Call broker"
+                >
+                  <Phone className="w-4 h-4" /> Call Broker
+                </a>
+              </div>
+            </div>
+
             <EmiCalculator propertyPrice={Number(property.price)} />
 
             <div className="bg-white p-5 rounded-card border border-[#E8E0D0] shadow-xs space-y-3">
