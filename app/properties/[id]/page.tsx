@@ -10,6 +10,8 @@ import { PropertyGallery } from "@/components/property/PropertyGallery";
 import { StickyEnquiryBar } from "@/components/property/StickyEnquiryBar";
 import { ViewPing } from "@/components/property/ViewPing";
 import { SITE_URL } from "@/lib/site";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const property = await prisma.property.findUnique({ 
@@ -63,7 +65,11 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
     include: { media: true },
   });
 
-  if (!property || property.status !== "ACTIVE") {
+  const session = await getServerSession(authOptions);
+  const isAdmin = session?.user?.role === "ADMIN";
+  const isOwner = session?.user?.id && property?.postedById === session.user.id;
+
+  if (!property || (property.status !== "ACTIVE" && !isAdmin && !isOwner)) {
     notFound();
   }
 

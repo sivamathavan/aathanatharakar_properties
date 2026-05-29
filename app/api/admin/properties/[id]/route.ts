@@ -19,7 +19,7 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== UserRole.ADMIN) {
+    if (!session || session.user.role !== "ADMIN") {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -55,6 +55,36 @@ export async function PATCH(
     return NextResponse.json(property);
   } catch (error) {
     console.error("[ADMIN_PROPERTY_PATCH]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "ADMIN") {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const target = await prisma.property.findUnique({
+      where: { id: params.id },
+      select: { id: true },
+    });
+
+    if (!target) {
+      return new NextResponse("Property not found", { status: 404 });
+    }
+
+    await prisma.property.delete({
+      where: { id: params.id },
+    });
+
+    return NextResponse.json({ success: true, message: "Property deleted permanently" });
+  } catch (error) {
+    console.error("[ADMIN_PROPERTY_DELETE]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

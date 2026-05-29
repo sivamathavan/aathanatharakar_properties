@@ -54,7 +54,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <MobileBottomNav />
-          <Toaster position="bottom-right" />
+          <Toaster position="top-center" richColors />
         </SessionProvider>
       </body>
     </html>

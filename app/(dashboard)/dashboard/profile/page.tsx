@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { VendorPortfolioUpload } from "@/components/profile/VendorPortfolioUpload";
+import { AgentPortfolioUpload } from "@/components/profile/AgentPortfolioUpload";
 
 export const metadata = {
   title: "My Profile | Aadana Tharakar",
@@ -21,7 +22,9 @@ export default async function ProfilePage() {
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
-      agentProfile: true,
+      agentProfile: {
+        include: { portfolioMedia: true }
+      },
       vendorProfile: {
         include: { portfolioMedia: true }
       },
@@ -140,6 +143,23 @@ export default async function ProfilePage() {
             </div>
             
             <p className="text-xs text-gray-500 italic mt-4">To update these details, please contact administrator support.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {user.agentProfile && (
+        <Card>
+          <CardHeader>
+            <CardTitle>My Portfolio</CardTitle>
+            <p className="text-sm text-gray-500 font-sans">Upload photos of your agency, team, or past achievements to showcase on your public profile.</p>
+          </CardHeader>
+          <CardContent>
+            <AgentPortfolioUpload 
+              initialMedia={user.agentProfile.portfolioMedia.map(m => ({ 
+                url: m.url, 
+                type: m.type as "IMAGE" | "VIDEO" 
+              }))} 
+            />
           </CardContent>
         </Card>
       )}

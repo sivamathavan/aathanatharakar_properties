@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { AccountStatus, UserRole } from "@prisma/client";
+import { sendEmail } from "@/lib/mail";
 
 const ALLOWED_ROLES: UserRole[] = [
   UserRole.PROPERTY_LISTER,
@@ -50,11 +51,8 @@ export async function POST(req: Request) {
       return new NextResponse("Email already registered", { status: 400 });
     }
 
-    // New accounts require admin approval before going live (broker-vetted model)
-    const initialStatus =
-      role === UserRole.PROPERTY_LISTER
-        ? AccountStatus.ACTIVE
-        : AccountStatus.PENDING;
+    // New accounts are active immediately to allow registration and OTP verification
+    const initialStatus = AccountStatus.ACTIVE;
 
     const user = await prisma.$transaction(async (tx) => {
       return tx.user.create({
@@ -110,23 +108,19 @@ export async function POST(req: Request) {
     });
 
     if (process.env.ADMIN_EMAIL) {
-      import("@/lib/mail")
-        .then(({ sendEmail }) => {
-          sendEmail({
-            to: process.env.ADMIN_EMAIL as string,
-            subject: `New ${role} Registration: ${trimmedName}`,
-            html: `
-              <h3>New User Registration</h3>
-              <p><strong>Name:</strong> ${trimmedName}</p>
-              <p><strong>Email:</strong> ${normalizedEmail}</p>
-              <p><strong>Phone:</strong> ${trimmedPhone}</p>
-              <p><strong>Role:</strong> ${role}</p>
-              <p><strong>Status:</strong> ${initialStatus}</p>
-              <p>Please log in to the admin dashboard to review this account.</p>
-            `,
-          }).catch(console.error);
-        })
-        .catch(console.error);
+      sendEmail({
+        to: process.env.ADMIN_EMAIL as string,
+        subject: `New ${role} Registration: ${trimmedName}`,
+        html: `
+          <h3>New User Registration</h3>
+          <p><strong>Name:</strong> ${trimmedName}</p>
+          <p><strong>Email:</strong> ${normalizedEmail}</p>
+          <p><strong>Phone:</strong> ${trimmedPhone}</p>
+          <p><strong>Role:</strong> ${role}</p>
+          <p><strong>Status:</strong> ${initialStatus}</p>
+          <p>Please log in to the admin dashboard to review this account.</p>
+        `,
+      }).catch(console.error);
     }
 
     // Only return non-sensitive fields

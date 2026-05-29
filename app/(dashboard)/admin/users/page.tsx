@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Check, X, Ban, ShieldCheck, UserCheck } from "lucide-react";
+import { Check, X, Ban, ShieldCheck, UserCheck, Trash2 } from "lucide-react";
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -38,6 +38,26 @@ export default function AdminUsersPage() {
         fetchUsers();
       } else {
         toast.error("Failed to update status");
+      }
+    } catch (error) {
+      toast.error("An error occurred");
+    }
+  };
+
+  const handleDeleteUser = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to permanently delete the user "${name}"? This action cannot be undone.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/users/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        toast.success(`User "${name}" deleted permanently`);
+        fetchUsers();
+      } else {
+        const errText = await res.text();
+        toast.error(errText || "Failed to delete user");
       }
     } catch (error) {
       toast.error("An error occurred");
@@ -84,7 +104,7 @@ export default function AdminUsersPage() {
 
                 <div className="flex justify-between items-center pt-2.5 border-t border-[#E8E0D0] text-xs">
                   <span className="text-[10px] text-navy-700">Joined: {new Date(user.createdAt).toLocaleDateString()}</span>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1.5 flex-wrap">
                     {user.accountStatus !== "ACTIVE" && (
                       <Button size="sm" className="bg-[#1D6A3A] hover:bg-[#15502c] text-white text-[10px] h-8 px-2.5 font-bold rounded-btn" onClick={() => handleStatusChange(user.id, "ACTIVE")}>
                         Approve
@@ -100,6 +120,9 @@ export default function AdminUsersPage() {
                         Suspend
                       </Button>
                     )}
+                    <Button size="sm" variant="outline" className="border-red-200 text-red-700 hover:bg-red-50 text-[10px] h-8 px-2.5 font-semibold rounded-btn flex items-center gap-1" onClick={() => handleDeleteUser(user.id, user.name)}>
+                      <Trash2 className="w-3.5 h-3.5 shrink-0" /> Delete
+                    </Button>
                   </div>
                 </div>
               </Card>
@@ -186,6 +209,15 @@ export default function AdminUsersPage() {
                                 <Ban className="w-4 h-4" />
                               </Button>
                             )}
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 rounded-full hover:bg-navy-50 text-red-600 hover:text-red-800" 
+                              onClick={() => handleDeleteUser(user.id, user.name)} 
+                              title="Delete Permanently"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
                         </td>
                       </tr>

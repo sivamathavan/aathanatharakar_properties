@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Check, X, Eye, Building2, MapPin } from "lucide-react";
+import { Check, X, Eye, Building2, MapPin, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminPropertiesPage() {
@@ -41,6 +41,26 @@ export default function AdminPropertiesPage() {
         fetchProperties();
       } else {
         toast.error("Failed to update status");
+      }
+    } catch (error) {
+      toast.error("An error occurred");
+    }
+  };
+
+  const handleDeleteProperty = async (id: string, title: string) => {
+    if (!confirm(`Are you sure you want to permanently delete the property "${title}"? This action cannot be undone.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/properties/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        toast.success(`Property "${title}" deleted successfully`);
+        fetchProperties();
+      } else {
+        const errText = await res.text();
+        toast.error(errText || "Failed to delete property");
       }
     } catch (error) {
       toast.error("An error occurred");
@@ -147,7 +167,7 @@ export default function AdminPropertiesPage() {
 
                 <div className="flex justify-between items-center pt-2.5 border-t border-[#E8E0D0] text-xs">
                   <span className="text-[10px] text-navy-700">Created: {new Date(property.createdAt).toLocaleDateString()}</span>
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1.5 flex-wrap">
                     <Link href={`/properties/${property.id}`} target="_blank">
                       <Button variant="outline" size="sm" className="h-8 px-2.5 text-navy-800 border-[#E8E0D0] hover:bg-navy-50 font-sans text-[10px] font-bold rounded-btn flex items-center gap-1">
                         <Eye className="w-3.5 h-3.5" /> View
@@ -163,6 +183,9 @@ export default function AdminPropertiesPage() {
                         Reject
                       </Button>
                     )}
+                    <Button size="sm" variant="outline" className="border-red-200 text-red-700 hover:bg-red-50 text-[10px] h-8 px-2.5 font-semibold rounded-btn flex items-center gap-1" onClick={() => handleDeleteProperty(property.id, property.title)}>
+                      <Trash2 className="w-3.5 h-3.5 shrink-0" /> Delete
+                    </Button>
                   </div>
                 </div>
               </Card>
@@ -225,7 +248,7 @@ export default function AdminPropertiesPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-1.5">
+                          <div className="flex justify-end gap-1.5 font-sans">
                             <Link href={`/properties/${property.id}`} target="_blank">
                               <Button 
                                 variant="ghost" 
@@ -258,6 +281,15 @@ export default function AdminPropertiesPage() {
                                 <X className="w-4 h-4" />
                               </Button>
                             )}
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 rounded-full hover:bg-navy-50 text-red-600 hover:text-red-800" 
+                              onClick={() => handleDeleteProperty(property.id, property.title)} 
+                              title="Delete Permanently"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
                         </td>
                       </tr>

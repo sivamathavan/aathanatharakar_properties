@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { AccountStatus, UserRole } from "@prisma/client";
+import { sendEmail } from "@/lib/mail";
 
 const ALLOWED_STATUSES: AccountStatus[] = [
   AccountStatus.PENDING,
@@ -17,7 +18,7 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== UserRole.ADMIN) {
+    if (!session || session.user.role !== "ADMIN") {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -71,38 +72,74 @@ export async function PATCH(
       accountStatus === AccountStatus.REJECTED ||
       accountStatus === AccountStatus.SUSPENDED
     ) {
-      import("@/lib/mail")
-        .then(({ sendEmail }) => {
-          const subject =
+      const subject =
+        accountStatus === AccountStatus.ACTIVE
+          ? "Your Aadana Tharakar Account is Approved"
+          : accountStatus === AccountStatus.SUSPENDED
+          ? "Your Aadana Tharakar Account has been Suspended"
+          : "Update on your Aadana Tharakar Application";
+      sendEmail({
+        to: user.email,
+        subject,
+        html: `
+          <h3>Hello ${user.name},</h3>
+          <p>Your account status has been updated to: <strong>${accountStatus}</strong>.</p>
+          ${
             accountStatus === AccountStatus.ACTIVE
-              ? "Your Aadana Tharakar Account is Approved"
+              ? "<p>You can now log in to access your dashboard and start using the platform.</p>"
               : accountStatus === AccountStatus.SUSPENDED
-              ? "Your Aadana Tharakar Account has been Suspended"
-              : "Update on your Aadana Tharakar Application";
-          sendEmail({
-            to: user.email,
-            subject,
-            html: `
-              <h3>Hello ${user.name},</h3>
-              <p>Your account status has been updated to: <strong>${accountStatus}</strong>.</p>
-              ${
-                accountStatus === AccountStatus.ACTIVE
-                  ? "<p>You can now log in to access your dashboard and start using the platform.</p>"
-                  : accountStatus === AccountStatus.SUSPENDED
-                  ? "<p>If you believe this is in error, please contact support.</p>"
-                  : ""
-              }
-              <br/>
-              <p>Regards,<br/>Aadana Tharakar Team</p>
-            `,
-          }).catch(console.error);
-        })
-        .catch(console.error);
+              ? "<p>If you believe this is in error, please contact support.</p>"
+              : ""
+          }
+          <br/>
+          <p>Regards,<br/>Aadana Tharakar Team</p>
+        `,
+      }).catch(console.error);
     }
 
     return NextResponse.json(user);
   } catch (error) {
     console.error("[ADMIN_USER_PATCH]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "ADMIN") {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    // Don't let an admin delete themselves
+    if (params.id === session.user.id) {
+      return new NextResponse("You cannot delete your own admin account", { status: 400 });
+    }
+
+    const target = await prisma.user.findUnique({
+      where: { id: params.id },
+      select: { id: true, role: true },
+    });
+
+    if (!target) {
+      return new NextResponse("User not found", { status: 404 });
+    }
+
+    // Don't allow deleting other admins
+    if (target.role === UserRole.ADMIN) {
+      return new NextResponse("Cannot delete another admin account", { status: 403 });
+    }
+
+    await prisma.user.delete({
+      where: { id: params.id },
+    });
+
+    return NextResponse.json({ success: true, message: "User deleted permanently" });
+  } catch (error) {
+    console.error("[ADMIN_USER_DELETE]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
