@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
+import { IOSInstallPrompt } from "@/components/layout/IOSInstallPrompt";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -54,6 +55,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <MobileBottomNav />
+          <IOSInstallPrompt />
           <Toaster position="top-center" richColors />
         </SessionProvider>
       </body>
