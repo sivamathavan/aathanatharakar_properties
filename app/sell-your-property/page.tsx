@@ -1,34 +1,38 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, ShieldCheck } from "lucide-react";
+import { CheckCircle2, ShieldCheck, Phone, MessageCircle } from "lucide-react";
 
 export const metadata = {
-  title: "List Your Property Free | Aadana Tharakar",
+  title: "List Your Property | DK Promoters",
   description:
-    "Sell or rent your property fast in Tamil Nadu. Aadana Tharakar handles every buyer enquiry — your contact stays private.",
+    "Sell or rent your property fast in Tamil Nadu. DK Promoters handles every buyer enquiry — your contact stays private.",
 };
 
 const BENEFITS = [
   {
-    title: "100% Free Listing",
-    description: "No hidden charges or premium fees to list your property.",
+    title: "Broker-Managed Listing",
+    description: "We personally handle your listing, photos, and pricing. No hassle for you.",
   },
   {
     title: "Broker-Verified Buyers",
     description:
-      "Every buyer enquiry is vetted by our broker team before reaching you.",
+      "Every buyer enquiry is vetted by our broker team before connecting with you.",
   },
   {
     title: "Privacy Protected",
     description:
-      "Your phone number and email are never shown publicly — buyers reach us, not you.",
+      "Your phone number and email are never shown publicly — buyers reach us, not you directly.",
   },
   {
     title: "Dedicated Support",
     description:
-      "We help you craft an attractive listing with great photos and pricing guidance.",
+      "We guide you through the entire process from listing to closing the deal.",
   },
 ];
+
+const WHATSAPP_NUMBER = "916381169124";
+const PHONE_NUMBER = "+916381169124";
+const WHATSAPP_MSG = encodeURIComponent("Hi DK Promoters, I want to list my property. Please guide me.");
 
 export default function SellYourPropertyPage() {
   return (
@@ -43,14 +47,14 @@ export default function SellYourPropertyPage() {
             <span className="text-gold-700">Faster</span>
           </h1>
           <p className="text-sm md:text-lg text-navy-700 max-w-2xl mx-auto">
-            Reach thousands of genuine buyers across all 38 districts of Tamil
-            Nadu. List for free — Aadana Tharakar handles every buyer enquiry.
+            Reach genuine buyers across all 38 districts of Tamil Nadu.
+            Contact DK Promoters — we handle every buyer enquiry personally.
           </p>
         </div>
 
         <div className="bg-white p-6 md:p-10 rounded-card border border-[#E8E0D0] shadow-sm">
           <h2 className="text-xl md:text-2xl font-display font-bold mb-6 text-navy-900 text-center">
-            Why List With Us?
+            Why List With DK Promoters?
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
@@ -70,29 +74,36 @@ export default function SellYourPropertyPage() {
           </div>
 
           <div className="pt-6 border-t border-[#E8E0D0] flex flex-col sm:flex-row justify-center gap-3">
-            <Link href="/register/property-lister" className="w-full sm:w-auto">
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto"
+            >
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-navy-900 text-gold-500 hover:bg-navy-950 hover:text-gold-400 font-bold px-8 h-12 rounded-btn shadow-sm"
+                className="w-full sm:w-auto bg-[#25D366] hover:bg-[#1DA851] text-white font-bold px-8 h-12 rounded-btn shadow-sm flex items-center justify-center gap-2"
               >
-                Create Free Account
+                <MessageCircle className="w-5 h-5" />
+                WhatsApp Us
               </Button>
-            </Link>
-            <Link href="/login" className="w-full sm:w-auto">
+            </a>
+            <a href={`tel:${PHONE_NUMBER}`} className="w-full sm:w-auto">
               <Button
                 size="lg"
                 variant="outline"
-                className="w-full sm:w-auto border-navy-700 text-navy-800 hover:bg-navy-50 font-bold px-8 h-12 rounded-btn"
+                className="w-full sm:w-auto border-navy-700 text-navy-800 hover:bg-navy-50 font-bold px-8 h-12 rounded-btn flex items-center justify-center gap-2"
               >
-                Login to Dashboard
+                <Phone className="w-5 h-5" />
+                Call +91 63811 69124
               </Button>
-            </Link>
+            </a>
           </div>
         </div>
 
         <p className="text-center text-xs text-navy-600 mt-6 leading-relaxed max-w-xl mx-auto">
-          By listing, you agree that all buyer enquiries are routed through
-          Aadana Tharakar. We will coordinate every conversation and protect
+          By contacting us, you agree that all buyer enquiries are routed
+          through DK Promoters. We coordinate every conversation and protect
           your contact details.
         </p>
       </div>

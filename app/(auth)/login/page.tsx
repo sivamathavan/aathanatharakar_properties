@@ -81,7 +81,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md border-[#E8E0D0] bg-white shadow-sm font-sans">
         <CardHeader className="text-center space-y-1">
           <CardTitle className="text-3xl font-display font-bold tracking-tight text-navy-900">
-            ஆதனத் தரகர்
+            டிகே புரமோட்டர்ஸ்
           </CardTitle>
           <CardDescription className="font-sans">
             Sign in to your account

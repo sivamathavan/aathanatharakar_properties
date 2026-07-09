@@ -99,7 +99,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
       : "Selling";
 
   const waMessage = encodeURIComponent(
-    `Hi Aadana Tharakar, I'm interested in "${property.title}" in ${property.locality}, ${property.city} (ID: ${property.id}). Please share more details.`
+    `Hi DK Promoters, I'm interested in "${property.title}" in ${property.locality}, ${property.city} (ID: ${property.id}). Please share more details.`
   );
   const waUrl = `https://wa.me/${BROKER_PHONE}?text=${waMessage}`;
   const callUrl = `tel:+${BROKER_PHONE}`;
@@ -236,7 +236,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
 
           <p className="text-[10px] text-navy-600 flex items-center gap-1 pt-1">
             <ShieldCheck className="w-3 h-3 text-gold-600" />
-            Contact via Aadana Tharakar broker only
+            Contact via DK Promoters broker only
           </p>
         </div>
       </div>

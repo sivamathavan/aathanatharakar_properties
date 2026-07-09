@@ -7,7 +7,7 @@ import { Mail, Calendar } from "lucide-react";
 import { UserRole } from "@prisma/client";
 
 export const metadata = {
-  title: "Enquiries | Aadana Tharakar",
+  title: "Enquiries | DK Promoters",
 };
 
 interface UnifiedEnquiry {

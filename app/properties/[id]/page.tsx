@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   
   if (!property) return { title: 'Property Not Found' };
 
-  const title = `${property.bedrooms ? property.bedrooms + 'BHK ' : ''}${property.type.replace('_', ' ')} for ${property.listingType} in ${property.locality}, ${property.city} — ₹${Number(property.price).toLocaleString('en-IN')} | Aadana Tharakar`;
+  const title = `${property.bedrooms ? property.bedrooms + 'BHK ' : ''}${property.type.replace('_', ' ')} for ${property.listingType} in ${property.locality}, ${property.city} — ₹${Number(property.price).toLocaleString('en-IN')} | DK Promoters`;
   const description = property.description.substring(0, 160) + (property.description.length > 160 ? "..." : "");
   
   const ogImage =
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
       title,
       description,
       url: `${SITE_URL}/properties/${property.id}`,
-      siteName: "Aadana Tharakar",
+      siteName: "DK Promoters",
       images: [
         {
           url: ogImage,
@@ -103,7 +103,7 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
   };
 
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/[^0-9]/g, "") || "916381169124";
-  const whatsappMessage = encodeURIComponent(`Hi, I'm interested in "${property.title}" (ID: ${property.id}) on Aadana Tharakar. Please share more details.`);
+  const whatsappMessage = encodeURIComponent(`Hi, I'm interested in "${property.title}" (ID: ${property.id}) on DK Promoters. Please share more details.`);
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
   const propertyUrl = `${SITE_URL}/properties/${property.id}`;
 
@@ -237,7 +237,7 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
                 Contact our broker
               </h3>
               <p className="text-xs text-navy-700 leading-relaxed">
-                Aadana Tharakar handles every conversation — your details stay private.
+                DK Promoters handles every conversation — your details stay private.
               </p>
               <div className="grid grid-cols-2 gap-2">
                 <a
@@ -275,7 +275,7 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
               <div className="p-3 bg-navy-50 rounded-btn border border-navy-100 flex items-start gap-2.5">
                 <ShieldCheck className="w-5 h-5 text-gold-600 shrink-0 mt-0.5" />
                 <p className="text-[11px] text-navy-800 leading-normal font-medium">
-                  Your data is secure. All enquiries go through Aadana Tharakar — owner contact is never shared publicly.
+                  Your data is secure. All enquiries go through DK Promoters — owner contact is never shared publicly.
                 </p>
               </div>
             </div>

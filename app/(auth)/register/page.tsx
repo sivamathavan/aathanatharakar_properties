@@ -4,8 +4,8 @@ import { User, Home, Briefcase, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Register | Aadana Tharakar",
-  description: "Create an account on Aadana Tharakar.",
+  title: "Register | DK Promoters",
+  description: "Create an account on DK Promoters.",
 };
 
 export default function RegisterSelectionPage() {
@@ -16,7 +16,7 @@ export default function RegisterSelectionPage() {
         {/* Header Title */}
         <div className="text-center mb-12">
           <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-navy-900 mb-3">
-            Join Aadana Tharakar
+            Join DK Promoters
           </h1>
           <p className="text-base text-navy-700">
             Select your account type below to get started on your journey

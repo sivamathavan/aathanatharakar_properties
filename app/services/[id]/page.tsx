@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   if (!vendor) return { title: 'Vendor Not Found' };
 
   return {
-    title: `${vendor.businessName} - ${vendor.category.replace('_', ' ')} in Tamil Nadu | Aadana Tharakar`,
+    title: `${vendor.businessName} - ${vendor.category.replace('_', ' ')} in Tamil Nadu | DK Promoters`,
   };
 }
 
@@ -134,7 +134,7 @@ export default async function VendorDetailPage({ params }: { params: { id: strin
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   <a
-                    href={`https://wa.me/916381169124?text=${encodeURIComponent(`Hi, I found ${vendor.businessName} on Aadana Tharakar. I need ${vendor.category.replace('_',' ')} services. Please share more details.`)}`}
+                    href={`https://wa.me/916381169124?text=${encodeURIComponent(`Hi, I found ${vendor.businessName} on DK Promoters. I need ${vendor.category.replace('_',' ')} services. Please share more details.`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 h-11 rounded-btn bg-[#25D366] hover:bg-[#1ebe5c] text-white text-sm font-bold transition-colors"

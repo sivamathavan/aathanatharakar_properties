@@ -86,11 +86,11 @@ export async function POST(req: Request) {
     try {
       await sendEmail({
         to: normalized,
-        subject: `Your Aadana Tharakar Login Code`,
+        subject: `Your DK Promoters Login Code`,
         html: `
           <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; border: 1px solid #E8E0D0; border-radius: 8px; overflow: hidden;">
             <div style="background-color: #0D1B2A; padding: 20px; text-align: center;">
-              <h1 style="color: #E5C158; margin: 0; font-size: 24px;">Aadana Tharakar</h1>
+              <h1 style="color: #E5C158; margin: 0; font-size: 24px;">DK Promoters</h1>
             </div>
             <div style="padding: 30px; background-color: #ffffff; text-align: center;">
               <p style="color: #4B5563; font-size: 16px; margin-bottom: 20px;">Use the code below to log in to your account. This code is valid for 10 minutes.</p>

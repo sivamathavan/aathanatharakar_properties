@@ -23,7 +23,7 @@ export function AdminHeader() {
             <Menu className="w-5 h-5" />
           </Button>
           <span className="font-display font-bold text-base text-gold-500 tracking-wide">
-            ஆதனத் தரகர் Admin
+            டிகே புரமோட்டர்ஸ் Admin
           </span>
         </div>
 

@@ -2,8 +2,8 @@ import Image from "next/image";
 import { Building2, ShieldCheck, Users, Target } from "lucide-react";
 
 export const metadata = {
-  title: "About Us | Aadana Tharakar",
-  description: "Learn more about Aadana Tharakar, Tamil Nadu's premier real estate marketplace.",
+  title: "About Us | DK Promoters",
+  description: "Learn more about DK Promoters, Tamil Nadu's premier real estate marketplace.",
 };
 
 export default function AboutPage() {
@@ -13,7 +13,7 @@ export default function AboutPage() {
       <section className="bg-navy-900 text-white py-20 px-4">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-gold-500">
-            About Aadana Tharakar
+            About DK Promoters
           </h1>
           <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
             We are Tamil Nadu's most trusted real estate marketplace, connecting buyers, sellers, and allied service professionals with transparency and ease.

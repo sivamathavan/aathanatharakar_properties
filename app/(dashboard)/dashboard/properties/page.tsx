@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Edit, Eye, MapPin, Plus } from "lucide-react";
 
 export const metadata = {
-  title: "My Properties | Aadana Tharakar",
+  title: "My Properties | DK Promoters",
 };
 
 export default async function MyPropertiesPage() {

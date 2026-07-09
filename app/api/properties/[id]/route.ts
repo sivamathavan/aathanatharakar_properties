@@ -88,11 +88,8 @@ export async function PUT(
       return new NextResponse("Not Found", { status: 404 });
     }
 
-    if (
-      property.postedById !== session.user.id &&
-      session.user.role !== UserRole.ADMIN
-    ) {
-      return new NextResponse("Forbidden", { status: 403 });
+    if (session.user.role !== UserRole.ADMIN) {
+      return new NextResponse("Forbidden - Only admins can edit properties in broker mode", { status: 403 });
     }
 
     const body = await req.json();
@@ -176,11 +173,8 @@ export async function DELETE(
     });
     if (!property) return new NextResponse("Not Found", { status: 404 });
 
-    if (
-      property.postedById !== session.user.id &&
-      session.user.role !== UserRole.ADMIN
-    ) {
-      return new NextResponse("Forbidden", { status: 403 });
+    if (session.user.role !== UserRole.ADMIN) {
+      return new NextResponse("Forbidden - Only admins can delete properties in broker mode", { status: 403 });
     }
 
     // Soft-disable rather than hard delete to preserve history.

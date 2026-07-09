@@ -27,8 +27,8 @@ const notoTamil = Noto_Sans_Tamil({
 });
 
 export const metadata: Metadata = {
-  title: "Aadana Tharakar | ஆதனத் தரகர்",
-  description: "TAMIL NADU'S TRUSTED PROPERTY MARKETPLACE",
+  title: "DK Promoters | டிகே புரமோட்டர்ஸ்",
+  description: "Tamil Nadu's Trusted Property Broker — DK Promoters",
 };
 
 export default function RootLayout({

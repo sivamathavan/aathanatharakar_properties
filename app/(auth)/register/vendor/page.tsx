@@ -161,7 +161,7 @@ export default function VendorRegistration() {
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-xl font-display font-bold text-navy-900">Service Professional Registration</CardTitle>
             <CardDescription className="text-xs text-navy-750 font-sans mt-1">
-              {step === "form" ? "Join Aadana Tharakar to offer your professional services" : "Enter the code sent to your email to verify your account"}
+              {step === "form" ? "Join DK Promoters to offer your professional services" : "Enter the code sent to your email to verify your account"}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">

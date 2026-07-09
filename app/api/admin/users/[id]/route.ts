@@ -74,10 +74,10 @@ export async function PATCH(
     ) {
       const subject =
         accountStatus === AccountStatus.ACTIVE
-          ? "Your Aadana Tharakar Account is Approved"
+          ? "Your DK Promoters Account is Approved"
           : accountStatus === AccountStatus.SUSPENDED
-          ? "Your Aadana Tharakar Account has been Suspended"
-          : "Update on your Aadana Tharakar Application";
+          ? "Your DK Promoters Account has been Suspended"
+          : "Update on your DK Promoters Application";
       sendEmail({
         to: user.email,
         subject,
@@ -92,7 +92,7 @@ export async function PATCH(
               : ""
           }
           <br/>
-          <p>Regards,<br/>Aadana Tharakar Team</p>
+          <p>Regards,<br/>DK Promoters Team</p>
         `,
       }).catch(console.error);
     }

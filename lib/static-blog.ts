@@ -30,7 +30,7 @@ This guide walks you through what every buyer should check:
 • Registration and stamp duty — current Tamil Nadu rate, calculation on guideline value vs. market value.
 • Negotiation — typical broker margins, when to walk away, lawyer review fee.
 
-Aadana Tharakar handles the broker-side coordination end-to-end so you don't have to chase multiple owners.`,
+DK Promoters handles the broker-side coordination end-to-end so you don't have to chase multiple owners.`,
     coverImageUrl:
       "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80",
     readTime: "8 min read",
@@ -55,7 +55,7 @@ Always check the TNRERA portal for project registration number before signing a 
     readTime: "6 min read",
     category: "Legal & RERA",
     publishedAt: "2025-05-10",
-    author: "Aadana Tharakar Team",
+    author: "DK Promoters Team",
   },
   {
     id: "static-3",
@@ -71,7 +71,7 @@ This article walks through three real Coimbatore case studies (Saravanampatti, V
     readTime: "7 min read",
     category: "Market Analysis",
     publishedAt: "2025-05-05",
-    author: "Aadana Tharakar Team",
+    author: "DK Promoters Team",
   },
   {
     id: "static-4",
@@ -90,7 +90,7 @@ This article walks through three real Coimbatore case studies (Saravanampatti, V
     readTime: "9 min read",
     category: "Finance",
     publishedAt: "2025-04-28",
-    author: "Aadana Tharakar Team",
+    author: "DK Promoters Team",
   },
   {
     id: "static-5",
@@ -110,7 +110,7 @@ Browse vetted interior designers in our Services directory.`,
     readTime: "5 min read",
     category: "Interior & Design",
     publishedAt: "2025-04-20",
-    author: "Aadana Tharakar Team",
+    author: "DK Promoters Team",
   },
   {
     id: "static-6",

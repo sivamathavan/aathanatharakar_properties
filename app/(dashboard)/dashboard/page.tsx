@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Dashboard | Aadana Tharakar",
+  title: "Dashboard | DK Promoters",
 };
 
 export default async function DashboardOverview() {
@@ -69,7 +69,7 @@ export default async function DashboardOverview() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#E8E0D0] pb-4">
         <div>
           <h1 className="font-display font-bold text-xl md:text-2xl text-navy-900 leading-snug">Welcome back, {user.name}</h1>
-          <p className="text-xs text-navy-700 mt-0.5">Here is a quick overview of your Aadana Tharakar activity.</p>
+          <p className="text-xs text-navy-700 mt-0.5">Here is a quick overview of your DK Promoters activity.</p>
         </div>
         {(user.role === "PROPERTY_LISTER" || user.role === "AGENT") && (
           <Link href="/dashboard/properties/new" className="w-full sm:w-auto">

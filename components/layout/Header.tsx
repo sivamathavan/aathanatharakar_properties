@@ -6,9 +6,12 @@ import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { UserRole } from "@prisma/client";
-import { Menu, X, Home, Briefcase, FileText, Info, LogIn, LayoutDashboard } from "lucide-react";
+import { Menu, X, Home, FileText, Info, LayoutDashboard, MessageCircle } from "lucide-react";
 
 import { LogoIcon } from "@/components/brand/LogoIcon";
+
+const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916381169124").replace(/\D/g, "");
+const WHATSAPP_MSG = encodeURIComponent("Hi DK Promoters, I'm interested in a property. Please share details.");
 
 export function Header() {
   const { data: session } = useSession();
@@ -49,16 +52,15 @@ export function Header() {
           <Link href="/" className="flex items-center gap-2 shrink-0 z-50 group" onClick={closeMobileMenu}>
             <LogoIcon className="w-7 h-7 md:w-8 md:h-8 shrink-0 group-hover:scale-105 transition-transform" />
             <span className="font-sans font-bold text-lg md:text-xl text-white leading-none tracking-wide">
-              Aadana<span className="text-gold-500">Tharakar</span>
+              DK<span className="text-gold-500">Promoters</span>
             </span>
           </Link>
 
-          {/* Desktop & Tablet Navigation Link Options (768px+) */}
+          {/* Desktop & Tablet Navigation — Broker-only: Properties, Blog, About */}
           {!isAdminRoute && (
             <nav className="hidden md:flex items-center space-x-5 lg:space-x-8 text-sm font-sans font-medium">
               {[
                 { href: "/properties", label: "Properties" },
-                { href: "/services", label: "Services" },
                 { href: "/blog", label: "Blog" },
                 { href: "/about", label: "About" },
               ].map((item) => {
@@ -84,51 +86,41 @@ export function Header() {
             </nav>
           )}
 
-          {/* Actions & Login Status (768px+) */}
+          {/* Actions (Desktop) */}
           <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
             {!isAdminRoute && (
-              <Link href="/sell-your-property">
-                <Button className="bg-gold-500 hover:bg-gold-400 active:bg-gold-600 text-navy-900 font-sans font-medium text-xs lg:text-sm px-4 lg:px-5 py-2 rounded-btn">
-                  List Property
+              <a
+                href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button className="bg-gold-500 hover:bg-gold-400 active:bg-gold-600 text-navy-900 font-sans font-medium text-xs lg:text-sm px-4 lg:px-5 py-2 rounded-btn flex items-center gap-1.5">
+                  <MessageCircle className="w-4 h-4" />
+                  Contact Broker
                 </Button>
-              </Link>
+              </a>
             )}
 
-            {session ? (
+            {/* Admin: show dashboard / sign-out if logged in as admin */}
+            {session && session.user.role === UserRole.ADMIN && (
               <div className="flex items-center space-x-2">
-                <Link href={session.user.role === UserRole.ADMIN ? "/admin" : "/dashboard"}>
+                <Link href="/admin">
                   <Button variant="ghost" className="text-white hover:bg-navy-800 text-xs lg:text-sm">
-                    {session.user.role === UserRole.ADMIN ? "Admin" : "Dashboard"}
+                    <LayoutDashboard className="w-4 h-4 mr-1" /> Admin
                   </Button>
                 </Link>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => signOut({ callbackUrl: "/" })}
                   className="border-navy-800 text-white bg-transparent hover:bg-navy-800 text-xs lg:text-sm h-9"
                 >
                   Sign Out
                 </Button>
               </div>
-            ) : (
-              <div className="flex items-center space-x-1 lg:space-x-2">
-                <Link href="/login">
-                  <Button variant="ghost" className="text-white hover:bg-navy-800 text-xs lg:text-sm">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button 
-                    variant="outline" 
-                    className="border-gold-500 text-gold-500 bg-transparent hover:bg-gold-500 hover:text-navy-900 text-xs lg:text-sm h-9"
-                  >
-                    Register
-                  </Button>
-                </Link>
-              </div>
             )}
           </div>
 
-          {/* Mobile Menu Icon Toggle (< 768px) */}
+          {/* Mobile Menu Toggle */}
           <button
             className="md:hidden p-2 text-gold-500 hover:text-gold-400 focus:outline-none z-50 h-10 w-10 flex items-center justify-center"
             onClick={toggleMobileMenu}
@@ -139,30 +131,21 @@ export function Header() {
         </div>
       </header>
 
-      {/* Mobile Drawer (Full screen overlay, navy bg) */}
+      {/* Mobile Drawer */}
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 bg-navy-900 z-40 pt-20 px-6 flex flex-col justify-between pb-safe-bottom animate-in slide-in-from-top duration-300">
           <nav className="flex flex-col space-y-5 text-lg font-sans font-medium text-white">
-            <Link 
-              href="/properties" 
+            <Link
+              href="/properties"
               onClick={closeMobileMenu}
               className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
             >
               <Home className="w-5 h-5 text-gold-500" />
               <span>Properties</span>
             </Link>
-            
-            <Link 
-              href="/services" 
-              onClick={closeMobileMenu}
-              className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
-            >
-              <Briefcase className="w-5 h-5 text-gold-500" />
-              <span>Services</span>
-            </Link>
-            
-            <Link 
-              href="/blog" 
+
+            <Link
+              href="/blog"
               onClick={closeMobileMenu}
               className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
             >
@@ -170,8 +153,8 @@ export function Header() {
               <span>Blog</span>
             </Link>
 
-            <Link 
-              href="/about" 
+            <Link
+              href="/about"
               onClick={closeMobileMenu}
               className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
             >
@@ -179,47 +162,41 @@ export function Header() {
               <span>About Us</span>
             </Link>
 
-            {session && (
-              <Link 
-                href={session.user.role === UserRole.ADMIN ? "/admin" : "/dashboard"} 
+            {session && session.user.role === UserRole.ADMIN && (
+              <Link
+                href="/admin"
                 onClick={closeMobileMenu}
                 className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
               >
                 <LayoutDashboard className="w-5 h-5 text-gold-500" />
-                <span>{session.user.role === UserRole.ADMIN ? "Admin Control" : "My Dashboard"}</span>
+                <span>Admin Control</span>
               </Link>
             )}
           </nav>
 
-          {/* Action Call at Bottom of Drawer */}
+          {/* Bottom CTA */}
           <div className="space-y-3 mb-10">
-            <Link href="/sell-your-property" onClick={closeMobileMenu} className="block w-full">
-              <Button className="w-full bg-gold-500 hover:bg-gold-400 active:bg-gold-600 text-navy-900 font-sans font-bold h-12 shadow-lg">
-                List Property Free
+            <a
+              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full"
+              onClick={closeMobileMenu}
+            >
+              <Button className="w-full bg-[#25D366] hover:bg-[#1DA851] text-white font-sans font-bold h-12 shadow-lg flex items-center justify-center gap-2">
+                <MessageCircle className="w-5 h-5" />
+                WhatsApp Us
               </Button>
-            </Link>
+            </a>
 
-            {session ? (
-              <Button 
-                variant="outline" 
+            {session && session.user.role === UserRole.ADMIN && (
+              <Button
+                variant="outline"
                 onClick={() => { signOut({ callbackUrl: "/" }); closeMobileMenu(); }}
                 className="w-full border-navy-700 text-white bg-transparent hover:bg-navy-800 h-12"
               >
                 Sign Out
               </Button>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                <Link href="/login" onClick={closeMobileMenu} className="w-full">
-                  <Button variant="ghost" className="w-full text-white hover:bg-navy-800 h-12 flex items-center justify-center gap-1.5">
-                    <LogIn className="w-4 h-4" /> Sign In
-                  </Button>
-                </Link>
-                <Link href="/register" onClick={closeMobileMenu} className="w-full">
-                  <Button variant="outline" className="w-full border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-navy-900 h-12">
-                    Register
-                  </Button>
-                </Link>
-              </div>
             )}
           </div>
         </div>

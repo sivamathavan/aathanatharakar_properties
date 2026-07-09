@@ -5,7 +5,7 @@ const testimonials = [
   {
     name: "Rajesh Kumar",
     role: "Property Buyer",
-    content: "Aadana Tharakar made buying our dream home in Coimbatore so easy. The transparency and support from their verified agents was incredible.",
+    content: "DK Promoters made buying our dream home in Coimbatore so easy. The transparency and support from their verified broker team was incredible.",
     rating: 5,
   },
   {

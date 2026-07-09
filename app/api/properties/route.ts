@@ -51,12 +51,8 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    if (
-      session.user.role !== UserRole.PROPERTY_LISTER &&
-      session.user.role !== UserRole.AGENT &&
-      session.user.role !== UserRole.ADMIN
-    ) {
-      return new NextResponse("Forbidden", { status: 403 });
+    if (session.user.role !== UserRole.ADMIN) {
+      return new NextResponse("Forbidden - Only admins can upload properties in broker mode", { status: 403 });
     }
 
     const body = await req.json();

@@ -161,7 +161,7 @@ export default function AgentRegistration() {
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-xl font-display font-bold text-navy-900">Agent & Broker Registration</CardTitle>
             <CardDescription className="text-xs text-navy-750 font-sans mt-1">
-              {step === "form" ? "Join Aadana Tharakar as a verified local property professional" : "Enter the code sent to your email to verify your account"}
+              {step === "form" ? "Join DK Promoters as a verified local property professional" : "Enter the code sent to your email to verify your account"}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-4">

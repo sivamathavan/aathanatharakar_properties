@@ -99,7 +99,7 @@ export async function POST(
         subject: `New Lead — ${property.title} (${property.city})`,
         html: `
           <h2>New Property Enquiry</h2>
-          <p>A buyer has enquired about a listing on Aadana Tharakar.</p>
+          <p>A buyer has enquired about a listing on DK Promoters.</p>
           <h3>Property</h3>
           <ul>
             <li><strong>Title:</strong> ${property.title}</li>
@@ -130,16 +130,16 @@ export async function POST(
           if (!owner?.email) return;
           sendEmail({
             to: owner.email,
-            subject: `New lead for ${property.title} — Aadana Tharakar`,
+            subject: `New lead for ${property.title} — DK Promoters`,
             html: `
               <p>Hello ${owner.name},</p>
               <p>You have received a new enquiry for your property
                  <strong>${property.title}</strong> in ${property.locality}, ${property.city}.</p>
               <p>Our broker team will contact the buyer and coordinate the next steps with you shortly.
-                 For your security, buyer contact details are kept confidential and managed by Aadana Tharakar.</p>
+                 For your security, buyer contact details are kept confidential and managed by DK Promoters.</p>
               <p>You can review the lead summary in your dashboard.</p>
               <br/>
-              <p>Regards,<br/>Aadana Tharakar Team</p>
+              <p>Regards,<br/>DK Promoters Team</p>
             `,
           }).catch((err) => console.error("[OWNER_EMAIL_ERR]", err));
         })

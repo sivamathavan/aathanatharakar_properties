@@ -63,7 +63,7 @@ export default async function HomePage() {
         <div className="container mx-auto max-w-5xl relative z-10 flex flex-col items-center text-center space-y-6 md:space-y-8">
           <div className="space-y-3">
             <span className="text-gold-500 font-sans font-bold text-xs md:text-sm uppercase tracking-widest block animate-fade-up">
-              ஆதனத் தரகர்
+              டிகே புரமோட்டர்ஸ்
             </span>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tight leading-tight tamil max-w-4xl text-gold-50 drop-shadow-md animate-fade-up-delay-1">
               உங்களுக்கான இடத்தை தேர்வு செய்யுங்கள்
@@ -165,14 +165,23 @@ export default async function HomePage() {
         <div className="container mx-auto px-4 relative z-10 space-y-5">
           <h2 className="font-display font-bold text-2xl sm:text-3xl lg:text-4xl text-gold-100 leading-snug">Want to sell or rent your property?</h2>
           <p className="text-xs sm:text-sm text-gray-300 max-w-xl mx-auto font-sans leading-relaxed">
-            List your residential, plot, or farm land assets for free on Aadana Tharakar and reach thousands of verified buyers and tenants across Tamil Nadu.
+            List your residential, plot, or farm land assets with DK Promoters and reach genuine buyers across Tamil Nadu. Contact us directly — we handle everything.
           </p>
-          <div className="pt-2">
-            <Link href="/sell-your-property">
-              <Button size="lg" className="btn-primary h-12 text-sm px-8 shadow-lg font-bold">
-                List Your Property Free
+          <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href={`https://wa.me/${(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916381169124").replace(/\D/g, "")}?text=${encodeURIComponent("Hi DK Promoters, I want to list my property. Please guide me.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button size="lg" className="btn-primary h-12 text-sm px-8 shadow-lg font-bold w-full sm:w-auto">
+                💬 WhatsApp Us to List
               </Button>
-            </Link>
+            </a>
+            <a href="tel:+916381169124">
+              <Button size="lg" variant="outline" className="h-12 text-sm px-8 font-bold border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-navy-900 w-full sm:w-auto">
+                📞 Call +91 63811 69124
+              </Button>
+            </a>
           </div>
         </div>
       </section>

@@ -105,14 +105,14 @@ export async function POST(
     if (vendorProfile.user?.email) {
       sendEmail({
         to: vendorProfile.user.email,
-        subject: `New service lead for ${vendorProfile.businessName} — Aadana Tharakar`,
+        subject: `New service lead for ${vendorProfile.businessName} — DK Promoters`,
         html: `
           <p>Hello ${vendorProfile.user.name || vendorProfile.businessName},</p>
-          <p>You have received a new service enquiry on Aadana Tharakar.</p>
+          <p>You have received a new service enquiry on DK Promoters.</p>
           <p>Our broker team will reach out to the customer and coordinate next steps with you shortly.
-             Customer contact details are kept confidential and managed by Aadana Tharakar.</p>
+             Customer contact details are kept confidential and managed by DK Promoters.</p>
           <br/>
-          <p>Regards,<br/>Aadana Tharakar Team</p>
+          <p>Regards,<br/>DK Promoters Team</p>
         `,
       }).catch((err) => console.error("[VENDOR_EMAIL_ERR]", err));
     }

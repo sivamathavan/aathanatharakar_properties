@@ -134,7 +134,7 @@ export function VendorEnquiryForm({ vendorId }: { vendorId: string }) {
 
       <p className="text-[11px] text-navy-700 flex items-start gap-1.5 leading-relaxed">
         <ShieldCheck className="w-3.5 h-3.5 text-gold-600 shrink-0 mt-0.5" />
-        Enquiries are coordinated through Aadana Tharakar. Vendor contact details are kept private.
+        Enquiries are coordinated through DK Promoters. Vendor contact details are kept private.
       </p>
     </form>
   );

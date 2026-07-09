@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { X, LayoutDashboard, Home, Users, MessageSquare, ShieldCheck, DollarSign } from "lucide-react";
+import { X, LayoutDashboard, Home, Store, Handshake, Zap, CheckCircle2, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MobileAdminMenuProps {
@@ -13,10 +13,11 @@ interface MobileAdminMenuProps {
 const ADMIN_LINKS = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/properties", label: "Properties", icon: Home },
-  { href: "/admin/leads", label: "Property Leads CRM", icon: MessageSquare },
-  { href: "/admin/vendor-enquiries", label: "Vendor Enquiries", icon: ShieldCheck },
-  { href: "/admin/users", label: "Users & Approvals", icon: Users },
-  { href: "/admin/commissions", label: "Commissions", icon: DollarSign },
+  { href: "/admin/vendors", label: "Vendors & Services", icon: Store },
+  { href: "/admin/co-brokers", label: "Co-Brokers / Dealers", icon: Handshake },
+  { href: "/admin/leads", label: "Active Deals", icon: Zap },
+  { href: "/admin/completed-deals", label: "Completed Deals", icon: CheckCircle2 },
+  { href: "/admin/commissions", label: "Revenue Tracker", icon: Receipt },
 ];
 
 export function MobileAdminMenu({ isOpen, onClose }: MobileAdminMenuProps) {
@@ -46,7 +47,7 @@ export function MobileAdminMenu({ isOpen, onClose }: MobileAdminMenuProps) {
         {/* Header inside drawer */}
         <div className="flex justify-between items-center pb-4 border-b border-navy-800 mb-6">
           <div>
-            <h2 className="text-lg font-display font-bold text-gold-500">ஆதனத் தரகர்</h2>
+            <h2 className="text-lg font-display font-bold text-gold-500">டிகே புரமோட்டர்ஸ்</h2>
             <p className="text-[10px] text-gray-400">Admin Control Panel</p>
           </div>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-navy-800" onClick={onClose}>

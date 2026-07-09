@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Check, X, Eye, Building2, MapPin, Trash2 } from "lucide-react";
+import { Check, X, Eye, Building2, MapPin, Trash2, Pencil } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminPropertiesPage() {
@@ -119,20 +119,27 @@ export default function AdminPropertiesPage() {
       {/* Page Title & Bulk Actions */}
       <div className="border-b border-[#E8E0D0] pb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="font-display font-bold text-xl md:text-2xl text-navy-900 leading-snug">Properties Management</h1>
-          <p className="text-xs text-navy-700 mt-0.5">Approve property listings, review agent draft posts, and moderate active inventory.</p>
+          <h1 className="font-display font-bold text-xl md:text-2xl text-navy-900 leading-snug">Properties</h1>
+          <p className="text-xs text-navy-700 mt-0.5">Manage all property listings on DK Promoters.</p>
         </div>
-        {selectedIds.length > 0 && (
-          <div className="flex gap-2 bg-navy-50 p-2 rounded-btn border border-navy-100">
-            <span className="text-xs text-navy-800 font-bold self-center px-2">{selectedIds.length} selected</span>
-            <Button size="sm" onClick={() => handleBulkStatusChange("ACTIVE")} disabled={bulkLoading} className="bg-[#1D6A3A] hover:bg-[#15502c] text-white text-[10px] h-8 px-2.5 font-bold rounded-btn">
-              Approve All
+        <div className="flex items-center gap-3">
+          <Link href="/admin/properties/new">
+            <Button className="bg-navy-900 text-gold-500 hover:bg-navy-950 font-bold rounded-btn text-xs h-10 px-4">
+              + Add Property
             </Button>
-            <Button size="sm" onClick={() => handleBulkStatusChange("REJECTED")} disabled={bulkLoading} variant="outline" className="border-red-200 text-red-700 hover:bg-red-50 text-[10px] h-8 px-2.5 font-semibold rounded-btn">
-              Reject All
-            </Button>
-          </div>
-        )}
+          </Link>
+          {selectedIds.length > 0 && (
+            <div className="flex gap-2 bg-navy-50 p-2 rounded-btn border border-navy-100">
+              <span className="text-xs text-navy-800 font-bold self-center px-2">{selectedIds.length} selected</span>
+              <Button size="sm" onClick={() => handleBulkStatusChange("ACTIVE")} disabled={bulkLoading} className="bg-[#1D6A3A] hover:bg-[#15502c] text-white text-[10px] h-8 px-2.5 font-bold rounded-btn">
+                Approve All
+              </Button>
+              <Button size="sm" onClick={() => handleBulkStatusChange("REJECTED")} disabled={bulkLoading} variant="outline" className="border-red-200 text-red-700 hover:bg-red-50 text-[10px] h-8 px-2.5 font-semibold rounded-btn">
+                Reject All
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -171,6 +178,11 @@ export default function AdminPropertiesPage() {
                     <Link href={`/properties/${property.id}`} target="_blank">
                       <Button variant="outline" size="sm" className="h-8 px-2.5 text-navy-800 border-[#E8E0D0] hover:bg-navy-50 font-sans text-[10px] font-bold rounded-btn flex items-center gap-1">
                         <Eye className="w-3.5 h-3.5" /> View
+                      </Button>
+                    </Link>
+                    <Link href={`/admin/properties/${property.id}/edit`}>
+                      <Button variant="outline" size="sm" className="h-8 px-2.5 text-navy-800 border-[#E8E0D0] hover:bg-navy-50 font-sans text-[10px] font-bold rounded-btn flex items-center gap-1">
+                        <Pencil className="w-3.5 h-3.5" /> Edit
                       </Button>
                     </Link>
                     {property.status !== "ACTIVE" && (
@@ -257,6 +269,16 @@ export default function AdminPropertiesPage() {
                                 title="View Property"
                               >
                                 <Eye className="w-4 h-4" />
+                              </Button>
+                            </Link>
+                            <Link href={`/admin/properties/${property.id}/edit`}>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 rounded-full hover:bg-navy-50 text-navy-850" 
+                                title="Edit Property"
+                              >
+                                <Pencil className="w-4 h-4" />
                               </Button>
                             </Link>
                             {property.status !== "ACTIVE" && (

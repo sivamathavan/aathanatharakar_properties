@@ -39,11 +39,11 @@ export function IOSInstallPrompt() {
       <div className="flex justify-between items-start">
         <div className="flex gap-3 items-center">
           <div className="w-10 h-10 bg-gradient-to-tr from-navy-900 to-navy-800 rounded-xl flex items-center justify-center text-gold-500 font-bold text-xl shadow-md border border-gold-400/20">
-            ஆ
+            DK
           </div>
           <div>
             <h4 className="font-semibold text-sm text-navy-950 font-sans tracking-wide">
-              Install Aadana Tharakar
+              Install DK Promoters
             </h4>
             <p className="text-[10px] text-navy-600 font-tamil leading-normal">
               முகப்புத் திரையில் சேர்த்து எளிதாகப் பயன்படுத்துங்கள்!
