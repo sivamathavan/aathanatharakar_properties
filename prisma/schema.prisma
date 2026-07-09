@@ -348,3 +348,9 @@ enum CommissionStatus {
   RECEIVED
   CANCELLED
 }
+
+model RateLimit {
+  key       String   @id
+  count     Int
+  resetAt   DateTime
+}
