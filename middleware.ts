@@ -25,6 +25,10 @@ export default withAuth(
     if (isDashboard) {
       return NextResponse.redirect(new URL("/", req.url));
     }
+    // /services/* → redirect to homepage (feature paused/handled via WhatsApp directly)
+    if (pathname.startsWith("/services")) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
 
     // ─── Admin Login page: redirect already-authed admins to /admin ──────────
     if (isAdminLogin && isAuth && role === "ADMIN") {
@@ -55,5 +59,6 @@ export const config = {
     "/admin/login",
     "/register/:path*",
     "/dashboard/:path*",
+    "/services/:path*",
   ],
 };
