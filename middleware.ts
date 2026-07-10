@@ -59,6 +59,7 @@ export const config = {
     "/admin/login",
     "/register/:path*",
     "/dashboard/:path*",
+    "/services",
     "/services/:path*",
   ],
 };

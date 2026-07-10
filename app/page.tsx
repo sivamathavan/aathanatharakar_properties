@@ -2,9 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { PropertyStatus } from "@prisma/client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Building, Map, Store, Warehouse, Trees, Briefcase, Sparkles, ShieldCheck, Heart } from "lucide-react";
-import { PROPERTY_TYPES, VENDOR_CATEGORIES } from "@/lib/constants";
+import { Card } from "@/components/ui/card";
+import { Building, Map, Store, Warehouse, Trees, Home as HomeIcon } from "lucide-react";
+import { PROPERTY_TYPES } from "@/lib/constants";
 import { HomeSearch } from "@/components/home/HomeSearch";
 import { PropertyCard } from "@/components/property/PropertyCard";
 import { AnimatedStats } from "@/components/home/AnimatedStats";
@@ -37,8 +37,8 @@ export default async function HomePage() {
 
   const propertyTypeIcons: Record<string, React.ReactNode> = {
     APARTMENT: <Building className="w-8 h-8" />,
-    VILLA: <Briefcase className="w-8 h-8" />, // fallback home
-    HOUSE: <Briefcase className="w-8 h-8" />,
+    VILLA: <HomeIcon className="w-8 h-8" />,
+    HOUSE: <HomeIcon className="w-8 h-8" />,
     PLOT: <Map className="w-8 h-8" />,
     COMMERCIAL: <Store className="w-8 h-8" />,
     WAREHOUSE: <Warehouse className="w-8 h-8" />,
@@ -128,46 +128,6 @@ export default async function HomePage() {
 
       {/* Testimonials */}
       <Testimonials />
-
-      {/* Allied Services */}
-      <section className="py-16 bg-cream-50">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <div className="text-center mb-10">
-            <h2 className="section-title">Find Trusted Professionals</h2>
-            <p className="section-subtitle mx-auto">Need verified builders, interior designers, or service professionals across Tamil Nadu? Contact us for direct recommendations.</p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            {VENDOR_CATEGORIES.map((cat) => {
-              const catName = cat.replace(/_/g, ' ').toLowerCase();
-              const whatsappNumber = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916381169124").replace(/\D/g, "");
-              const message = `Hi DK Promoters, I need a trusted professional for ${catName} services. Please guide me.`;
-              const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-
-              return (
-                <a key={cat} href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="block h-full">
-                  <Card className="p-4 text-center hover:border-gold-400 hover:shadow-xs transition-all group cursor-pointer h-full flex flex-col items-center justify-center bg-white rounded-card border-[#E8E0D0]">
-                    <Briefcase className="w-6 h-6 sm:w-8 sm:h-8 text-navy-900 mb-2 group-hover:scale-105 transition-transform" />
-                    <span className="font-semibold text-xs text-navy-800 capitalize">{catName}</span>
-                  </Card>
-                </a>
-              );
-            })}
-          </div>
-          
-          <div className="text-center mt-8">
-            <a 
-              href={`https://wa.me/${(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916381169124").replace(/\D/g, "")}?text=${encodeURIComponent("Hi DK Promoters, I am looking for allied services/professionals in Tamil Nadu. Please help.")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button className="btn-secondary h-11 text-xs px-6 font-bold">
-                💬 Request Service Recommendation
-              </Button>
-            </a>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Banner */}
       <section className="py-16 bg-navy-900 text-white text-center border-t border-navy-800 relative overflow-hidden">
