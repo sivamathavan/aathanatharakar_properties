@@ -3,5 +3,5 @@
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ||
   process.env.NEXTAUTH_URL ||
-  "https://www.aadanatharakar.com"
+  "https://www.dkpromoters.in"
 ).replace(/\/$/, "");

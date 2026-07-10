@@ -132,7 +132,7 @@ export default function AdminLeadsCRM() {
     const vendorMobile = selectedVendor.vendorProfile.mobile.replace(/\D/g, "");
     const finalNumber = vendorMobile.startsWith("91") ? vendorMobile : `91${vendorMobile}`;
 
-    const text = `Vanakkam ${selectedVendor.name},\n\nWe are pleased to introduce you to our premium client *${leadName}* (${leadEmail}) who is looking for *${categoryKey.replace(/_/g, " ")}* services for their property in *${locality}*. Please get in touch with them at your earliest convenience.\n\nBest regards,\nAdmin Team\nAadana Tharakar`;
+    const text = `Vanakkam ${selectedVendor.name},\n\nWe are pleased to introduce you to our premium client *${leadName}* (${leadEmail}) who is looking for *${categoryKey.replace(/_/g, " ")}* services for their property in *${locality}*. Please get in touch with them at your earliest convenience.\n\nBest regards,\nAdmin Team\nDK Promoters`;
 
     const whatsappUrl = `https://wa.me/${finalNumber}?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, "_blank");
@@ -176,8 +176,8 @@ export default function AdminLeadsCRM() {
       {/* Header Info */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#E8E0D0] pb-4">
         <div>
-          <h1 className="font-display font-bold text-xl md:text-2xl text-navy-900 leading-snug">Property Leads CRM</h1>
-          <p className="text-xs text-navy-700 mt-0.5">Manage property enquiries, assign leads to agents, and match post-sale referrals.</p>
+          <h1 className="font-display font-bold text-xl md:text-2xl text-navy-900 leading-snug">Active Deals</h1>
+          <p className="text-xs text-navy-700 mt-0.5">Track all ongoing property deals through the pipeline. Drag left/right to update status.</p>
         </div>
         <Button onClick={exportToCSV} className="w-full sm:w-auto h-11 bg-navy-900 text-gold-500 hover:bg-navy-950 hover:text-gold-400 font-bold rounded-btn transition-colors shadow-sm flex items-center justify-center gap-2">
           <Download className="w-4 h-4 text-gold-500" /> Export Leads to CSV

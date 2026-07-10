@@ -51,7 +51,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-md border-[#E8E0D0] bg-white shadow-sm font-sans">
         <CardHeader className="text-center space-y-1">
           <CardTitle className="text-3xl font-display font-bold tracking-tight text-navy-900">
-            ஆதனத் தரகர்
+            டிகே புரமோட்டர்ஸ்
           </CardTitle>
           <CardDescription className="flex items-center justify-center gap-1.5 text-navy-700">
             <ShieldCheck className="w-3.5 h-3.5 text-gold-600" /> Admin Portal Login
@@ -66,7 +66,7 @@ export default function AdminLoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@aadanatharakar.in"
+                placeholder="admin@dkpromoters.in"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

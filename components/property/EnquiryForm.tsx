@@ -140,7 +140,7 @@ export function EnquiryForm({ propertyId }: { propertyId: string }) {
 
       <p className="text-[11px] text-navy-700 flex items-start gap-1.5 leading-relaxed">
         <ShieldCheck className="w-3.5 h-3.5 text-gold-600 shrink-0 mt-0.5" />
-        Your enquiry is routed through Aadana Tharakar. Owner contact details
+        Your enquiry is routed through DK Promoters. Owner contact details
         are never shared publicly.
       </p>
     </form>

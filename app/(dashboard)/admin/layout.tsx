@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import Link from "next/link";
-import { LayoutDashboard, Home, Users, MessageSquare, ShieldCheck, DollarSign } from "lucide-react";
+import { LayoutDashboard, Home, Store, Users2, Zap, CheckCircle2, Receipt, Handshake } from "lucide-react";
 import { UserRole } from "@prisma/client";
 import { AdminHeader } from "@/components/layout/AdminHeader";
 
@@ -25,7 +25,7 @@ export default async function AdminLayout({
       {/* Desktop Sidebar (lg+ visible) */}
       <aside className="w-64 bg-[#0D1B2A] text-white hidden lg:flex flex-col shrink-0 border-r border-[#1E3278]">
         <div className="p-6 border-b border-[#1E3278]">
-          <h2 className="text-xl font-display font-bold text-gold-500">ஆதனத் தரகர்</h2>
+          <h2 className="text-xl font-display font-bold text-gold-500">டிகே புரமோட்டர்ஸ்</h2>
           <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-sans">Admin Control Panel</p>
         </div>
         
@@ -40,24 +40,29 @@ export default async function AdminLayout({
             <span>Properties</span>
           </Link>
 
+          <Link href="/admin/vendors" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
+            <Store className="w-5 h-5 text-gold-500" />
+            <span>Vendors &amp; Services</span>
+          </Link>
+
+          <Link href="/admin/co-brokers" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
+            <Handshake className="w-5 h-5 text-gold-500" />
+            <span>Co-Brokers / Dealers</span>
+          </Link>
+
           <Link href="/admin/leads" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
-            <MessageSquare className="w-5 h-5 text-gold-500" />
-            <span>Property Leads CRM</span>
+            <Zap className="w-5 h-5 text-gold-500" />
+            <span>Active Deals</span>
           </Link>
 
-          <Link href="/admin/vendor-enquiries" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
-            <ShieldCheck className="w-5 h-5 text-gold-500" />
-            <span>Vendor Enquiries</span>
-          </Link>
-
-          <Link href="/admin/users" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
-            <Users className="w-5 h-5 text-gold-500" />
-            <span>Users & Approvals</span>
+          <Link href="/admin/completed-deals" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
+            <CheckCircle2 className="w-5 h-5 text-gold-500" />
+            <span>Completed Deals</span>
           </Link>
 
           <Link href="/admin/commissions" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
-            <DollarSign className="w-5 h-5 text-gold-500" />
-            <span>Commissions</span>
+            <Receipt className="w-5 h-5 text-gold-500" />
+            <span>Revenue Tracker</span>
           </Link>
         </nav>
       </aside>

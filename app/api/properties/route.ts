@@ -3,19 +3,36 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { PropertyStatus, UserRole } from "@prisma/client";
+import { z } from "zod";
 
-const ALLOWED_PROPERTY_TYPES = [
-  "APARTMENT",
-  "VILLA",
-  "HOUSE",
-  "PLOT",
-  "COMMERCIAL",
-  "WAREHOUSE",
-  "FARM_LAND",
-  "PG_HOSTEL",
-];
-const ALLOWED_LISTING_TYPES = ["BUY", "SELL", "RENT", "LEASE"];
-const ALLOWED_PRICE_UNITS = ["TOTAL", "PER_SQFT", "PER_MONTH", "PER_YEAR"];
+const propertySchema = z.object({
+  title: z.string().trim().min(1).max(240),
+  description: z.string().trim().min(1).max(5000),
+  type: z.enum([
+    "APARTMENT", "VILLA", "HOUSE", "PLOT", 
+    "COMMERCIAL", "WAREHOUSE", "FARM_LAND", "PG_HOSTEL"
+  ]),
+  listingType: z.enum(["BUY", "SELL", "RENT", "LEASE"]),
+  price: z.coerce.number().min(0),
+  priceUnit: z.enum(["TOTAL", "PER_SQFT", "PER_MONTH", "PER_YEAR"]).default("TOTAL"),
+  area: z.coerce.number().positive(),
+  bedrooms: z.coerce.number().int().nonnegative().optional().nullable(),
+  bathrooms: z.coerce.number().int().nonnegative().optional().nullable(),
+  address: z.string().trim().min(1).max(500),
+  locality: z.string().trim().min(1).max(120),
+  city: z.string().trim().min(1).max(80),
+  district: z.string().trim().max(80).optional(),
+  pincode: z.string().trim().max(20).optional().nullable(),
+  latitude: z.coerce.number().optional().nullable(),
+  longitude: z.coerce.number().optional().nullable(),
+  amenities: z.array(z.string()).max(30).optional().default([]),
+  media: z.array(z.object({
+    url: z.string().url(),
+    type: z.enum(["IMAGE", "VIDEO"]),
+    publicId: z.string().optional(),
+    thumbnailUrl: z.string().url().optional().nullable(),
+  })).max(20).optional().default([])
+});
 
 function safePublicId(m: any): string {
   if (m?.publicId) return String(m.publicId);
@@ -34,98 +51,48 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    if (
-      session.user.role !== UserRole.PROPERTY_LISTER &&
-      session.user.role !== UserRole.AGENT &&
-      session.user.role !== UserRole.ADMIN
-    ) {
-      return new NextResponse("Forbidden", { status: 403 });
+    if (session.user.role !== UserRole.ADMIN) {
+      return new NextResponse("Forbidden - Only admins can upload properties in broker mode", { status: 403 });
     }
 
     const body = await req.json();
-    const {
-      price,
-      title,
-      description,
-      type,
-      listingType,
-      area,
-      bedrooms,
-      bathrooms,
-      address,
-      city,
-      locality,
-      amenities,
-      priceUnit,
-      latitude,
-      longitude,
-    } = body;
+    const result = propertySchema.safeParse(body);
 
-    // Basic validation
-    if (
-      !title?.toString().trim() ||
-      !description?.toString().trim() ||
-      !type ||
-      !listingType ||
-      !address?.toString().trim() ||
-      !city?.toString().trim() ||
-      !locality?.toString().trim() ||
-      price === undefined ||
-      area === undefined
-    ) {
-      return new NextResponse("Missing required fields", { status: 400 });
-    }
-    if (!ALLOWED_PROPERTY_TYPES.includes(type)) {
-      return new NextResponse("Invalid property type", { status: 400 });
-    }
-    if (!ALLOWED_LISTING_TYPES.includes(listingType)) {
-      return new NextResponse("Invalid listing type", { status: 400 });
-    }
-    const finalPriceUnit = priceUnit || "TOTAL";
-    if (!ALLOWED_PRICE_UNITS.includes(finalPriceUnit)) {
-      return new NextResponse("Invalid price unit", { status: 400 });
+    if (!result.success) {
+      return new NextResponse(result.error.issues[0].message, { status: 400 });
     }
 
-    const priceNum = Number(price);
-    const areaNum = Number(area);
-    if (!Number.isFinite(priceNum) || priceNum < 0) {
-      return new NextResponse("Invalid price", { status: 400 });
-    }
-    if (!Number.isFinite(areaNum) || areaNum <= 0) {
-      return new NextResponse("Invalid area", { status: 400 });
-    }
+    const data = result.data;
 
     const property = await prisma.property.create({
       data: {
-        title: String(title).trim().slice(0, 240),
-        description: String(description).trim().slice(0, 5000),
-        type,
-        listingType,
-        price: BigInt(Math.round(priceNum)),
-        priceUnit: finalPriceUnit,
-        area: areaNum,
-        bedrooms: bedrooms ? parseInt(String(bedrooms)) : null,
-        bathrooms: bathrooms ? parseInt(String(bathrooms)) : null,
-        address: String(address).trim().slice(0, 500),
-        city: String(city).trim().slice(0, 80),
-        locality: String(locality).trim().slice(0, 120),
-        district: body.district || city || "Tamil Nadu",
-        pincode: body.pincode || null,
-        latitude: latitude ? parseFloat(String(latitude)) : null,
-        longitude: longitude ? parseFloat(String(longitude)) : null,
-        amenities: Array.isArray(amenities) ? amenities.slice(0, 30) : [],
+        title: data.title,
+        description: data.description,
+        type: data.type as any,
+        listingType: data.listingType as any,
+        price: BigInt(Math.round(data.price)),
+        priceUnit: data.priceUnit as any,
+        area: data.area,
+        bedrooms: data.bedrooms || null,
+        bathrooms: data.bathrooms || null,
+        address: data.address,
+        city: data.city,
+        locality: data.locality,
+        district: data.district || data.city,
+        pincode: data.pincode || null,
+        latitude: data.latitude || null,
+        longitude: data.longitude || null,
+        amenities: data.amenities,
         postedById: session.user.id,
         status: PropertyStatus.PENDING,
         media: {
-          create: Array.isArray(body.media)
-            ? body.media.slice(0, 20).map((m: any, index: number) => ({
-                url: String(m.url),
-                type: m.type === "VIDEO" ? "VIDEO" : "IMAGE",
-                publicId: safePublicId(m),
-                thumbnailUrl: m.thumbnailUrl || null,
-                order: index,
-              }))
-            : [],
+          create: data.media.map((m, index) => ({
+            url: m.url,
+            type: m.type as any,
+            publicId: safePublicId(m),
+            thumbnailUrl: m.thumbnailUrl || null,
+            order: index,
+          })),
         },
       },
       include: { media: true },

@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Mail, Calendar, User, Briefcase } from "lucide-react";
 
 export const metadata = {
-  title: "Vendor Enquiries | Aadana Tharakar Admin",
+  title: "Vendor Enquiries | DK Promoters Admin",
 };
 
 export default async function AdminVendorEnquiriesPage() {

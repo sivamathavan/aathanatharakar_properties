@@ -18,7 +18,7 @@ export const sendEmail = async ({ to, subject, html }: { to: string, subject: st
   
   try {
     await transporter.sendMail({
-      from: `"Aadana Tharakar" <${process.env.SMTP_USER}>`,
+      from: `"DK Promoters" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,

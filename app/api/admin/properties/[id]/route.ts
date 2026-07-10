@@ -26,7 +26,7 @@ export async function PATCH(
     const body = await req.json();
     const { status, isFeatured } = body;
 
-    const data: any = {};
+    const data: { status?: any; isFeatured?: boolean } = {};
     if (status !== undefined) {
       if (!ALLOWED_STATUSES.includes(status)) {
         return new NextResponse("Invalid status", { status: 400 });

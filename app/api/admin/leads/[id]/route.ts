@@ -14,7 +14,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const body = await req.json();
     const { status, assignedToId, note } = body;
 
-    const updateData: any = {};
+    const updateData: { status?: any; assignedToId?: string } = {};
     if (status) updateData.status = status;
     if (assignedToId !== undefined) updateData.assignedToId = assignedToId;
 

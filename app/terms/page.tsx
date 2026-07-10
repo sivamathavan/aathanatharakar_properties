@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Terms of Service | Aadana Tharakar",
-  description: "Terms of Service for Aadana Tharakar — Tamil Nadu's trusted property marketplace.",
+  title: "Terms of Service | DK Promoters",
+  description: "Terms of Service for DK Promoters — Tamil Nadu's trusted property marketplace.",
 };
 
 export default function TermsOfServicePage() {
@@ -18,14 +18,14 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-xl font-display font-bold text-navy-900 mb-3">1. Acceptance of Terms</h2>
             <p className="text-sm leading-relaxed">
-              By accessing or using Aadana Tharakar (&ldquo;the Platform&rdquo;), you agree to be bound by these Terms of Service. If you do not agree, please do not use the Platform. These terms apply to all users, including property listers, buyers, agents, vendors, and visitors.
+              By accessing or using DK Promoters (&ldquo;the Platform&rdquo;), you agree to be bound by these Terms of Service. If you do not agree, please do not use the Platform. These terms apply to all users, including property listers, buyers, agents, vendors, and visitors.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-display font-bold text-navy-900 mb-3">2. Platform Description</h2>
             <p className="text-sm leading-relaxed">
-              Aadana Tharakar is an online real estate marketplace operating in Tamil Nadu, India. We facilitate connections between property buyers, sellers, landlords, tenants, real estate agents, and allied service professionals such as builders, interior designers, and legal advisors. We are an intermediary platform and are not a party to any real estate transaction.
+              DK Promoters is an online real estate marketplace operating in Tamil Nadu, India. We facilitate connections between property buyers, sellers, landlords, tenants, real estate agents, and allied service professionals such as builders, interior designers, and legal advisors. We are an intermediary platform and are not a party to any real estate transaction.
             </p>
           </section>
 
@@ -71,7 +71,7 @@ export default function TermsOfServicePage() {
             <ul className="text-sm leading-relaxed space-y-2 list-disc pl-5">
               <li>Agents must comply with RERA (Real Estate Regulatory Authority) regulations applicable to Tamil Nadu.</li>
               <li>Vendors are responsible for the accuracy of their service descriptions and portfolio.</li>
-              <li>Commission arrangements are solely between agents and clients — Aadana Tharakar is not a party.</li>
+              <li>Commission arrangements are solely between agents and clients — DK Promoters is not a party.</li>
               <li>We may display agent profiles publicly to facilitate discovery.</li>
             </ul>
           </section>
@@ -79,7 +79,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-xl font-display font-bold text-navy-900 mb-3">7. Intellectual Property</h2>
             <p className="text-sm leading-relaxed">
-              All platform content including the brand name, logo, design, and software is the intellectual property of Aadana Tharakar. By uploading photos, videos, or other content to the platform, you grant us a non-exclusive, royalty-free licence to display that content in connection with your listings.
+              All platform content including the brand name, logo, design, and software is the intellectual property of DK Promoters. By uploading photos, videos, or other content to the platform, you grant us a non-exclusive, royalty-free licence to display that content in connection with your listings.
             </p>
           </section>
 
@@ -93,7 +93,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-xl font-display font-bold text-navy-900 mb-3">9. Limitation of Liability</h2>
             <p className="text-sm leading-relaxed">
-              To the maximum extent permitted by Indian law, Aadana Tharakar and its operators shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the platform or any transaction conducted through it. Our liability in any matter is limited to the amount paid by you for platform services, if any.
+              To the maximum extent permitted by Indian law, DK Promoters and its operators shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the platform or any transaction conducted through it. Our liability in any matter is limited to the amount paid by you for platform services, if any.
             </p>
           </section>
 

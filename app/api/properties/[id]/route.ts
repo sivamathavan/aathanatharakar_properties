@@ -37,6 +37,37 @@ export async function GET(
   }
 }
 
+import { z } from "zod";
+
+const propertySchema = z.object({
+  title: z.string().trim().min(1).max(240),
+  description: z.string().trim().min(1).max(5000),
+  type: z.enum([
+    "APARTMENT", "VILLA", "HOUSE", "PLOT", 
+    "COMMERCIAL", "WAREHOUSE", "FARM_LAND", "PG_HOSTEL"
+  ]),
+  listingType: z.enum(["BUY", "SELL", "RENT", "LEASE"]),
+  price: z.coerce.number().min(0),
+  priceUnit: z.enum(["TOTAL", "PER_SQFT", "PER_MONTH", "PER_YEAR"]).default("TOTAL"),
+  area: z.coerce.number().positive(),
+  bedrooms: z.coerce.number().int().nonnegative().optional().nullable(),
+  bathrooms: z.coerce.number().int().nonnegative().optional().nullable(),
+  address: z.string().trim().min(1).max(500),
+  locality: z.string().trim().min(1).max(120),
+  city: z.string().trim().min(1).max(80),
+  district: z.string().trim().max(80).optional(),
+  pincode: z.string().trim().max(20).optional().nullable(),
+  latitude: z.coerce.number().optional().nullable(),
+  longitude: z.coerce.number().optional().nullable(),
+  amenities: z.array(z.string()).max(30).optional().default([]),
+  media: z.array(z.object({
+    url: z.string().url(),
+    type: z.enum(["IMAGE", "VIDEO"]),
+    publicId: z.string().optional(),
+    thumbnailUrl: z.string().url().optional().nullable(),
+  })).max(20).optional().default([])
+});
+
 export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
@@ -57,59 +88,38 @@ export async function PUT(
       return new NextResponse("Not Found", { status: 404 });
     }
 
-    if (
-      property.postedById !== session.user.id &&
-      session.user.role !== UserRole.ADMIN
-    ) {
-      return new NextResponse("Forbidden", { status: 403 });
+    if (session.user.role !== UserRole.ADMIN) {
+      return new NextResponse("Forbidden - Only admins can edit properties in broker mode", { status: 403 });
     }
 
     const body = await req.json();
-    const {
-      price,
-      title,
-      description,
-      type,
-      listingType,
-      area,
-      bedrooms,
-      bathrooms,
-      address,
-      city,
-      locality,
-      amenities,
-      priceUnit,
-      media,
-    } = body;
+    const result = propertySchema.safeParse(body);
 
-    const priceNum = Number(price);
-    const areaNum = Number(area);
-    if (!Number.isFinite(priceNum) || priceNum < 0) {
-      return new NextResponse("Invalid price", { status: 400 });
+    if (!result.success) {
+      return new NextResponse(result.error.issues[0].message, { status: 400 });
     }
-    if (!Number.isFinite(areaNum) || areaNum <= 0) {
-      return new NextResponse("Invalid area", { status: 400 });
-    }
+
+    const data = result.data;
 
     const updatedProperty = await prisma.$transaction(async (tx) => {
       const updated = await tx.property.update({
         where: { id: params.id },
         data: {
-          title: String(title).trim().slice(0, 240),
-          description: String(description).trim().slice(0, 5000),
-          type,
-          listingType,
-          price: BigInt(Math.round(priceNum)),
-          priceUnit: priceUnit || "TOTAL",
-          area: areaNum,
-          bedrooms: bedrooms ? parseInt(String(bedrooms)) : null,
-          bathrooms: bathrooms ? parseInt(String(bathrooms)) : null,
-          address: String(address).trim().slice(0, 500),
-          city: String(city).trim().slice(0, 80),
-          locality: String(locality).trim().slice(0, 120),
-          district: body.district || city || "Tamil Nadu",
-          pincode: body.pincode || null,
-          amenities: Array.isArray(amenities) ? amenities.slice(0, 30) : [],
+          title: data.title,
+          description: data.description,
+          type: data.type as any,
+          listingType: data.listingType as any,
+          price: BigInt(Math.round(data.price)),
+          priceUnit: data.priceUnit as any,
+          area: data.area,
+          bedrooms: data.bedrooms || null,
+          bathrooms: data.bathrooms || null,
+          address: data.address,
+          city: data.city,
+          locality: data.locality,
+          district: data.district || data.city,
+          pincode: data.pincode || null,
+          amenities: data.amenities,
           // Re-set to PENDING after edit so admin re-approves changes.
           status:
             session.user.role === UserRole.ADMIN
@@ -118,14 +128,14 @@ export async function PUT(
         },
       });
 
-      if (Array.isArray(media)) {
+      if (Array.isArray(data.media)) {
         await tx.propertyMedia.deleteMany({ where: { propertyId: params.id } });
-        if (media.length > 0) {
+        if (data.media.length > 0) {
           await tx.propertyMedia.createMany({
-            data: media.slice(0, 20).map((m: any, index: number) => ({
+            data: data.media.map((m, index) => ({
               propertyId: params.id,
-              url: String(m.url),
-              type: m.type === "VIDEO" ? "VIDEO" : "IMAGE",
+              url: m.url,
+              type: m.type as any,
               publicId: safePublicId(m),
               thumbnailUrl: m.thumbnailUrl || null,
               order: index,
@@ -163,11 +173,8 @@ export async function DELETE(
     });
     if (!property) return new NextResponse("Not Found", { status: 404 });
 
-    if (
-      property.postedById !== session.user.id &&
-      session.user.role !== UserRole.ADMIN
-    ) {
-      return new NextResponse("Forbidden", { status: 403 });
+    if (session.user.role !== UserRole.ADMIN) {
+      return new NextResponse("Forbidden - Only admins can delete properties in broker mode", { status: 403 });
     }
 
     // Soft-disable rather than hard delete to preserve history.

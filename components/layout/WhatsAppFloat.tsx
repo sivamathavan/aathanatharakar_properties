@@ -10,7 +10,7 @@ export function WhatsAppFloat() {
   }
 
   const number = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919000000000").replace(/\D/g, "");
-  const msg = encodeURIComponent("Hi, I found your platform Aadana Tharakar and I'm interested in properties.");
+  const msg = encodeURIComponent("Hi DK Promoters, I'm interested in properties. Please share details.");
 
   return (
     <a

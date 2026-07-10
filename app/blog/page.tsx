@@ -6,7 +6,7 @@ import { STATIC_POSTS } from "@/lib/static-blog";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Real Estate Blog | Aadana Tharakar",
+  title: "Real Estate Blog | DK Promoters",
   description:
     "Expert tips, market insights, and guides for buying, selling, and renting properties in Tamil Nadu.",
 };

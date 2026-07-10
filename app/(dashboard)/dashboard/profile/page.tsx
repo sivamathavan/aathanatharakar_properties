@@ -11,7 +11,7 @@ import { VendorPortfolioUpload } from "@/components/profile/VendorPortfolioUploa
 import { AgentPortfolioUpload } from "@/components/profile/AgentPortfolioUpload";
 
 export const metadata = {
-  title: "My Profile | Aadana Tharakar",
+  title: "My Profile | DK Promoters",
 };
 
 export default async function ProfilePage() {

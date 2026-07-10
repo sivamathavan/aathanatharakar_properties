@@ -4,38 +4,46 @@ import { NextResponse } from "next/server";
 export default withAuth(
   function middleware(req) {
     const isAuth = !!req.nextauth.token;
-    const isAuthPage = req.nextUrl.pathname.startsWith("/login") || req.nextUrl.pathname.startsWith("/admin/login") || req.nextUrl.pathname.startsWith("/register");
-    const isAdminRoute = req.nextUrl.pathname.startsWith("/admin");
+    const pathname = req.nextUrl.pathname;
+    const isAdminLogin = pathname.startsWith("/admin/login");
+    const isAdminRoute = pathname.startsWith("/admin");
+    const isPublicLogin = pathname === "/login";
+    const isRegister = pathname.startsWith("/register");
+    const isDashboard = pathname.startsWith("/dashboard");
     const role = req.nextauth.token?.role;
 
-    if (isAuthPage) {
-      if (isAuth) {
-        if (role === "ADMIN" && req.nextUrl.pathname.startsWith("/admin/login")) {
-          return NextResponse.redirect(new URL("/admin", req.url));
-        } else if (role !== "ADMIN" && req.nextUrl.pathname.startsWith("/login")) {
-          return NextResponse.redirect(new URL("/dashboard", req.url));
-        }
-      }
-      return null;
-    }
-
-    if (!isAuth && isAdminRoute) {
+    // ─── Broker-Only Mode: Redirect public auth routes ───────────────────────
+    // /login → redirect to /admin/login (kept for admin access)
+    if (isPublicLogin) {
       return NextResponse.redirect(new URL("/admin/login", req.url));
     }
-
-    if (isAuth && isAdminRoute && role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/login", req.url)); // or redirect to unauthorized
+    // /register/* → redirect to homepage (feature paused)
+    if (isRegister) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+    // /dashboard/* → redirect to homepage (feature paused)
+    if (isDashboard) {
+      return NextResponse.redirect(new URL("/", req.url));
     }
 
-    if (!isAuth && req.nextUrl.pathname.startsWith("/dashboard")) {
-      return NextResponse.redirect(new URL("/login", req.url));
+    // ─── Admin Login page: redirect already-authed admins to /admin ──────────
+    if (isAdminLogin && isAuth && role === "ADMIN") {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
+
+    // ─── Protect /admin/* routes ─────────────────────────────────────────────
+    if (!isAuth && isAdminRoute && !isAdminLogin) {
+      return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
+    if (isAuth && isAdminRoute && role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/", req.url));
     }
 
     return NextResponse.next();
   },
   {
     callbacks: {
-      authorized: () => true, // We handle redirects in the middleware function
+      authorized: () => true, // We handle all redirects manually above
     },
   }
 );

@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Privacy Policy | Aadana Tharakar",
-  description: "Privacy Policy for Aadana Tharakar — Tamil Nadu's trusted property marketplace.",
+  title: "Privacy Policy | DK Promoters",
+  description: "Privacy Policy for DK Promoters — Tamil Nadu's trusted property marketplace.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -18,7 +18,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-xl font-display font-bold text-navy-900 mb-3">1. Who We Are</h2>
             <p className="text-sm leading-relaxed">
-              Aadana Tharakar (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;) is a Tamil Nadu-based real estate marketplace operated by Tamilarasan, Vadavalli, Coimbatore — 641041. We connect property buyers, sellers, renters, agents, and allied service professionals across Tamil Nadu.
+              DK Promoters (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;) is a Tamil Nadu-based real estate marketplace operated by Tamilarasan, Vadavalli, Coimbatore — 641041. We connect property buyers, sellers, renters, agents, and allied service professionals across Tamil Nadu.
             </p>
             <p className="text-sm leading-relaxed mt-2">
               Contact: <a href="mailto:aadanatharakarproperty@gmail.com" className="text-gold-600 hover:underline">aadanatharakarproperty@gmail.com</a>
@@ -95,7 +95,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-xl font-display font-bold text-navy-900 mb-3">9. Children's Privacy</h2>
             <p className="text-sm leading-relaxed">
-              Aadana Tharakar is intended for users 18 years of age and older. We do not knowingly collect personal information from minors.
+              DK Promoters is intended for users 18 years of age and older. We do not knowingly collect personal information from minors.
             </p>
           </section>
 
