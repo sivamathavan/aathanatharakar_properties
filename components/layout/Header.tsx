@@ -4,11 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { UserRole } from "@prisma/client";
 import { Menu, X, Home, FileText, Info, LayoutDashboard, MessageCircle } from "lucide-react";
-
-import { LogoIcon } from "@/components/brand/LogoIcon";
 
 const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916381169124").replace(/\D/g, "");
 const WHATSAPP_MSG = encodeURIComponent("Hi DK Promoters, I'm interested in a property. Please share details.");
@@ -49,11 +48,15 @@ export function Header() {
       <header className="sticky top-0 z-50 w-full bg-navy-900 border-b border-navy-800 text-white transition-all duration-300">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14 md:h-[60px] lg:h-[68px]">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0 z-50 group" onClick={closeMobileMenu}>
-            <LogoIcon className="w-7 h-7 md:w-8 md:h-8 shrink-0 group-hover:scale-105 transition-transform" />
-            <span className="font-sans font-bold text-lg md:text-xl text-white leading-none tracking-wide">
-              DK<span className="text-gold-500">Promoters</span>
-            </span>
+          <Link href="/" className="flex items-center shrink-0 z-50 group py-1" onClick={closeMobileMenu}>
+            <Image
+              src="/logo.png"
+              alt="DK Promoters"
+              width={140}
+              height={125}
+              className="h-10 w-auto md:h-12 group-hover:scale-105 transition-transform object-contain"
+              priority
+            />
           </Link>
 
           {/* Desktop & Tablet Navigation — Broker-only: Properties, Blog, About */}
