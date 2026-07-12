@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { Home, Search, Phone, MessageCircle } from "lucide-react";
 
 const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916381169124").replace(/\D/g, "");
@@ -11,7 +10,6 @@ const PHONE_NUMBER = "+916381169124";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
-  const { data: session } = useSession();
 
   // Hide on desktop, hide on dashboard/admin (which have their own nav)
   if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/admin")) {
