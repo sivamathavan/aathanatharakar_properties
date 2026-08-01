@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CloudinaryUpload } from "@/components/ui/CloudinaryUpload";
+import { FirebaseUpload } from "@/components/ui/FirebaseUpload";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -40,10 +40,11 @@ export function AgentPortfolioUpload({ initialMedia }: AgentPortfolioUploadProps
 
   return (
     <div className="space-y-4 font-sans">
-      <CloudinaryUpload 
+      <FirebaseUpload 
         onUpload={(newMedia) => setMedia(newMedia)} 
         existingMedia={media}
         maxFiles={10} 
+        storageFolder="agents"
       />
       <div className="flex justify-end pt-2">
         <Button 

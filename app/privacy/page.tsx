@@ -21,7 +21,7 @@ export default function PrivacyPolicyPage() {
               DK Promoters (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;) is a Tamil Nadu-based real estate marketplace operated by Tamilarasan, Vadavalli, Coimbatore — 641041. We connect property buyers, sellers, renters, agents, and allied service professionals across Tamil Nadu.
             </p>
             <p className="text-sm leading-relaxed mt-2">
-              Contact: <a href="mailto:aadanatharakarproperty@gmail.com" className="text-gold-600 hover:underline">aadanatharakarproperty@gmail.com</a>
+              Contact: <a href="mailto:dkpromotersproperty@gmail.com" className="text-gold-600 hover:underline">dkpromotersproperty@gmail.com</a>
             </p>
           </section>
 
@@ -82,7 +82,7 @@ export default function PrivacyPolicyPage() {
               <li>Request deletion of your account and associated data.</li>
               <li>Withdraw consent for marketing communications at any time.</li>
             </ul>
-            <p className="text-sm mt-3">To exercise these rights, email us at <a href="mailto:aadanatharakarproperty@gmail.com" className="text-gold-600 hover:underline">aadanatharakarproperty@gmail.com</a>.</p>
+            <p className="text-sm mt-3">To exercise these rights, email us at <a href="mailto:dkpromotersproperty@gmail.com" className="text-gold-600 hover:underline">dkpromotersproperty@gmail.com</a>.</p>
           </section>
 
           <section>
@@ -107,7 +107,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <div className="pt-4 border-t border-[#E8E0D0] text-sm text-navy-600">
-            <p>Questions? Contact us at <a href="mailto:aadanatharakarproperty@gmail.com" className="text-gold-600 hover:underline">aadanatharakarproperty@gmail.com</a> or call <a href="tel:+916381169124" className="text-gold-600 hover:underline">+91 63811 69124</a>.</p>
+            <p>Questions? Contact us at <a href="mailto:dkpromotersproperty@gmail.com" className="text-gold-600 hover:underline">dkpromotersproperty@gmail.com</a> or call <a href="tel:+916381169124" className="text-gold-600 hover:underline">+91 63811 69124</a>.</p>
           </div>
         </div>
       </div>

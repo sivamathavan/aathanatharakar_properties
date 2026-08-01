@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { UserRole } from "@prisma/client";
+import { verifyIdToken } from "@/lib/auth";
+import { getPropertyById, updateProperty } from "@/lib/firestore";
+import { UserRole, PropertyStatus, PropertyType, ListingType, PriceUnit, MediaDoc } from "@/types";
+import { adminDb } from "@/lib/firebase-admin";
+import { z } from "zod";
 
 function safePublicId(m: any): string {
   if (m?.publicId) return String(m.publicId);
@@ -18,10 +19,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const property = await prisma.property.findUnique({
-      where: { id: params.id },
-      include: { media: true },
-    });
+    const property = await getPropertyById(params.id);
 
     if (!property) {
       return new NextResponse("Property not found", { status: 404 });
@@ -37,18 +35,13 @@ export async function GET(
   }
 }
 
-import { z } from "zod";
-
 const propertySchema = z.object({
   title: z.string().trim().min(1).max(240),
   description: z.string().trim().min(1).max(5000),
-  type: z.enum([
-    "APARTMENT", "VILLA", "HOUSE", "PLOT", 
-    "COMMERCIAL", "WAREHOUSE", "FARM_LAND", "PG_HOSTEL"
-  ]),
-  listingType: z.enum(["BUY", "SELL", "RENT", "LEASE"]),
+  type: z.nativeEnum(PropertyType),
+  listingType: z.nativeEnum(ListingType),
   price: z.coerce.number().min(0),
-  priceUnit: z.enum(["TOTAL", "PER_SQFT", "PER_MONTH", "PER_YEAR"]).default("TOTAL"),
+  priceUnit: z.nativeEnum(PriceUnit).default(PriceUnit.TOTAL),
   area: z.coerce.number().positive(),
   bedrooms: z.coerce.number().int().nonnegative().optional().nullable(),
   bathrooms: z.coerce.number().int().nonnegative().optional().nullable(),
@@ -73,22 +66,19 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const authUser = await verifyIdToken(req);
 
-    if (!session || !session.user || !session.user.id) {
+    if (!authUser || !authUser.uid) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const property = await prisma.property.findUnique({
-      where: { id: params.id },
-      select: { id: true, postedById: true },
-    });
+    const property = await getPropertyById(params.id);
 
     if (!property) {
       return new NextResponse("Not Found", { status: 404 });
     }
 
-    if (session.user.role !== UserRole.ADMIN) {
+    if (authUser.role !== UserRole.ADMIN) {
       return new NextResponse("Forbidden - Only admins can edit properties in broker mode", { status: 403 });
     }
 
@@ -101,55 +91,59 @@ export async function PUT(
 
     const data = result.data;
 
-    const updatedProperty = await prisma.$transaction(async (tx) => {
-      const updated = await tx.property.update({
-        where: { id: params.id },
-        data: {
-          title: data.title,
-          description: data.description,
-          type: data.type as any,
-          listingType: data.listingType as any,
-          price: BigInt(Math.round(data.price)),
-          priceUnit: data.priceUnit as any,
-          area: data.area,
-          bedrooms: data.bedrooms || null,
-          bathrooms: data.bathrooms || null,
-          address: data.address,
-          city: data.city,
-          locality: data.locality,
-          district: data.district || data.city,
-          pincode: data.pincode || null,
-          amenities: data.amenities,
-          // Re-set to PENDING after edit so admin re-approves changes.
-          status:
-            session.user.role === UserRole.ADMIN
-              ? undefined
-              : ("PENDING" as any),
-        },
+    // Use a transaction or batch to update property and subcollection media
+    const batch = adminDb.batch();
+    const propRef = adminDb.collection("properties").doc(params.id);
+
+    const updateFields: any = {
+      title: data.title,
+      description: data.description,
+      type: data.type,
+      listingType: data.listingType,
+      price: Math.round(data.price),
+      priceUnit: data.priceUnit,
+      area: data.area,
+      bedrooms: data.bedrooms || null,
+      bathrooms: data.bathrooms || null,
+      address: data.address,
+      city: data.city,
+      locality: data.locality,
+      district: data.district || data.city,
+      pincode: data.pincode || null,
+      amenities: data.amenities,
+      updatedAt: new Date(),
+    };
+
+    batch.update(propRef, updateFields);
+
+    if (Array.isArray(data.media)) {
+      // 1. Delete all existing media documents in subcollection
+      const mediaCol = propRef.collection("media");
+      const existingMediaSnap = await mediaCol.get();
+      existingMediaSnap.docs.forEach((doc) => {
+        batch.delete(doc.ref);
       });
 
-      if (Array.isArray(data.media)) {
-        await tx.propertyMedia.deleteMany({ where: { propertyId: params.id } });
-        if (data.media.length > 0) {
-          await tx.propertyMedia.createMany({
-            data: data.media.map((m, index) => ({
-              propertyId: params.id,
-              url: m.url,
-              type: m.type as any,
-              publicId: safePublicId(m),
-              thumbnailUrl: m.thumbnailUrl || null,
-              order: index,
-            })),
-          });
-        }
-      }
+      // 2. Add new media docs
+      data.media.forEach((m, index) => {
+        const newMediaRef = mediaCol.doc();
+        batch.set(newMediaRef, {
+          url: m.url,
+          type: m.type,
+          publicId: safePublicId(m),
+          thumbnailUrl: m.thumbnailUrl || null,
+          order: index,
+          createdAt: new Date(),
+        });
+      });
+    }
 
-      return updated;
-    });
+    await batch.commit();
 
     return NextResponse.json({
-      ...updatedProperty,
-      price: updatedProperty.price.toString(),
+      ...property,
+      ...updateFields,
+      price: updateFields.price.toString(),
     });
   } catch (error) {
     console.error("[PROPERTY_PUT]", error);
@@ -162,26 +156,20 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    const authUser = await verifyIdToken(req);
+    if (!authUser || !authUser.uid) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const property = await prisma.property.findUnique({
-      where: { id: params.id },
-      select: { id: true, postedById: true },
-    });
+    const property = await getPropertyById(params.id);
     if (!property) return new NextResponse("Not Found", { status: 404 });
 
-    if (session.user.role !== UserRole.ADMIN) {
+    if (authUser.role !== UserRole.ADMIN) {
       return new NextResponse("Forbidden - Only admins can delete properties in broker mode", { status: 403 });
     }
 
     // Soft-disable rather than hard delete to preserve history.
-    await prisma.property.update({
-      where: { id: params.id },
-      data: { status: "INACTIVE" },
-    });
+    await updateProperty(params.id, { status: PropertyStatus.INACTIVE });
 
     return NextResponse.json({ success: true });
   } catch (error) {

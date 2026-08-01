@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { TN_CITIES, PROPERTY_TYPES, LISTING_TYPES } from "@/lib/constants";
-import { CloudinaryUpload } from "@/components/ui/CloudinaryUpload";
+import { FirebaseUpload } from "@/components/ui/FirebaseUpload";
 
 export default function NewPropertyPage() {
   const router = useRouter();
@@ -239,9 +239,10 @@ export default function NewPropertyPage() {
               <h2 className="text-lg font-bold mb-4 pb-2 border-b">Photos & Videos</h2>
               <div className="space-y-2">
                 <Label>Upload Property Images</Label>
-                <CloudinaryUpload 
+                <FirebaseUpload 
                   onUpload={(media) => setFormData({...formData, media})} 
                   maxFiles={15} 
+                  storageFolder="properties"
                 />
               </div>
             </div>

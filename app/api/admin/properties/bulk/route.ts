@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { PropertyStatus, UserRole } from "@prisma/client";
+import { verifyIdToken } from "@/lib/auth";
+import { propertiesCol } from "@/lib/firestore";
+import { UserRole, PropertyStatus } from "@/types";
+import { adminDb } from "@/lib/firebase-admin";
 
 const ALLOWED_STATUSES: PropertyStatus[] = [
   PropertyStatus.PENDING,
@@ -15,8 +15,8 @@ const ALLOWED_STATUSES: PropertyStatus[] = [
 
 export async function PATCH(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== UserRole.ADMIN) {
+    const authUser = await verifyIdToken(req);
+    if (!authUser || authUser.role !== UserRole.ADMIN) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -34,12 +34,15 @@ export async function PATCH(req: Request) {
       (id) => typeof id === "string" && id.length < 60
     );
 
-    const result = await prisma.property.updateMany({
-      where: { id: { in: safeIds } },
-      data: { status },
+    const batch = adminDb.batch();
+    safeIds.forEach((id) => {
+      const docRef = propertiesCol().doc(id);
+      batch.update(docRef, { status, updatedAt: new Date() });
     });
 
-    return NextResponse.json({ success: true, count: result.count });
+    await batch.commit();
+
+    return NextResponse.json({ success: true, count: safeIds.length });
   } catch (error) {
     console.error("[ADMIN_PROPERTIES_BULK_PATCH]", error);
     return new NextResponse("Internal error", { status: 500 });

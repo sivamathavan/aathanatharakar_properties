@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Menu, LogOut, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MobileAdminMenu } from "@/components/layout/MobileAdminMenu";
-import { signOut } from "next-auth/react";
+import { signOut } from "@/lib/auth-client";
 import Link from "next/link";
 
 export function AdminHeader() {
@@ -36,7 +36,7 @@ export function AdminHeader() {
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => signOut({ callbackUrl: "/" })}
+            onClick={() => signOut()}
             className="h-8 w-8 text-red-400 hover:bg-navy-800 hover:text-red-300 rounded-full"
             title="Log Out"
           >

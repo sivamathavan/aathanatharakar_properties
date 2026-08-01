@@ -1,210 +1,124 @@
-import { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "@/lib/prisma";
-import { AccountStatus, UserRole } from "@prisma/client";
-import * as bcrypt from "bcryptjs";
+// Firebase Auth utilities — replaces NextAuth authOptions
+// Server-side helpers for API routes
+import { adminAuth } from "@/lib/firebase-admin";
+import { getUserById, getUserByEmail, incrementRateLimit, getRateLimit, deleteRateLimit } from "@/lib/firestore";
 import { createHash } from "crypto";
+import { cookies } from "next/headers";
+import { AccountStatus, UserRole, UserDoc } from "@/types";
 
 const MAX_ATTEMPTS = 5;
 const LOCK_WINDOW_MS = 15 * 60 * 1000;
 
-async function recordFail(key: string) {
-  const now = new Date();
-  const resetAt = new Date(now.getTime() + LOCK_WINDOW_MS);
-  await prisma.rateLimit.upsert({
-    where: { key: `fail:${key}` },
-    create: { key: `fail:${key}`, count: 1, resetAt },
-    update: { count: { increment: 1 }, resetAt },
-  }).catch(() => {});
-}
-
-async function isLocked(key: string) {
-  try {
-    const bucket = await prisma.rateLimit.findUnique({
-      where: { key: `fail:${key}` }
-    });
-    if (!bucket) return false;
-    if (bucket.resetAt < new Date()) {
-      await prisma.rateLimit.delete({ where: { key: `fail:${key}` } }).catch(() => {});
-      return false;
-    }
-    return bucket.count >= MAX_ATTEMPTS;
-  } catch (err) {
-    return false; // Fail open to avoid blocking valid traffic if DB goes down
-  }
-}
-
-async function clearFail(key: string) {
-  await prisma.rateLimit.delete({ where: { key: `fail:${key}` } }).catch(() => {});
-}
+// ─── OTP Hashing ────────────────────────────────────────────────────────────
 
 export function hashOtp(code: string) {
   return createHash("sha256").update(code).digest("hex");
 }
 
-export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
-  },
-  pages: {
-    signIn: "/login",
-    error: "/login",
-  },
-  providers: [
-    CredentialsProvider({
-      id: "otp",
-      name: "OTP Login",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        code: { label: "Code", type: "text" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.code) {
-          throw new Error("Missing email or code");
-        }
+// ─── Rate Limiting ──────────────────────────────────────────────────────────
 
-        const email = credentials.email.toLowerCase().trim();
-        const code = String(credentials.code).trim();
+async function recordFail(key: string) {
+  const resetAt = new Date(Date.now() + LOCK_WINDOW_MS);
+  await incrementRateLimit(`fail:${key}`, resetAt);
+}
 
-        if (!/^[0-9]{6}$/.test(code)) {
-          throw new Error("Invalid code format");
-        }
+async function isLocked(key: string): Promise<boolean> {
+  try {
+    const bucket = await getRateLimit(`fail:${key}`);
+    if (!bucket) return false;
+    if (new Date(bucket.resetAt) < new Date()) {
+      await deleteRateLimit(`fail:${key}`);
+      return false;
+    }
+    return bucket.count >= MAX_ATTEMPTS;
+  } catch {
+    return false;
+  }
+}
 
-        if (await isLocked(email)) {
-          throw new Error(
-            "Too many failed attempts. Try again in 15 minutes."
-          );
-        }
+async function clearFail(key: string) {
+  await deleteRateLimit(`fail:${key}`);
+}
 
-        const codeHash = hashOtp(code);
+// ─── Token Verification (Server-side) ───────────────────────────────────────
 
-        // Look up by identifier + hashed token
-        const tokenRecord = await prisma.verificationToken.findFirst({
-          where: { identifier: email, token: codeHash },
-        });
+/**
+ * Verify Firebase ID token from request headers or cookies.
+ * Used in API routes and middleware.
+ */
+export async function verifyIdToken(request: Request): Promise<{ uid: string; email: string; role: UserRole } | null> {
+  try {
+    // Check Authorization header first
+    const authHeader = request.headers.get("Authorization");
+    let token: string | undefined;
 
-        if (!tokenRecord) {
-          await recordFail(email);
-          throw new Error("Invalid or expired code");
-        }
+    if (authHeader?.startsWith("Bearer ")) {
+      token = authHeader.split("Bearer ")[1];
+    }
 
-        if (tokenRecord.expires < new Date()) {
-          await prisma.verificationToken
-            .deleteMany({ where: { identifier: email, token: codeHash } })
-            .catch(() => {});
-          throw new Error("Code has expired. Please request a new one.");
-        }
+    // Fallback to cookie
+    if (!token) {
+      const cookieHeader = request.headers.get("cookie") || "";
+      const match = cookieHeader.match(/firebase_token=([^;]+)/);
+      token = match?.[1];
+    }
 
-        // Single-use token
-        await prisma.verificationToken
-          .deleteMany({ where: { identifier: email, token: codeHash } })
-          .catch(() => {});
+    if (!token) return null;
 
-        const user = await prisma.user.findUnique({ where: { email } });
+    const decoded = await adminAuth.verifyIdToken(token);
+    const user = await getUserById(decoded.uid);
 
-        if (!user) {
-          throw new Error("No account found with this email");
-        }
+    if (!user) return null;
+    if (user.accountStatus === AccountStatus.SUSPENDED || user.accountStatus === AccountStatus.REJECTED) {
+      return null;
+    }
 
-        if (
-          user.accountStatus === AccountStatus.SUSPENDED ||
-          user.accountStatus === AccountStatus.REJECTED
-        ) {
-          throw new Error(
-            "Your account is not active. Please contact support."
-          );
-        }
+    return {
+      uid: decoded.uid,
+      email: decoded.email || user.email,
+      role: user.role,
+    };
+  } catch (err) {
+    console.error("[verifyIdToken]", err);
+    return null;
+  }
+}
 
-        await clearFail(email);
+/**
+ * Get the current authenticated user from a server component context.
+ * Returns null if not authenticated.
+ */
+export async function getServerUser(): Promise<{ uid: string; email: string; role: UserRole; user: UserDoc } | null> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("firebase_token")?.value;
+    if (!token) return null;
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
-      },
-    }),
-    CredentialsProvider({
-      id: "credentials",
-      name: "Admin Login",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid credentials");
-        }
+    const decoded = await adminAuth.verifyIdToken(token);
+    const user = await getUserById(decoded.uid);
 
-        const email = credentials.email.toLowerCase().trim();
+    if (!user) return null;
+    if (user.accountStatus === AccountStatus.SUSPENDED || user.accountStatus === AccountStatus.REJECTED) {
+      return null;
+    }
 
-        if (await isLocked(email)) {
-          throw new Error(
-            "Too many failed attempts. Try again in 15 minutes."
-          );
-        }
+    return {
+      uid: decoded.uid,
+      email: decoded.email || user.email,
+      role: user.role,
+      user,
+    };
+  } catch {
+    return null;
+  }
+}
 
-        const user = await prisma.user.findUnique({ where: { email } });
+/**
+ * Set custom claims on a Firebase user (for role-based access in security rules).
+ */
+export async function setUserRole(uid: string, role: UserRole): Promise<void> {
+  await adminAuth.setCustomUserClaims(uid, { role });
+}
 
-        if (!user || user.role !== UserRole.ADMIN || !user.password) {
-          await recordFail(email);
-          throw new Error("Invalid credentials");
-        }
-
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-
-        if (!isValid) {
-          await recordFail(email);
-          throw new Error("Invalid credentials");
-        }
-
-        await clearFail(email);
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
-      },
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user, trigger, session }) {
-      if (user) {
-        token.id = user.id;
-        token.role = (user as any).role || UserRole.PROPERTY_LISTER;
-        token.lastChecked = Date.now();
-      }
-
-      const now = Date.now();
-      if (token.id && (!token.lastChecked || (now - (token.lastChecked as number) > 5 * 60 * 1000))) {
-        const dbUser = await prisma.user.findUnique({ where: { id: token.id as string } });
-        if (!dbUser || dbUser.accountStatus === AccountStatus.SUSPENDED || dbUser.accountStatus === AccountStatus.REJECTED) {
-          throw new Error("Account is no longer active"); // NextAuth will handle the error
-        }
-        token.role = dbUser.role; // Dynamically update role
-        token.lastChecked = now;
-      }
-
-      if (trigger === "update" && session) {
-        token = { ...token, ...session };
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token && token.id) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as UserRole;
-      } else {
-        // If token is invalidated (e.g. suspended user), clear the session user
-        (session as any).user = null;
-      }
-      return session;
-    },
-  },
-};
+// Re-export for backward compatibility
+export { recordFail, isLocked, clearFail };

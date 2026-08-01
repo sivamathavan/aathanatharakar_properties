@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { signInWithEmail } from "@/lib/auth-client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -26,21 +26,12 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      const res = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-
-      if (res?.error) {
-        toast.error(res.error || "Invalid credentials");
-      } else {
-        toast.success("Welcome back, Admin");
-        router.push("/admin");
-        router.refresh();
-      }
-    } catch (error) {
-      toast.error("An error occurred");
+      await signInWithEmail(email, password);
+      toast.success("Welcome back, Admin");
+      router.push("/admin");
+      router.refresh();
+    } catch (error: any) {
+      toast.error(error.message || "Invalid credentials");
     } finally {
       setIsLoading(false);
     }

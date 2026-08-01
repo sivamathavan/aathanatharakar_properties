@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { UserRole } from "@prisma/client";
+import { verifyIdToken } from "@/lib/auth";
+import { createCommission, getAllCommissions, getPropertyById } from "@/lib/firestore";
+import { UserRole, CommissionStatus } from "@/types";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
+    const authUser = await verifyIdToken(req);
+    if (!authUser || authUser.role !== UserRole.ADMIN) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -21,49 +20,47 @@ export async function POST(req: Request) {
       return new NextResponse("Commission amount must be greater than 0", { status: 400 });
     }
 
-    const commission = await prisma.commission.create({
-      data: {
-        type,
-        amount: BigInt(Math.round(amt)),
-        status: status || "EXPECTED",
-        notes: notes || null,
-        propertyId: propertyId || null,
-        createdBy: session.user.id,
-      }
+    const commission = await createCommission({
+      type,
+      amount: Math.round(amt),
+      status: status || CommissionStatus.EXPECTED,
+      notes: notes || null,
+      propertyId: propertyId || null,
+      createdBy: authUser.uid,
     });
 
-    const serialized = {
+    return NextResponse.json({
       ...commission,
-      amount: commission.amount.toString()
-    };
-
-    return NextResponse.json(serialized);
+      amount: commission.amount.toString(),
+    });
   } catch (error) {
     console.error("[ADMIN_COMMISSION_POST]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
+    const authUser = await verifyIdToken(req);
+    if (!authUser || authUser.role !== UserRole.ADMIN) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const commissions = await prisma.commission.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        property: true,
-      }
-    });
+    const commissions = await getAllCommissions();
 
-    const serializedCommissions = commissions.map(c => ({
-      ...c,
-      amount: c.amount.toString(),
-    }));
+    // Enrich with property details
+    const enriched = await Promise.all(
+      commissions.map(async (c) => {
+        const property = c.propertyId ? await getPropertyById(c.propertyId) : null;
+        return {
+          ...c,
+          property,
+          amount: c.amount.toString(),
+        };
+      })
+    );
 
-    return NextResponse.json(serializedCommissions);
+    return NextResponse.json(enriched);
   } catch (error) {
     console.error("[ADMIN_COMMISSIONS_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });

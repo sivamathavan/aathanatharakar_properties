@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth";
 import Link from "next/link";
 import { Home, List, MessageSquare, UserCircle, PlusCircle } from "lucide-react";
 
@@ -9,13 +8,13 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerUser();
 
   if (!session) {
-    redirect("/login");
+    redirect("/admin/login");
   }
 
-  const role = session.user.role;
+  const role = session.role;
 
   return (
     <div className="flex min-h-[calc(100vh-68px)] bg-warm-cream flex-col md:flex-row pb-16 md:pb-0">

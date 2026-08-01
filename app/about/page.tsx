@@ -113,13 +113,13 @@ export default function AboutPage() {
                 <span>📞</span> <a href="tel:+916381169124" className="hover:text-gold-600">63811 69124</a>
               </p>
               <p className="flex items-center gap-3">
-                <span>✉️</span> <a href="mailto:aadanatharakarproperty@gmail.com" className="hover:text-gold-600 break-all">aadanatharakarproperty@gmail.com</a>
+                <span>✉️</span> <a href="mailto:dkpromotersproperty@gmail.com" className="hover:text-gold-600 break-all">dkpromotersproperty@gmail.com</a>
               </p>
             </div>
           </div>
           
           <div className="pt-4">
-            <a href="mailto:aadanatharakarproperty@gmail.com" className="inline-block px-8 py-3 bg-gold-500 text-navy-900 font-bold rounded-lg hover:bg-gold-400 transition-colors shadow-sm">
+            <a href="mailto:dkpromotersproperty@gmail.com" className="inline-block px-8 py-3 bg-gold-500 text-navy-900 font-bold rounded-lg hover:bg-gold-400 transition-colors shadow-sm">
               Email Us Now
             </a>
           </div>

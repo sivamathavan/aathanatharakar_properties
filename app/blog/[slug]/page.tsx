@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getBlogPostBySlug, getUserById } from "@/lib/firestore";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { Calendar, User, Clock, ArrowLeft } from "lucide-react";
@@ -19,19 +19,17 @@ type ResolvedPost = {
 };
 
 async function resolvePost(slug: string): Promise<ResolvedPost | null> {
-  const dbPost = await prisma.blogPost.findUnique({
-    where: { slug },
-    include: { author: true },
-  });
+  const dbPost = await getBlogPostBySlug(slug);
 
   if (dbPost && dbPost.isPublished) {
+    const author = await getUserById(dbPost.authorId);
     return {
       title: dbPost.title,
       content: dbPost.content,
-      coverImageUrl: dbPost.coverImageUrl,
-      publishedAtIso: (dbPost.publishedAt || dbPost.createdAt).toISOString(),
-      updatedAtIso: dbPost.updatedAt.toISOString(),
-      authorName: dbPost.author.name,
+      coverImageUrl: dbPost.coverImageUrl || null,
+      publishedAtIso: new Date(dbPost.publishedAt || dbPost.createdAt).toISOString(),
+      updatedAtIso: new Date(dbPost.updatedAt).toISOString(),
+      authorName: author?.name || "DK Promoters Team",
       excerpt: dbPost.excerpt,
     };
   }

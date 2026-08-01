@@ -1,0 +1,95 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if the user is an admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.role == 'ADMIN';
+    }
+
+    // Helper to check if the document belongs to the authenticated user
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // 1. Users collection
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin() || isOwner(userId);
+    }
+
+    // 2. Properties collection
+    match /properties/{propertyId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      // Media subcollection inside property
+      match /media/{mediaId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+    }
+
+    // 3. Leads collection
+    match /leads/{leadId} {
+      allow create: if true; // public enquirers
+      allow read, write: if isAdmin();
+    }
+
+    // 4. Lead Notes collection
+    match /leadNotes/{noteId} {
+      allow read, write: if isAdmin();
+    }
+
+    // 5. Vendor Enquiries collection
+    match /vendorEnquiries/{enquiryId} {
+      allow create: if true; // public enquirers
+      allow read, write: if isAdmin();
+    }
+
+    // 6. Vendor Profiles collection
+    match /vendorProfiles/{profileId} {
+      allow read: if true;
+      allow write: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+
+      // Portfolio Media subcollection
+      match /media/{mediaId} {
+        allow read: if true;
+        allow write: if isAdmin() || (request.auth != null && get(/databases/$(database)/documents/vendorProfiles/$(profileId)).data.userId == request.auth.uid);
+      }
+    }
+
+    // 7. Agent Profiles collection
+    match /agentProfiles/{profileId} {
+      allow read: if true;
+      allow write: if isAdmin() || (request.auth != null && resource.data.userId == request.auth.uid);
+
+      // Portfolio Media subcollection
+      match /media/{mediaId} {
+        allow read: if true;
+        allow write: if isAdmin() || (request.auth != null && get(/databases/$(database)/documents/agentProfiles/$(profileId)).data.userId == request.auth.uid);
+      }
+    }
+
+    // 8. Commissions collection
+    match /commissions/{commissionId} {
+      allow read, write: if isAdmin();
+    }
+
+    // 9. Blog Posts collection
+    match /blogPosts/{postId} {
+      allow read: if resource.data.isPublished == true || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // 10. Rate Limits collection
+    match /rateLimits/{limitId} {
+      allow read, write: if false; // System-only updates via firebase-admin SDK
+    }
+
+    // 11. Verification Tokens collection
+    match /verificationTokens/{tokenId} {
+      allow read, write: if false; // System-only updates via firebase-admin SDK
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { incrementViewCount } from "@/lib/firestore";
 
 // Lightweight IP rate-limit so refreshes don't inflate counts.
 // One increment per IP+property every 30 minutes.
@@ -23,10 +23,7 @@ export async function POST(
     }
     buckets.set(key, now);
 
-    await prisma.property.update({
-      where: { id: params.id },
-      data: { viewCount: { increment: 1 } },
-    });
+    await incrementViewCount(params.id);
 
     return NextResponse.json({ counted: true });
   } catch (error) {

@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
-import { AccountStatus, VendorCategory } from "@prisma/client";
+import { getAllVendorProfiles, getUserById } from "@/lib/firestore";
+import { AccountStatus, VendorCategory } from "@/types";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,24 +14,34 @@ export default async function ServicesPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined }
 }) {
-  const city = typeof searchParams.city === 'string' ? searchParams.city : undefined;
-  const category = typeof searchParams.category === 'string' ? searchParams.category : undefined;
+  const category = typeof searchParams.category === "string" ? searchParams.category : undefined;
+  const city = typeof searchParams.city === "string" ? searchParams.city : undefined;
 
-  const whereClause: any = {
-    user: { accountStatus: AccountStatus.ACTIVE },
-  };
+  const rawVendors = await getAllVendorProfiles();
+  
+  let vendorsWithUsers = await Promise.all(
+    rawVendors.map(async (v) => {
+      const user = await getUserById(v.userId);
+      return { ...v, user };
+    })
+  );
 
-  if (category) whereClause.category = category as VendorCategory;
+  let vendors = vendorsWithUsers.filter(
+    (v) =>
+      v.isVerified &&
+      v.user &&
+      v.user.accountStatus === AccountStatus.ACTIVE
+  );
+
+  if (category) {
+    vendors = vendors.filter((v) => v.category === category);
+  }
   if (city) {
-    whereClause.serviceAreas = { has: city };
+    vendors = vendors.filter((v) => v.serviceAreas.includes(city));
   }
 
-  const vendors = await prisma.vendorProfile.findMany({
-    where: whereClause,
-    orderBy: { businessName: "asc" },
-    include: { user: true },
-    take: 20,
-  });
+  vendors.sort((a, b) => a.businessName.localeCompare(b.businessName));
+  vendors = vendors.slice(0, 20);
 
   const categories = VENDOR_CATEGORIES.map((cat) => ({
     value: cat,

@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
-import { PropertyStatus } from "@prisma/client";
+import { getActiveProperties } from "@/lib/firestore";
+import { PropertyStatus } from "@/types";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal, ArrowUpDown, Search } from "lucide-react";
@@ -33,40 +33,18 @@ export default async function PropertiesPage({
   const bhk = toIntOrUndefined(searchParams.bhk);
   const page = Math.max(1, toIntOrUndefined(searchParams.page) || 1);
 
-  const whereClause: any = { status: PropertyStatus.ACTIVE };
-  if (city) whereClause.city = city;
-  if (type) whereClause.type = type;
-  if (listingType) whereClause.listingType = listingType;
-  if (bhk !== undefined) whereClause.bedrooms = bhk;
-  if (minPrice !== undefined || maxPrice !== undefined) {
-    whereClause.price = {};
-    if (minPrice !== undefined) whereClause.price.gte = BigInt(minPrice);
-    if (maxPrice !== undefined) whereClause.price.lte = BigInt(maxPrice);
-  }
-  if (q) {
-    whereClause.OR = [
-      { title: { contains: q, mode: "insensitive" } },
-      { locality: { contains: q, mode: "insensitive" } },
-      { address: { contains: q, mode: "insensitive" } },
-      { description: { contains: q, mode: "insensitive" } },
-    ];
-  }
-
-  let orderBy: any = { createdAt: "desc" };
-  if (sort === "price_asc") orderBy = { price: "asc" };
-  else if (sort === "price_desc") orderBy = { price: "desc" };
-  else if (sort === "newest") orderBy = { createdAt: "desc" };
-
-  const [properties, totalCount] = await Promise.all([
-    prisma.property.findMany({
-      where: whereClause,
-      orderBy,
-      include: { media: true },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-    }),
-    prisma.property.count({ where: whereClause }),
-  ]);
+  const { properties, total: totalCount } = await getActiveProperties({
+    city,
+    type,
+    listingType,
+    bedrooms: bhk,
+    minPrice,
+    maxPrice,
+    search: q,
+    sort,
+    limit: PAGE_SIZE,
+    offset: (page - 1) * PAGE_SIZE,
+  });
 
   const buildUrl = (overrides: Record<string, string | undefined>) => {
     const params = new URLSearchParams();

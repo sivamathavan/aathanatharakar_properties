@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getPropertyById, createLead, getUserById } from "@/lib/firestore";
 import { sendEmail } from "@/lib/mail";
+import { LeadSource, LeadStatus } from "@/types";
 
 const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 const isValidPhone = (s: string) => /^[0-9+\-\s()]{7,20}$/.test(s);
@@ -55,16 +56,7 @@ export async function POST(
       return new NextResponse("Invalid phone number", { status: 400 });
     }
 
-    const property = await prisma.property.findUnique({
-      where: { id: params.id },
-      select: {
-        id: true,
-        title: true,
-        locality: true,
-        city: true,
-        postedById: true,
-      },
-    });
+    const property = await getPropertyById(params.id);
 
     if (!property) {
       return new NextResponse("Property not found", { status: 404 });
@@ -74,22 +66,15 @@ export async function POST(
       ? `Phone: ${phone}\n\nMessage: ${message}`
       : message;
 
-    const lead = await prisma.lead.create({
-      data: {
-        name,
-        email,
-        message: fullMessage,
-        propertyId: property.id,
-      },
-      select: { id: true, createdAt: true },
+    const lead = await createLead({
+      name,
+      email,
+      message: fullMessage,
+      propertyId: property.id,
+      status: LeadStatus.NEW,
+      source: LeadSource.WEB,
     });
 
-    // Broker-only model:
-    //   - All enquiries are routed to the BROKER (ADMIN_EMAIL), who is the
-    //     sole point of contact with the buyer.
-    //   - The property owner is NOT given the buyer's contact details — they
-    //     are notified that a new lead has been registered and the broker
-    //     will follow up.
     const adminEmail = process.env.ADMIN_EMAIL;
 
     // Non-blocking: don't make the user wait for SMTP.
@@ -121,11 +106,7 @@ export async function POST(
 
     // Notify owner WITHOUT exposing buyer's direct contact details.
     if (property.postedById) {
-      prisma.user
-        .findUnique({
-          where: { id: property.postedById },
-          select: { email: true, name: true },
-        })
+      getUserById(property.postedById)
         .then((owner) => {
           if (!owner?.email) return;
           sendEmail({

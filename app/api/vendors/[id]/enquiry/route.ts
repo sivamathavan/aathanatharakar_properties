@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getVendorProfileById, getUserById, createVendorEnquiry } from "@/lib/firestore";
 import { sendEmail } from "@/lib/mail";
 
 const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
@@ -49,33 +49,24 @@ export async function POST(
       return new NextResponse("Invalid email address", { status: 400 });
     }
 
-    const vendorProfile = await prisma.vendorProfile.findUnique({
-      where: { id: params.id },
-      select: {
-        id: true,
-        businessName: true,
-        category: true,
-        user: { select: { email: true, name: true } },
-      },
-    });
+    const vendorProfile = await getVendorProfileById(params.id);
 
     if (!vendorProfile) {
       return new NextResponse("Vendor not found", { status: 404 });
     }
 
+    const vendorUser = await getUserById(vendorProfile.userId);
+
     const fullMessage = phone ? `Phone: ${phone}\n\nMessage: ${message}` : message;
 
-    const lead = await prisma.vendorEnquiry.create({
-      data: {
-        name,
-        email,
-        message: fullMessage,
-        vendorId: vendorProfile.id,
-      },
-      select: { id: true, createdAt: true },
+    const lead = await createVendorEnquiry({
+      name,
+      email,
+      message: fullMessage,
+      vendorId: vendorProfile.id,
+      status: "NEW" as any,
     });
 
-    // Broker-only model — all customer enquiries are routed via the broker.
     const adminEmail = process.env.ADMIN_EMAIL;
 
     if (adminEmail) {
@@ -101,13 +92,12 @@ export async function POST(
       }).catch((err) => console.error("[BROKER_VENDOR_EMAIL_ERR]", err));
     }
 
-    // Notify vendor without exposing customer contact details.
-    if (vendorProfile.user?.email) {
+    if (vendorUser?.email) {
       sendEmail({
-        to: vendorProfile.user.email,
+        to: vendorUser.email,
         subject: `New service lead for ${vendorProfile.businessName} — DK Promoters`,
         html: `
-          <p>Hello ${vendorProfile.user.name || vendorProfile.businessName},</p>
+          <p>Hello ${vendorUser.name || vendorProfile.businessName},</p>
           <p>You have received a new service enquiry on DK Promoters.</p>
           <p>Our broker team will reach out to the customer and coordinate next steps with you shortly.
              Customer contact details are kept confidential and managed by DK Promoters.</p>

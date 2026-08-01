@@ -1,12 +1,13 @@
-import { prisma } from "@/lib/prisma";
+import { getVendorProfileById, getUserById, vendorProfilesCol } from "@/lib/firestore";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { MapPin, Briefcase, Calendar, Globe, Building2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { VendorEnquiryForm } from "@/components/vendor/VendorEnquiryForm";
+import { MediaDoc } from "@/types";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const vendor = await prisma.vendorProfile.findUnique({ where: { id: params.id } });
+  const vendor = await getVendorProfileById(params.id);
   
   if (!vendor) return { title: 'Vendor Not Found' };
 
@@ -16,14 +17,35 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 }
 
 export default async function VendorDetailPage({ params }: { params: { id: string } }) {
-  const vendor = await prisma.vendorProfile.findUnique({
-    where: { id: params.id },
-    include: { user: true, portfolioMedia: true },
-  });
-
-  if (!vendor || vendor.user.accountStatus !== "ACTIVE") {
+  const vendorData = await getVendorProfileById(params.id);
+  if (!vendorData) {
     notFound();
   }
+
+  const user = await getUserById(vendorData.userId);
+
+  if (!user || user.accountStatus !== "ACTIVE") {
+    notFound();
+  }
+
+  // Fetch portfolio media subcollection
+  const mediaSnap = await vendorProfilesCol().doc(params.id).collection("media").orderBy("order").get();
+  const portfolioMedia = mediaSnap.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      url: data.url,
+      type: data.type || "IMAGE",
+      publicId: data.publicId || "unknown",
+      order: data.order || 0,
+    };
+  });
+
+  const vendor = {
+    ...vendorData,
+    user,
+    portfolioMedia,
+  };
 
   return (
     <div className="bg-warm-cream min-h-screen py-8 md:py-12">

@@ -1,30 +1,37 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { UserRole } from "@prisma/client";
+import { verifyIdToken } from "@/lib/auth";
+import { getAllLeads, getPropertyById, getUserById, getLeadNotes } from "@/lib/firestore";
+import { UserRole } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== UserRole.ADMIN) {
+    const authUser = await verifyIdToken(req);
+    if (!authUser || authUser.role !== UserRole.ADMIN) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const leads = await prisma.lead.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        property: true,
-        assignedTo: true,
-        notes: {
-          orderBy: { createdAt: "desc" }
-        }
-      }
-    });
+    const leads = await getAllLeads();
 
-    return NextResponse.json(leads);
+    // Enrich leads with related properties, users and notes in parallel
+    const enriched = await Promise.all(
+      leads.map(async (l) => {
+        const [property, assignedTo, notes] = await Promise.all([
+          l.propertyId ? getPropertyById(l.propertyId) : null,
+          l.assignedToId ? getUserById(l.assignedToId) : null,
+          getLeadNotes(l.id),
+        ]);
+        return {
+          ...l,
+          property,
+          assignedTo,
+          notes,
+        };
+      })
+    );
+
+    return NextResponse.json(enriched);
   } catch (error) {
     console.error("[ADMIN_LEADS_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });

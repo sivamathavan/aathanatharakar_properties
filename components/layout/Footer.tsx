@@ -110,8 +110,8 @@ export function Footer() {
                 <a href="tel:+916381169124" className="hover:text-gold-500 transition-colors block">📞 +91 63811 69124</a>
               </p>
               <p>
-                <a href="mailto:aadanatharakarproperty@gmail.com" className="hover:text-gold-500 transition-colors break-all">
-                  ✉️ aadanatharakarproperty@gmail.com
+                <a href="mailto:dkpromotersproperty@gmail.com" className="hover:text-gold-500 transition-colors break-all">
+                  ✉️ dkpromotersproperty@gmail.com
                 </a>
               </p>
             </div>

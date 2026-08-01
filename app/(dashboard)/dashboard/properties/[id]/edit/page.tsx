@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { TN_CITIES, PROPERTY_TYPES, LISTING_TYPES } from "@/lib/constants";
-import { CloudinaryUpload } from "@/components/ui/CloudinaryUpload";
+import { FirebaseUpload } from "@/components/ui/FirebaseUpload";
 import { Loader2 } from "lucide-react";
 
 export default function EditPropertyPage({ params }: { params: { id: string } }) {
@@ -263,10 +263,11 @@ export default function EditPropertyPage({ params }: { params: { id: string } })
               <h2 className="text-lg font-bold mb-4 pb-2 border-b">Photos & Videos</h2>
               <div className="space-y-2">
                 <Label>Update Property Images</Label>
-                <CloudinaryUpload 
+                <FirebaseUpload 
                   onUpload={(media) => setFormData({...formData, media})} 
                   existingMedia={formData.media}
                   maxFiles={15} 
+                  storageFolder="properties"
                 />
               </div>
             </div>

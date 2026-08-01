@@ -1,25 +1,42 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { UserRole } from "@prisma/client";
+import { getAllUsers, getAgentProfileByUserId, getVendorProfileByUserId } from "@/lib/firestore";
+import { UserRole } from "@/types";
+import { verifyIdToken as verifyAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
+    const authUser = await verifyAuth(req);
+    if (!authUser || authUser.role !== UserRole.ADMIN) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const users = await prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      include: { agentProfile: true, vendorProfile: true },
-    });
+    const users = await getAllUsers();
+    
+    // Enrich users with profiles in parallel
+    const enrichedUsers = await Promise.all(
+      users.map(async (u) => {
+        let agentProfile = null;
+        let vendorProfile = null;
 
-    return NextResponse.json(users);
+        if (u.role === UserRole.AGENT) {
+          agentProfile = await getAgentProfileByUserId(u.id);
+        } else if (u.role === UserRole.VENDOR) {
+          vendorProfile = await getVendorProfileByUserId(u.id);
+        }
+
+        return {
+          ...u,
+          agentProfile,
+          vendorProfile,
+        };
+      })
+    );
+
+    return NextResponse.json(enrichedUsers);
   } catch (error) {
+    console.error("[ADMIN_USERS_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

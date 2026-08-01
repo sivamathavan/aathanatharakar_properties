@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPublishedBlogPosts, getUserById } from "@/lib/firestore";
 import Link from "next/link";
 import { Calendar, User, Clock, TrendingUp } from "lucide-react";
 import { STATIC_POSTS } from "@/lib/static-blog";
@@ -21,11 +21,16 @@ const categoryColors: Record<string, string> = {
 };
 
 export default async function BlogPage() {
-  const dbPosts = await prisma.blogPost.findMany({
-    where: { isPublished: true },
-    orderBy: { publishedAt: "desc" },
-    include: { author: true },
-  });
+  const posts = await getPublishedBlogPosts();
+  const dbPosts = await Promise.all(
+    posts.map(async (post) => {
+      const author = await getUserById(post.authorId);
+      return {
+        ...post,
+        author: author || { name: "DK Promoters Team" },
+      };
+    })
+  );
 
   const hasPosts = dbPosts.length > 0;
 

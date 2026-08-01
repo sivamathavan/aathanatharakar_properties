@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, DM_Sans, Noto_Sans_Tamil } from "next/font/google";
 import "./globals.css";
-import { SessionProvider } from "@/components/providers/session-provider";
+import { AuthProvider } from "@/components/providers/auth-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -48,7 +48,7 @@ export default function RootLayout({
         <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
       </head>
       <body className="font-sans antialiased min-h-screen flex flex-col text-[#0D1B2A] bg-[#FDF8E8]">
-        <SessionProvider>
+        <AuthProvider>
           <Header />
           <main className="flex-1 pb-16 md:pb-0">
             {children}
@@ -57,7 +57,7 @@ export default function RootLayout({
           <MobileBottomNav />
           <IOSInstallPrompt />
           <Toaster position="top-center" richColors />
-        </SessionProvider>
+        </AuthProvider>
       </body>
     </html>
   );

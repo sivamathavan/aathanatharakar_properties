@@ -100,7 +100,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-xl font-display font-bold text-navy-900 mb-3">10. Governing Law & Dispute Resolution</h2>
             <p className="text-sm leading-relaxed">
-              These Terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts in Coimbatore, Tamil Nadu. We encourage you to contact us first at <a href="mailto:aadanatharakarproperty@gmail.com" className="text-gold-600 hover:underline">aadanatharakarproperty@gmail.com</a> to resolve any disputes amicably.
+              These Terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts in Coimbatore, Tamil Nadu. We encourage you to contact us first at <a href="mailto:dkpromotersproperty@gmail.com" className="text-gold-600 hover:underline">dkpromotersproperty@gmail.com</a> to resolve any disputes amicably.
             </p>
           </section>
 
@@ -112,7 +112,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <div className="pt-4 border-t border-[#E8E0D0] text-sm text-navy-600">
-            <p>Questions about these terms? Contact us at <a href="mailto:aadanatharakarproperty@gmail.com" className="text-gold-600 hover:underline">aadanatharakarproperty@gmail.com</a>.</p>
+            <p>Questions about these terms? Contact us at <a href="mailto:dkpromotersproperty@gmail.com" className="text-gold-600 hover:underline">dkpromotersproperty@gmail.com</a>.</p>
           </div>
         </div>
       </div>

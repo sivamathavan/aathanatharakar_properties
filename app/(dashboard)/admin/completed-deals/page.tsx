@@ -1,9 +1,9 @@
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { CheckCircle2, TrendingUp, Building, Calendar } from "lucide-react";
+import { CheckCircle2, Building, Calendar } from "lucide-react";
 import Link from "next/link";
+import { getServerUser } from "@/lib/auth";
+import { leadsCol, getPropertyById, getLeadNotes, commissionsCol } from "@/lib/firestore";
+import { UserRole, LeadStatus, CommissionStatus } from "@/types";
 
 export const metadata = {
   title: "Completed Deals | DK Promoters Admin",
@@ -12,32 +12,71 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function CompletedDealsPage() {
-  const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") redirect("/admin/login");
+  const session = await getServerUser();
+  if (!session || session.role !== UserRole.ADMIN) redirect("/admin/login");
 
-  const completedDeals = await prisma.lead.findMany({
-    where: { status: "CLOSED" },
-    orderBy: { updatedAt: "desc" },
-    include: {
-      property: { select: { title: true, city: true, locality: true, type: true, listingType: true } },
-      notes: { orderBy: { createdAt: "desc" }, take: 1 },
-    },
+  const closedLeadsSnap = await leadsCol()
+    .where("status", "==", LeadStatus.CLOSED)
+    .get();
+
+  const leadsList = closedLeadsSnap.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      name: data.name,
+      email: data.email,
+      message: data.message,
+      status: data.status,
+      propertyId: data.propertyId,
+      createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now()),
+      updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt || Date.now()),
+    };
   });
 
-  // For each deal, look up associated commission
-  const dealIds = completedDeals.map((d) => d.id);
-  const commissions = await prisma.commission.findMany({
-    where: { leadId: { in: dealIds } },
-    select: { leadId: true, amount: true, status: true, type: true },
-  });
+  // Sort by updatedAt desc in-memory
+  leadsList.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+
+  // Enrich leads and fetch commissions
+  const dealIds = leadsList.map((d) => d.id);
+
+  const [completedDeals, commissionsSnap] = await Promise.all([
+    Promise.all(
+      leadsList.map(async (deal) => {
+        const [property, notes] = await Promise.all([
+          deal.propertyId ? getPropertyById(deal.propertyId) : null,
+          getLeadNotes(deal.id),
+        ]);
+        return {
+          ...deal,
+          property: property ? { title: property.title, city: property.city, locality: property.locality, type: property.type, listingType: property.listingType } : null,
+          notes: notes.slice(0, 1),
+        };
+      })
+    ),
+    commissionsCol().get(),
+  ]);
+
+  // Filter commissions for completed deals in-memory
+  const commissions = commissionsSnap.docs
+    .filter((doc) => doc.data().leadId && dealIds.includes(doc.data().leadId))
+    .map((doc) => {
+      const data = doc.data();
+      return {
+        leadId: data.leadId,
+        amount: data.amount,
+        status: data.status,
+        type: data.type,
+      };
+    });
+
   const commissionMap = Object.fromEntries(commissions.map((c) => [c.leadId, c]));
 
   const totalEarned = commissions
-    .filter((c) => c.status === "RECEIVED")
+    .filter((c) => c.status === CommissionStatus.RECEIVED)
     .reduce((sum, c) => sum + Number(c.amount), 0);
 
   const totalExpected = commissions
-    .filter((c) => c.status === "EXPECTED")
+    .filter((c) => c.status === CommissionStatus.EXPECTED)
     .reduce((sum, c) => sum + Number(c.amount), 0);
 
   return (
@@ -125,17 +164,17 @@ export default async function CompletedDealsPage() {
                   <div className="flex items-center gap-3 sm:flex-col sm:items-end shrink-0">
                     {commission ? (
                       <div className={`text-center px-3 py-1.5 rounded-card border ${
-                        commission.status === "RECEIVED"
+                        commission.status === CommissionStatus.RECEIVED
                           ? "bg-green-50 border-green-200"
                           : "bg-amber-50 border-amber-200"
                       }`}>
                         <p className={`text-[9px] font-bold uppercase tracking-wider ${
-                          commission.status === "RECEIVED" ? "text-green-700" : "text-amber-700"
+                          commission.status === CommissionStatus.RECEIVED ? "text-green-700" : "text-amber-700"
                         }`}>
-                          {commission.status === "RECEIVED" ? "✓ Received" : "⏳ Expected"}
+                          {commission.status === CommissionStatus.RECEIVED ? "✓ Received" : "⏳ Expected"}
                         </p>
                         <p className={`text-base font-display font-bold ${
-                          commission.status === "RECEIVED" ? "text-green-800" : "text-amber-800"
+                          commission.status === CommissionStatus.RECEIVED ? "text-green-800" : "text-amber-800"
                         }`}>
                           ₹{Number(commission.amount).toLocaleString("en-IN")}
                         </p>

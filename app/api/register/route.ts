@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { AccountStatus, UserRole } from "@prisma/client";
+import { getUserByEmail, createUser, usersCol, agentProfilesCol, vendorProfilesCol } from "@/lib/firestore";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
 import { sendEmail } from "@/lib/mail";
+import { UserRole, AccountStatus } from "@/types";
 
 const ALLOWED_ROLES: UserRole[] = [
   UserRole.PROPERTY_LISTER,
@@ -15,9 +16,9 @@ const isValidPhone = (s: string) => /^[0-9+\-\s()]{7,20}$/.test(s);
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, phone, role, agentDetails, vendorDetails } = body;
+    const { uid, name, email, phone, role, agentDetails, vendorDetails } = body;
 
-    if (!name || !email || !phone || !role) {
+    if (!uid || !name || !email || !phone || !role) {
       return new NextResponse("Missing required fields", { status: 400 });
     }
 
@@ -37,9 +38,7 @@ export async function POST(req: Request) {
     const trimmedName = String(name).trim().slice(0, 120);
     const trimmedPhone = String(phone).trim().slice(0, 20);
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
-    });
+    const existingUser = await getUserByEmail(normalizedEmail);
 
     if (existingUser) {
       if (existingUser.accountStatus === AccountStatus.SUSPENDED) {
@@ -51,61 +50,71 @@ export async function POST(req: Request) {
       return new NextResponse("Email already registered", { status: 400 });
     }
 
-    // New accounts are active immediately to allow registration and OTP verification
     const initialStatus = AccountStatus.ACTIVE;
 
-    const user = await prisma.$transaction(async (tx) => {
-      return tx.user.create({
-        data: {
-          name: trimmedName,
-          email: normalizedEmail,
-          phone: trimmedPhone,
-          role,
-          accountStatus: initialStatus,
-          agentProfile:
-            role === UserRole.AGENT && agentDetails
-              ? {
-                  create: {
-                    fullName: trimmedName,
-                    mobile: trimmedPhone,
-                    reraNumber: agentDetails.reraNumber || null,
-                    officeAddress:
-                      agentDetails.officeAddress ||
-                      agentDetails.agencyName ||
-                      "Not Provided",
-                    operatingCities: Array.isArray(agentDetails.operatingCities)
-                      ? agentDetails.operatingCities
-                      : [],
-                    experience:
-                      parseInt(String(agentDetails.experienceYears ?? "0")) ||
-                      0,
-                    bio: agentDetails.bio || null,
-                  },
-                }
-              : undefined,
-          vendorProfile:
-            role === UserRole.VENDOR && vendorDetails
-              ? {
-                  create: {
-                    businessName: vendorDetails.businessName || trimmedName,
-                    ownerName: trimmedName,
-                    mobile: trimmedPhone,
-                    email: normalizedEmail,
-                    category: vendorDetails.category || "CIVIL_CONTRACTOR",
-                    description: vendorDetails.description || "",
-                    serviceAreas: Array.isArray(vendorDetails.operatingCities)
-                      ? vendorDetails.operatingCities
-                      : [],
-                    yearsInBusiness:
-                      parseInt(String(vendorDetails.experienceYears ?? "0")) ||
-                      0,
-                    websiteUrl: vendorDetails.websiteUrl || null,
-                  },
-                }
-              : undefined,
-        },
+    // Use a batch to create the User and their Profile in Firestore
+    const batch = adminDb.batch();
+    const userRef = usersCol().doc(uid);
+
+    const userData = {
+      name: trimmedName,
+      email: normalizedEmail,
+      phone: trimmedPhone,
+      role,
+      accountStatus: initialStatus,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    batch.set(userRef, userData);
+
+    if (role === UserRole.AGENT && agentDetails) {
+      const agentRef = agentProfilesCol().doc(uid);
+      batch.set(agentRef, {
+        userId: uid,
+        fullName: trimmedName,
+        mobile: trimmedPhone,
+        reraNumber: agentDetails.reraNumber || null,
+        officeAddress:
+          agentDetails.officeAddress ||
+          agentDetails.agencyName ||
+          "Not Provided",
+        operatingCities: Array.isArray(agentDetails.operatingCities)
+          ? agentDetails.operatingCities
+          : [],
+        experience: parseInt(String(agentDetails.experienceYears ?? "0")) || 0,
+        bio: agentDetails.bio || null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
-    });
+    }
+
+    if (role === UserRole.VENDOR && vendorDetails) {
+      const vendorRef = vendorProfilesCol().doc(uid);
+      batch.set(vendorRef, {
+        userId: uid,
+        businessName: vendorDetails.businessName || trimmedName,
+        ownerName: trimmedName,
+        mobile: trimmedPhone,
+        email: normalizedEmail,
+        category: vendorDetails.category || "CIVIL_CONTRACTOR",
+        description: vendorDetails.description || "",
+        serviceAreas: Array.isArray(vendorDetails.operatingCities)
+          ? vendorDetails.operatingCities
+          : [],
+        yearsInBusiness: parseInt(String(vendorDetails.experienceYears ?? "0")) || 0,
+        websiteUrl: vendorDetails.websiteUrl || null,
+        isVerified: false,
+        isFeatured: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+
+    await batch.commit();
+
+    // Set custom claims (roles) on the Firebase Auth user object
+    await adminAuth.setCustomUserClaims(uid, { role });
 
     if (process.env.ADMIN_EMAIL) {
       sendEmail({
@@ -123,12 +132,11 @@ export async function POST(req: Request) {
       }).catch(console.error);
     }
 
-    // Only return non-sensitive fields
     return NextResponse.json({
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      accountStatus: user.accountStatus,
+      id: uid,
+      email: normalizedEmail,
+      role,
+      accountStatus: initialStatus,
     });
   } catch (error) {
     console.error("[REGISTER_ERROR]", error);

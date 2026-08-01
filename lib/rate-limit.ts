@@ -1,40 +1,26 @@
-import { prisma } from "@/lib/prisma";
+import { getRateLimit, upsertRateLimit, incrementRateLimit } from "@/lib/firestore";
 
 export async function checkRateLimit(key: string, limit: number, windowMs: number): Promise<boolean> {
   const now = new Date();
   
-  // Periodically clean up expired records (1% chance)
-  if (Math.random() < 0.01) {
-    await prisma.rateLimit.deleteMany({
-      where: { resetAt: { lt: now } }
-    }).catch(() => {});
-  }
-
   try {
-    const result = await prisma.$transaction(async (tx) => {
-      let bucket = await tx.rateLimit.findUnique({ where: { key } });
+    let bucket = await getRateLimit(key);
 
-      if (!bucket || bucket.resetAt < now) {
-        bucket = await tx.rateLimit.upsert({
-          where: { key },
-          create: { key, count: 1, resetAt: new Date(now.getTime() + windowMs) },
-          update: { count: 1, resetAt: new Date(now.getTime() + windowMs) },
-        });
-        return false;
-      }
+    if (!bucket || new Date(bucket.resetAt) < now) {
+      const resetAt = new Date(now.getTime() + windowMs);
+      await upsertRateLimit(key, 1, resetAt);
+      return false;
+    }
 
-      bucket = await tx.rateLimit.update({
-        where: { key },
-        data: { count: { increment: 1 } },
-      });
+    const resetAt = new Date(bucket.resetAt);
+    await incrementRateLimit(key, resetAt);
 
-      return bucket.count > limit;
-    });
-    
-    return result;
+    // Fetch the updated count to evaluate limit
+    const updated = await getRateLimit(key);
+    return (updated?.count || 1) > limit;
   } catch (err) {
     console.error("[RATE_LIMIT_ERROR]", err);
-    // Fallback: If DB errors on rate limit logic, fail open to avoid blocking valid users
+    // Fail open to avoid blocking legitimate users on DB network failure
     return false;
   }
 }

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPropertyById } from "@/lib/firestore";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { MapPin, Bed, Bath, Layers, Square, Share2, Calendar, ShieldCheck, Phone } from "lucide-react";
@@ -10,14 +10,10 @@ import { PropertyGallery } from "@/components/property/PropertyGallery";
 import { StickyEnquiryBar } from "@/components/property/StickyEnquiryBar";
 import { ViewPing } from "@/components/property/ViewPing";
 import { SITE_URL } from "@/lib/site";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const property = await prisma.property.findUnique({ 
-    where: { id: params.id },
-    include: { media: { orderBy: { order: 'asc' }, take: 1 } }
-  });
+  const property = await getPropertyById(params.id);
   
   if (!property) return { title: 'Property Not Found' };
 
@@ -60,14 +56,11 @@ import { SharePropertyButton } from "@/components/property/SharePropertyButton";
 import { EmiCalculator } from "@/components/property/EmiCalculator";
 
 export default async function PropertyDetailPage({ params }: { params: { id: string } }) {
-  const property = await prisma.property.findUnique({
-    where: { id: params.id },
-    include: { media: true },
-  });
+  const property = await getPropertyById(params.id);
 
-  const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.role === "ADMIN";
-  const isOwner = session?.user?.id && property?.postedById === session.user.id;
+  const session = await getServerUser();
+  const isAdmin = session?.role === "ADMIN";
+  const isOwner = session?.uid && property?.postedById === session.uid;
 
   if (!property || (property.status !== "ACTIVE" && !isAdmin && !isOwner)) {
     notFound();
@@ -85,7 +78,7 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
   const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const addressQuery = encodeURIComponent(`${property.address}, ${property.city}, Tamil Nadu`);
 
-  const mediaItems = property.media.map(m => ({
+  const mediaItems = (property.media || []).map(m => ({
     id: m.id,
     url: m.url,
     thumbnailUrl: m.thumbnailUrl,

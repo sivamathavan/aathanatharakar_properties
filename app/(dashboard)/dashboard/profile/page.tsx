@@ -1,6 +1,3 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,29 +6,52 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { VendorPortfolioUpload } from "@/components/profile/VendorPortfolioUpload";
 import { AgentPortfolioUpload } from "@/components/profile/AgentPortfolioUpload";
+import { getServerUser } from "@/lib/auth";
+import { getUserById, getAgentProfileByUserId, getVendorProfileByUserId, agentProfilesCol, vendorProfilesCol } from "@/lib/firestore";
+import { UserRole } from "@/types";
 
 export const metadata = {
   title: "My Profile | DK Promoters",
 };
 
 export default async function ProfilePage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerUser();
   
-  if (!session) redirect("/login");
+  if (!session) redirect("/admin/login");
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: {
-      agentProfile: {
-        include: { portfolioMedia: true }
-      },
-      vendorProfile: {
-        include: { portfolioMedia: true }
-      },
+  const userData = await getUserById(session.uid);
+  if (!userData) redirect("/admin/login");
+
+  let agentProfile = null;
+  let vendorProfile = null;
+
+  if (userData.role === UserRole.AGENT) {
+    const profile = await getAgentProfileByUserId(session.uid);
+    if (profile) {
+      // Fetch media subcollection
+      const mediaSnap = await agentProfilesCol().doc(profile.id).collection("media").orderBy("order").get();
+      agentProfile = {
+        ...profile,
+        portfolioMedia: mediaSnap.docs.map((doc) => doc.data()),
+      };
     }
-  });
+  } else if (userData.role === UserRole.VENDOR) {
+    const profile = await getVendorProfileByUserId(session.uid);
+    if (profile) {
+      // Fetch media subcollection
+      const mediaSnap = await vendorProfilesCol().doc(profile.id).collection("media").orderBy("order").get();
+      vendorProfile = {
+        ...profile,
+        portfolioMedia: mediaSnap.docs.map((doc) => doc.data()),
+      };
+    }
+  }
 
-  if (!user) redirect("/login");
+  const user = {
+    ...userData,
+    agentProfile,
+    vendorProfile,
+  };
 
   return (
     <div className="max-w-3xl space-y-6 pb-12">
@@ -48,118 +68,54 @@ export default async function ProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Full Name</Label>
-              <Input defaultValue={user.name || ""} disabled />
+              <Input defaultValue={user.name} disabled />
             </div>
             <div className="space-y-2">
-              <Label>Email</Label>
+              <Label>Email Address</Label>
               <Input defaultValue={user.email} disabled />
             </div>
-            <div className="space-y-2">
-              <Label>Phone Number</Label>
-              <Input defaultValue={user.phone || ""} disabled />
-            </div>
-            <div className="space-y-2">
-              <Label>Account Role</Label>
-              <Input defaultValue={user.role.replace('_', ' ')} disabled />
-            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Phone Number</Label>
+            <Input defaultValue={user.phone || ""} disabled />
           </div>
         </CardContent>
       </Card>
 
-      {user.vendorProfile && (
+      {user.role === UserRole.AGENT && user.agentProfile && (
         <Card>
           <CardHeader>
-            <CardTitle>Vendor Profile Details</CardTitle>
+            <CardTitle>Agent Portfolio Portfolio</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Business Name</Label>
-                <Input defaultValue={user.vendorProfile.businessName} readOnly />
-              </div>
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <Input defaultValue={user.vendorProfile.category.replace('_', ' ')} readOnly />
-              </div>
-              <div className="space-y-2">
-                <Label>Experience (Years)</Label>
-                <Input defaultValue={user.vendorProfile.yearsInBusiness || ""} readOnly />
-              </div>
-              <div className="space-y-2">
-                <Label>Operating Cities</Label>
-                <Input defaultValue={user.vendorProfile.serviceAreas.join(', ')} readOnly />
-              </div>
+            <div className="space-y-2">
+              <Label>Office Address</Label>
+              <Input defaultValue={user.agentProfile.officeAddress} disabled />
             </div>
             <div className="space-y-2">
-              <Label>Business Description</Label>
-              <Textarea defaultValue={user.vendorProfile.description || ""} rows={4} readOnly />
+              <Label>Experience (Years)</Label>
+              <Input defaultValue={user.agentProfile.experience.toString()} disabled />
             </div>
-            
-            <p className="text-xs text-gray-500 italic mt-4">To update these details, please contact administrator support.</p>
+            <AgentPortfolioUpload initialMedia={user.agentProfile.portfolioMedia as any} />
           </CardContent>
         </Card>
       )}
 
-      {user.vendorProfile && (
+      {user.role === UserRole.VENDOR && user.vendorProfile && (
         <Card>
           <CardHeader>
-            <CardTitle>My Portfolio</CardTitle>
-            <p className="text-sm text-gray-500">Upload photos of your past projects to showcase on your public profile.</p>
-          </CardHeader>
-          <CardContent>
-            <VendorPortfolioUpload 
-              initialMedia={user.vendorProfile.portfolioMedia.map(m => ({ 
-                url: m.url, 
-                type: m.type as "IMAGE" | "VIDEO" 
-              }))} 
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {user.agentProfile && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Agent Profile Details</CardTitle>
+            <CardTitle>Vendor Portfolio Portfolio</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Office Address</Label>
-                <Input defaultValue={user.agentProfile.officeAddress} readOnly />
-              </div>
-              <div className="space-y-2">
-                <Label>RERA Number</Label>
-                <Input defaultValue={user.agentProfile.reraNumber || "Not Provided"} readOnly />
-              </div>
-              <div className="space-y-2">
-                <Label>Experience (Years)</Label>
-                <Input defaultValue={user.agentProfile.experience || ""} readOnly />
-              </div>
-              <div className="space-y-2">
-                <Label>Operating Cities</Label>
-                <Input defaultValue={user.agentProfile.operatingCities.join(', ')} readOnly />
-              </div>
+            <div className="space-y-2">
+              <Label>Business Name</Label>
+              <Input defaultValue={user.vendorProfile.businessName} disabled />
             </div>
-            
-            <p className="text-xs text-gray-500 italic mt-4">To update these details, please contact administrator support.</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {user.agentProfile && (
-        <Card>
-          <CardHeader>
-            <CardTitle>My Portfolio</CardTitle>
-            <p className="text-sm text-gray-500 font-sans">Upload photos of your agency, team, or past achievements to showcase on your public profile.</p>
-          </CardHeader>
-          <CardContent>
-            <AgentPortfolioUpload 
-              initialMedia={user.agentProfile.portfolioMedia.map(m => ({ 
-                url: m.url, 
-                type: m.type as "IMAGE" | "VIDEO" 
-              }))} 
-            />
+            <div className="space-y-2">
+              <Label>Years in Business</Label>
+              <Input defaultValue={user.vendorProfile.yearsInBusiness.toString()} disabled />
+            </div>
+            <VendorPortfolioUpload initialMedia={user.vendorProfile.portfolioMedia as any} />
           </CardContent>
         </Card>
       )}

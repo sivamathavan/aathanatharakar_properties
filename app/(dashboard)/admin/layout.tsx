@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getServerUser } from "@/lib/auth";
 import Link from "next/link";
 import { LayoutDashboard, Home, Store, Users2, Zap, CheckCircle2, Receipt, Handshake } from "lucide-react";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/types";
 import { AdminHeader } from "@/components/layout/AdminHeader";
 
 export default async function AdminLayout({
@@ -11,9 +10,9 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerUser();
 
-  if (!session || session.user.role !== UserRole.ADMIN) {
+  if (!session || session.role !== UserRole.ADMIN) {
     redirect("/admin/login");
   }
 

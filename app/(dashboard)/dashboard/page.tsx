@@ -1,175 +1,144 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, CheckCircle2, Clock } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { getServerUser } from "@/lib/auth";
+import { getUserById, propertiesCol, leadsCol, vendorProfilesCol, vendorEnquiriesCol } from "@/lib/firestore";
+import { UserRole } from "@/types";
 
 export const metadata = {
   title: "Dashboard | DK Promoters",
 };
 
 export default async function DashboardOverview() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerUser();
   
   if (!session) return null;
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  });
+  const user = await getUserById(session.uid);
 
   if (!user) return null;
 
   let properties: any[] = [];
   let recentEnquiries: any[] = [];
 
-  if (user.role === "PROPERTY_LISTER" || user.role === "AGENT") {
-    properties = await prisma.property.findMany({
-      where: { postedById: user.id },
-    });
+  if (user.role === UserRole.PROPERTY_LISTER || user.role === UserRole.AGENT) {
+    const propsSnap = await propertiesCol()
+      .where("postedById", "==", user.id)
+      .get();
+    
+    properties = propsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     const propertyIds = properties.map(p => p.id);
-    const leads = await prisma.lead.findMany({
-      where: { propertyId: { in: propertyIds } },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    });
-    recentEnquiries = leads.map(l => ({
-      id: l.id,
-      name: l.name,
-      email: l.email,
-      message: l.message,
-      createdAt: l.createdAt,
-    }));
-  } else if (user.role === "VENDOR") {
-    const vendorProfile = await prisma.vendorProfile.findUnique({
-      where: { userId: user.id },
-    });
+
+    if (propertyIds.length > 0) {
+      const leadsSnap = await leadsCol().get();
+      // Filter in-memory
+      const leads = leadsSnap.docs
+        .filter((d) => d.data().propertyId && propertyIds.includes(d.data().propertyId))
+        .map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            name: data.name,
+            email: data.email,
+            message: data.message,
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now()),
+          };
+        });
+
+      leads.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      recentEnquiries = leads.slice(0, 5);
+    }
+  } else if (user.role === UserRole.VENDOR) {
+    const vendorProfile = await getVendorProfileByUserId(user.id);
     if (vendorProfile) {
-      const enqs = await prisma.vendorEnquiry.findMany({
-        where: { vendorId: vendorProfile.id },
-        orderBy: { createdAt: "desc" },
-        take: 5,
+      const enqsSnap = await vendorEnquiriesCol()
+        .where("vendorId", "==", vendorProfile.id)
+        .get();
+
+      const enqs = enqsSnap.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          name: data.name,
+          email: data.email,
+          message: data.message,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now()),
+        };
       });
-      recentEnquiries = enqs.map(e => ({
-        id: e.id,
-        name: e.name,
-        email: e.email,
-        message: e.message,
-        createdAt: e.createdAt,
-      }));
+
+      enqs.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      recentEnquiries = enqs.slice(0, 5);
     }
   }
 
-  const activeProperties = properties.filter(p => p.status === "ACTIVE").length;
-  const pendingProperties = properties.filter(p => p.status === "PENDING").length;
-
   return (
-    <div className="space-y-6 font-sans">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#E8E0D0] pb-4">
-        <div>
-          <h1 className="font-display font-bold text-xl md:text-2xl text-navy-900 leading-snug">Welcome back, {user.name}</h1>
-          <p className="text-xs text-navy-700 mt-0.5">Here is a quick overview of your DK Promoters activity.</p>
+    <div className="space-y-6">
+      {/* Welcome Banner */}
+      <div className="bg-navy-900 text-white rounded-xl p-6 relative overflow-hidden">
+        <div className="relative z-10 space-y-2">
+          <h1 className="text-xl md:text-2xl font-bold font-display">Welcome Back, {user.name}!</h1>
+          <p className="text-gray-300 text-xs md:text-sm max-w-md">DK Promoters Broker Command Dashboard</p>
         </div>
-        {(user.role === "PROPERTY_LISTER" || user.role === "AGENT") && (
-          <Link href="/dashboard/properties/new" className="w-full sm:w-auto">
-            <Button className="w-full sm:w-auto h-11 bg-navy-900 text-gold-500 hover:bg-navy-950 hover:text-gold-400 font-bold rounded-btn transition-colors shadow-sm">
-              Add New Property
-            </Button>
-          </Link>
-        )}
       </div>
 
-      {user.accountStatus === "PENDING" && (
-        <div className="bg-navy-50 border border-navy-100 text-navy-900 p-4 rounded-btn flex items-start gap-3">
-          <Clock className="w-5 h-5 mt-0.5 text-gold-600 shrink-0 animate-pulse" />
-          <div>
-            <h3 className="text-sm font-semibold text-navy-950">Account Pending Verification</h3>
-            <p className="text-xs mt-1 text-navy-800 leading-relaxed">
-              Your profile is currently under review by our moderation team. You can explore the dashboard and prepare drafts, but listings/quotes will not go live until verified.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Stats Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        {(user.role === "PROPERTY_LISTER" || user.role === "AGENT") && (
-          <>
-            <Card className="border-[#E8E0D0] bg-white rounded-card shadow-xs">
-              <CardContent className="p-5 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-navy-750 uppercase tracking-wider mb-1">Active Properties</p>
-                  <h3 className="text-2xl font-bold text-navy-900 font-display">{activeProperties}</h3>
-                </div>
-                <div className="w-10 h-10 bg-[#1D6A3A]/10 rounded-full flex items-center justify-center text-[#1D6A3A]">
-                  <CheckCircle2 className="w-5 h-5" />
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-[#E8E0D0] bg-white rounded-card shadow-xs">
-              <CardContent className="p-5 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold text-navy-750 uppercase tracking-wider mb-1">Pending Review</p>
-                  <h3 className="text-2xl font-bold text-navy-900 font-display">{pendingProperties}</h3>
-                </div>
-                <div className="w-10 h-10 bg-gold-500/10 rounded-full flex items-center justify-center text-gold-650">
-                  <Clock className="w-5 h-5 text-gold-600" />
-                </div>
-              </CardContent>
-            </Card>
-          </>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {(user.role === UserRole.PROPERTY_LISTER || user.role === UserRole.AGENT) && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">My Listings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{properties.length}</div>
+            </CardContent>
+          </Card>
         )}
-        
-        <Card className="border-[#E8E0D0] bg-white rounded-card shadow-xs">
-          <CardContent className="p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-navy-750 uppercase tracking-wider mb-1">Recent Enquiries</p>
-              <h3 className="text-2xl font-bold text-navy-900 font-display">{recentEnquiries.length}</h3>
-            </div>
-            <div className="w-10 h-10 bg-navy-50 rounded-full flex items-center justify-center text-gold-600">
-              <MessageSquare className="w-5 h-5" />
-            </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Recent Enquiries</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{recentEnquiries.length}</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Recent Enquiries List */}
-      <Card className="border-[#E8E0D0] bg-white rounded-card shadow-xs">
-        <CardHeader className="border-b border-[#E8E0D0]/60 pb-3">
-          <CardTitle className="text-base font-display font-semibold text-navy-900">Recent Customer Enquiries</CardTitle>
+      {/* Enquiries list */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Enquiries Received</CardTitle>
         </CardHeader>
-        <CardContent className="pt-4">
-          {recentEnquiries.length === 0 ? (
-            <div className="text-center py-10 text-xs text-navy-700 leading-normal">
-              No enquiries received yet. Property detail views will prompt buyer leads here.
-            </div>
-          ) : (
-            <div className="divide-y divide-[#E8E0D0]/50">
-              {recentEnquiries.map(lead => (
-                <div key={lead.id} className="py-4 flex justify-between items-start gap-4 flex-wrap sm:flex-nowrap">
-                  <div className="space-y-1">
-                    <h4 className="font-semibold text-sm text-navy-900">{lead.name}</h4>
-                    <p className="text-xs text-navy-700 font-medium">{lead.email}</p>
-                    <p className="text-xs text-navy-800 bg-navy-50/50 p-2.5 rounded-btn mt-2 border border-navy-100/50 leading-relaxed font-sans">{lead.message}</p>
+        <CardContent>
+          {recentEnquiries.length > 0 ? (
+            <div className="space-y-4">
+              {recentEnquiries.map((enq) => (
+                <div key={enq.id} className="border-b border-[#E8E0D0] pb-4 last:border-0 last:pb-0">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-semibold">{enq.name}</p>
+                      <p className="text-xs text-gray-500">{enq.email}</p>
+                    </div>
+                    <span className="text-xs text-gray-400">
+                      {enq.createdAt.toLocaleDateString()}
+                    </span>
                   </div>
-                  <div className="text-[10px] text-navy-700 whitespace-nowrap bg-warm-cream/50 px-2.5 py-1 rounded-full border border-[#E8E0D0]/40 font-medium">
-                    {new Date(lead.createdAt).toLocaleDateString()}
-                  </div>
+                  <p className="text-sm text-gray-600 mt-2 italic">"{enq.message}"</p>
                 </div>
               ))}
             </div>
-          )}
-          {recentEnquiries.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-[#E8E0D0]/50 text-center">
-              <Link href="/dashboard/enquiries" className="text-gold-600 text-xs font-bold hover:underline tracking-wide uppercase">
-                View All Enquiries
-              </Link>
-            </div>
+          ) : (
+            <p className="text-sm text-gray-500 text-center py-6">No enquiries received yet.</p>
           )}
         </CardContent>
       </Card>
     </div>
   );
+}
+
+// Inline helper for vendor profile fetch
+async function getVendorProfileByUserId(userId: string) {
+  const snap = await vendorProfilesCol().where("userId", "==", userId).limit(1).get();
+  if (snap.empty) return null;
+  return { id: snap.docs[0].id, ...snap.docs[0].data() };
 }

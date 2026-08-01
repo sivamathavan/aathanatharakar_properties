@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
-import { PropertyStatus } from "@prisma/client";
+import { getActiveProperties } from "@/lib/firestore";
+import { PropertyStatus } from "@/types";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,20 +14,13 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   // Show up to 3 featured + newest active to fill 6 cards, deduped.
-  const [featuredProperties, latestProperties] = await Promise.all([
-    prisma.property.findMany({
-      where: { status: PropertyStatus.ACTIVE, isFeatured: true },
-      take: 3,
-      orderBy: { createdAt: "desc" },
-      include: { media: true },
-    }),
-    prisma.property.findMany({
-      where: { status: PropertyStatus.ACTIVE },
-      take: 9,
-      orderBy: { createdAt: "desc" },
-      include: { media: true },
-    }),
+  const [featuredRes, latestRes] = await Promise.all([
+    getActiveProperties({ limit: 3, featured: true }),
+    getActiveProperties({ limit: 9 }),
   ]);
+  
+  const featuredProperties = featuredRes.properties;
+  const latestProperties = latestRes.properties;
 
   const seen = new Set(featuredProperties.map((p) => p.id));
   const propertiesToShow = [

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "@/components/providers/auth-provider";
+import { signOut } from "@/lib/auth-client";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/types";
 import { Menu, X, Home, FileText, Info, LayoutDashboard, MessageCircle } from "lucide-react";
 
 const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916381169124").replace(/\D/g, "");
@@ -114,7 +115,7 @@ export function Header() {
                 </Link>
                 <Button
                   variant="outline"
-                  onClick={() => signOut({ callbackUrl: "/" })}
+                  onClick={() => signOut()}
                   className="border-navy-800 text-white bg-transparent hover:bg-navy-800 text-xs lg:text-sm h-9"
                 >
                   Sign Out
@@ -195,7 +196,7 @@ export function Header() {
             {session && session.user.role === UserRole.ADMIN && (
               <Button
                 variant="outline"
-                onClick={() => { signOut({ callbackUrl: "/" }); closeMobileMenu(); }}
+                onClick={() => { signOut(); closeMobileMenu(); }}
                 className="w-full border-navy-700 text-white bg-transparent hover:bg-navy-800 h-12"
               >
                 Sign Out

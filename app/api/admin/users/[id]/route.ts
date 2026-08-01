@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { AccountStatus, UserRole } from "@prisma/client";
+import { verifyIdToken as verifyAuth } from "@/lib/auth";
+import { getUserById, updateUser, usersCol, agentProfilesCol, vendorProfilesCol } from "@/lib/firestore";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
 import { sendEmail } from "@/lib/mail";
+import { AccountStatus, UserRole } from "@/types";
 
 const ALLOWED_STATUSES: AccountStatus[] = [
   AccountStatus.PENDING,
@@ -17,8 +17,8 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
+    const authUser = await verifyAuth(req);
+    if (!authUser || authUser.role !== UserRole.ADMIN) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -30,17 +30,14 @@ export async function PATCH(
     }
 
     // Don't let an admin lock themselves out
-    if (params.id === session.user.id && accountStatus !== AccountStatus.ACTIVE) {
+    if (params.id === authUser.uid && accountStatus !== AccountStatus.ACTIVE) {
       return new NextResponse(
         "You cannot change your own account status",
         { status: 400 }
       );
     }
 
-    const target = await prisma.user.findUnique({
-      where: { id: params.id },
-      select: { id: true, email: true, name: true, role: true },
-    });
+    const target = await getUserById(params.id);
 
     if (!target) {
       return new NextResponse("User not found", { status: 404 });
@@ -54,17 +51,17 @@ export async function PATCH(
       );
     }
 
-    const user = await prisma.user.update({
-      where: { id: params.id },
-      data: { accountStatus },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        accountStatus: true,
-      },
-    });
+    // Update status in Firestore
+    await updateUser(params.id, { accountStatus });
+
+    // Sync to Firebase Auth status (enable or disable account)
+    const isSuspendedOrRejected = 
+      accountStatus === AccountStatus.SUSPENDED || 
+      accountStatus === AccountStatus.REJECTED;
+
+    await adminAuth.updateUser(params.id, {
+      disabled: isSuspendedOrRejected,
+    }).catch((err) => console.error("Firebase auth user status sync failed: ", err));
 
     // Notify user of status changes (non-blocking)
     if (
@@ -79,10 +76,10 @@ export async function PATCH(
           ? "Your DK Promoters Account has been Suspended"
           : "Update on your DK Promoters Application";
       sendEmail({
-        to: user.email,
+        to: target.email,
         subject,
         html: `
-          <h3>Hello ${user.name},</h3>
+          <h3>Hello ${target.name},</h3>
           <p>Your account status has been updated to: <strong>${accountStatus}</strong>.</p>
           ${
             accountStatus === AccountStatus.ACTIVE
@@ -97,7 +94,13 @@ export async function PATCH(
       }).catch(console.error);
     }
 
-    return NextResponse.json(user);
+    return NextResponse.json({
+      id: params.id,
+      name: target.name,
+      email: target.email,
+      role: target.role,
+      accountStatus,
+    });
   } catch (error) {
     console.error("[ADMIN_USER_PATCH]", error);
     return new NextResponse("Internal Error", { status: 500 });
@@ -109,20 +112,17 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
+    const authUser = await verifyAuth(req);
+    if (!authUser || authUser.role !== UserRole.ADMIN) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     // Don't let an admin delete themselves
-    if (params.id === session.user.id) {
+    if (params.id === authUser.uid) {
       return new NextResponse("You cannot delete your own admin account", { status: 400 });
     }
 
-    const target = await prisma.user.findUnique({
-      where: { id: params.id },
-      select: { id: true, role: true },
-    });
+    const target = await getUserById(params.id);
 
     if (!target) {
       return new NextResponse("User not found", { status: 404 });
@@ -133,9 +133,20 @@ export async function DELETE(
       return new NextResponse("Cannot delete another admin account", { status: 403 });
     }
 
-    await prisma.user.delete({
-      where: { id: params.id },
-    });
+    // Use a batch to clean up Firestore documents
+    const batch = adminDb.batch();
+    batch.delete(usersCol().doc(params.id));
+    
+    if (target.role === UserRole.AGENT) {
+      batch.delete(agentProfilesCol().doc(params.id));
+    } else if (target.role === UserRole.VENDOR) {
+      batch.delete(vendorProfilesCol().doc(params.id));
+    }
+
+    await batch.commit();
+
+    // Delete user from Firebase Auth
+    await adminAuth.deleteUser(params.id).catch((err) => console.error("Firebase auth deletion failed: ", err));
 
     return NextResponse.json({ success: true, message: "User deleted permanently" });
   } catch (error) {

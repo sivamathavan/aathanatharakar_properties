@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getUserByEmail, createVerificationToken, deleteVerificationTokens } from "@/lib/firestore";
 import { sendEmail } from "@/lib/mail";
 import { hashOtp } from "@/lib/auth";
 import crypto from "crypto";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
+import { AccountStatus } from "@/types";
 
 const WINDOW_MS = 60 * 1000;
 const IP_LIMIT = 10;
@@ -14,14 +15,11 @@ const emailSchema = z.object({
   email: z.string().email("A valid email is required").trim().toLowerCase(),
 });
 
-// Same generic response regardless of whether an account exists, to prevent
-// user enumeration.
 const GENERIC_OK = NextResponse.json({
   success: true,
   message: "If an account exists for that email, a login code has been sent.",
 });
 
-// Helper to simulate the time delay of sending an email, preventing timing attacks.
 const simulateDelay = () => new Promise(res => setTimeout(res, 800 + Math.random() * 400));
 
 export async function POST(req: Request) {
@@ -50,35 +48,32 @@ export async function POST(req: Request) {
       });
     }
 
-    const user = await prisma.user.findUnique({ where: { email: normalized } });
+    const user = await getUserByEmail(normalized);
 
     // Phase 5: Remove User Enumeration
-    if (!user || user.accountStatus === "SUSPENDED" || user.accountStatus === "REJECTED") {
+    if (!user || user.accountStatus === AccountStatus.SUSPENDED || user.accountStatus === AccountStatus.REJECTED) {
       // Simulate delay to prevent timing attacks, log internally, but return GENERIC_OK
       await simulateDelay();
       return GENERIC_OK;
     }
 
-    // Phase 2: Fix OTP Randomness (crypto.randomInt instead of Math.random)
+    // Fix OTP Randomness
     const otp = crypto.randomInt(100000, 1000000).toString();
     const expires = new Date(Date.now() + 10 * 60 * 1000);
 
-    // Invalidate prior tokens to ensure single-use semantics.
-    await prisma.verificationToken.deleteMany({
-      where: { identifier: normalized },
-    });
+    const hashedToken = hashOtp(otp);
 
-    await prisma.verificationToken.create({
-      data: {
-        identifier: normalized,
-        token: hashOtp(otp),
-        expires,
-      },
+    // Invalidate prior tokens to ensure single-use semantics
+    await deleteVerificationTokens(normalized, hashedToken);
+
+    await createVerificationToken({
+      identifier: normalized,
+      token: hashedToken,
+      expires,
     });
 
     // Dev fallback — log when SMTP not configured.
     if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
-      // Intentionally NOT logging OTP to comply with: "Never log OTP values" (Rule 23).
       console.log(`[DEV_FALLBACK] OTP generated for ${normalized}`);
       return GENERIC_OK;
     }
@@ -103,7 +98,6 @@ export async function POST(req: Request) {
         `,
       });
     } catch (mailErr: any) {
-      // Phase 6: Safely log mail failure, do NOT leak error publicly.
       console.error("[SEND_OTP_MAIL_ERROR]", mailErr.message);
     }
 

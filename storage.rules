@@ -1,0 +1,39 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper check for admin
+    function isAdmin() {
+      return request.auth != null && request.auth.token.role == 'ADMIN';
+    }
+
+    // Helper check for authenticated user
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    // Properties media (images/videos)
+    match /properties/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Vendor profile portfolios
+    match /vendors/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthed(); // simplified for client-side uploads, validated securely at profile save
+    }
+
+    // Agent profile portfolios
+    match /agents/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthed();
+    }
+
+    // Generic media fallbacks
+    match /media/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthed();
+    }
+  }
+}

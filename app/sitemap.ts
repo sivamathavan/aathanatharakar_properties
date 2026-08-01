@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
-import { prisma } from "@/lib/prisma";
-import { PropertyStatus } from "@prisma/client";
+import { propertiesCol, blogPostsCol } from "@/lib/firestore";
+import { PropertyStatus } from "@/types";
 import { SITE_URL } from "@/lib/site";
 import { STATIC_POSTS } from "@/lib/static-blog";
 
@@ -24,32 +24,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === "" ? 1.0 : 0.8,
   }));
 
-  const properties = await prisma.property.findMany({
-    where: { status: PropertyStatus.ACTIVE },
-    select: { id: true, updatedAt: true },
-    take: 10000,
+  const propertiesSnap = await propertiesCol()
+    .where("status", "==", PropertyStatus.ACTIVE)
+    .get();
+
+  const propertyRoutes = propertiesSnap.docs.map((doc) => {
+    const data = doc.data();
+    const updatedAt = data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt || Date.now());
+    return {
+      url: `${baseUrl}/properties/${doc.id}`,
+      lastModified: updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    };
   });
 
-  const propertyRoutes = properties.map((property) => ({
-    url: `${baseUrl}/properties/${property.id}`,
-    lastModified: property.updatedAt,
-    changeFrequency: "weekly" as const,
-    priority: 0.6,
-  }));
+  const dbPostsSnap = await blogPostsCol()
+    .where("isPublished", "==", true)
+    .get();
 
-  const dbPosts = await prisma.blogPost.findMany({
-    where: { isPublished: true },
-    select: { slug: true, updatedAt: true },
+  const dbBlogRoutes = dbPostsSnap.docs.map((doc) => {
+    const data = doc.data();
+    const updatedAt = data.updatedAt?.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt || Date.now());
+    return {
+      url: `${baseUrl}/blog/${data.slug}`,
+      lastModified: updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    };
   });
-  const dbBlogRoutes = dbPosts.map((p) => ({
-    url: `${baseUrl}/blog/${p.slug}`,
-    lastModified: p.updatedAt,
-    changeFrequency: "monthly" as const,
-    priority: 0.5,
-  }));
 
   const staticBlogRoutes =
-    dbPosts.length === 0
+    dbPostsSnap.empty
       ? STATIC_POSTS.map((p) => ({
           url: `${baseUrl}/blog/${p.slug}`,
           lastModified: new Date(p.publishedAt),

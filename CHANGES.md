@@ -6,7 +6,7 @@ flipping the switch.
 ## Manual follow-ups
 
 1. **Verify your `.env`** has these keys (most already present):
-   - `NEXT_PUBLIC_SITE_URL` — canonical site URL (e.g. `https://www.aadanatharakar.com`).
+   - `NEXT_PUBLIC_SITE_URL` — canonical site URL (e.g. `https://www.dkpromoters.in`).
      Falls back to `NEXTAUTH_URL`. Used for sitemap, robots, OG tags.
    - `NEXT_PUBLIC_WHATSAPP_NUMBER` — broker WhatsApp/call number (digits only).
      Property cards and detail pages route every public contact to this.

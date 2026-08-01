@@ -1,27 +1,39 @@
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Mail, Calendar, User, Briefcase } from "lucide-react";
+import { getServerUser } from "@/lib/auth";
+import { getAllVendorEnquiries, getVendorProfileById, getUserById } from "@/lib/firestore";
+import { UserRole } from "@/types";
 
 export const metadata = {
   title: "Vendor Enquiries | DK Promoters Admin",
 };
 
-export default async function AdminVendorEnquiriesPage() {
-  const session = await getServerSession(authOptions);
-  
-  if (!session || session.user.role !== "ADMIN") redirect("/admin/login");
+export const dynamic = "force-dynamic";
 
-  const enquiries = await prisma.vendorEnquiry.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      vendor: {
-        include: { user: true }
+export default async function AdminVendorEnquiriesPage() {
+  const session = await getServerUser();
+  
+  if (!session || session.role !== UserRole.ADMIN) redirect("/admin/login");
+
+  const rawEnquiries = await getAllVendorEnquiries();
+
+  const enquiries = await Promise.all(
+    rawEnquiries.map(async (enquiry) => {
+      const vendor = enquiry.vendorId ? await getVendorProfileById(enquiry.vendorId) : null;
+      let vendorUser = null;
+      if (vendor) {
+        vendorUser = await getUserById(vendor.userId);
       }
-    }
-  });
+      return {
+        ...enquiry,
+        vendor: vendor ? {
+          businessName: vendor.businessName,
+          user: vendorUser ? { name: vendorUser.name } : null,
+        } : null,
+      };
+    })
+  );
 
   return (
     <div className="space-y-6">

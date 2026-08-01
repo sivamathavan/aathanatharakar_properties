@@ -1,22 +1,19 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { verifyIdToken } from "@/lib/auth";
+import { getVendorProfileByUserId, vendorProfilesCol } from "@/lib/firestore";
+import { adminDb } from "@/lib/firebase-admin";
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const authUser = await verifyIdToken(req);
     
-    if (!session || !session.user || !session.user.id) {
+    if (!authUser || !authUser.uid) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      include: { vendorProfile: true }
-    });
+    const vendorProfile = await getVendorProfileByUserId(authUser.uid);
 
-    if (!user || !user.vendorProfile) {
+    if (!vendorProfile) {
       return new NextResponse("Vendor profile not found", { status: 404 });
     }
 
@@ -26,23 +23,29 @@ export async function POST(req: Request) {
       return new NextResponse("Invalid media array", { status: 400 });
     }
 
-    // Delete existing media for this vendor
-    await prisma.vendorMedia.deleteMany({
-      where: { vendorId: user.vendorProfile.id }
+    const batch = adminDb.batch();
+    const vendorRef = vendorProfilesCol().doc(vendorProfile.id);
+    const mediaCol = vendorRef.collection("media");
+
+    // 1. Delete all existing media documents for this vendor profile
+    const existingMediaSnap = await mediaCol.get();
+    existingMediaSnap.docs.forEach((doc) => {
+      batch.delete(doc.ref);
     });
 
-    // Create new media
-    if (media.length > 0) {
-      await prisma.vendorMedia.createMany({
-        data: media.map((m: any, index: number) => ({
-          vendorId: user.vendorProfile!.id,
-          url: m.url,
-          type: m.type || "IMAGE",
-          publicId: m.url.split('/').pop() || "unknown",
-          order: index
-        }))
+    // 2. Write new media documents
+    media.forEach((m: any, index: number) => {
+      const newMediaRef = mediaCol.doc();
+      batch.set(newMediaRef, {
+        url: m.url,
+        type: m.type || "IMAGE",
+        publicId: m.url.split('/').pop()?.split('.')[0] || "unknown",
+        order: index,
+        createdAt: new Date(),
       });
-    }
+    });
+
+    await batch.commit();
 
     return NextResponse.json({ success: true });
   } catch (error) {

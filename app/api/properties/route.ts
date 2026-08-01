@@ -1,20 +1,16 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
-import { PropertyStatus, UserRole } from "@prisma/client";
+import { verifyIdToken } from "@/lib/auth";
+import { createProperty } from "@/lib/firestore";
+import { UserRole, PropertyStatus, PropertyType, ListingType, PriceUnit } from "@/types";
 import { z } from "zod";
 
 const propertySchema = z.object({
   title: z.string().trim().min(1).max(240),
   description: z.string().trim().min(1).max(5000),
-  type: z.enum([
-    "APARTMENT", "VILLA", "HOUSE", "PLOT", 
-    "COMMERCIAL", "WAREHOUSE", "FARM_LAND", "PG_HOSTEL"
-  ]),
-  listingType: z.enum(["BUY", "SELL", "RENT", "LEASE"]),
+  type: z.nativeEnum(PropertyType),
+  listingType: z.nativeEnum(ListingType),
   price: z.coerce.number().min(0),
-  priceUnit: z.enum(["TOTAL", "PER_SQFT", "PER_MONTH", "PER_YEAR"]).default("TOTAL"),
+  priceUnit: z.nativeEnum(PriceUnit).default(PriceUnit.TOTAL),
   area: z.coerce.number().positive(),
   bedrooms: z.coerce.number().int().nonnegative().optional().nullable(),
   bathrooms: z.coerce.number().int().nonnegative().optional().nullable(),
@@ -45,13 +41,13 @@ function safePublicId(m: any): string {
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const authUser = await verifyIdToken(req);
 
-    if (!session || !session.user || !session.user.id) {
+    if (!authUser || !authUser.uid) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    if (session.user.role !== UserRole.ADMIN) {
+    if (authUser.role !== UserRole.ADMIN) {
       return new NextResponse("Forbidden - Only admins can upload properties in broker mode", { status: 403 });
     }
 
@@ -64,39 +60,35 @@ export async function POST(req: Request) {
 
     const data = result.data;
 
-    const property = await prisma.property.create({
-      data: {
-        title: data.title,
-        description: data.description,
-        type: data.type as any,
-        listingType: data.listingType as any,
-        price: BigInt(Math.round(data.price)),
-        priceUnit: data.priceUnit as any,
-        area: data.area,
-        bedrooms: data.bedrooms || null,
-        bathrooms: data.bathrooms || null,
-        address: data.address,
-        city: data.city,
-        locality: data.locality,
-        district: data.district || data.city,
-        pincode: data.pincode || null,
-        latitude: data.latitude || null,
-        longitude: data.longitude || null,
-        amenities: data.amenities,
-        postedById: session.user.id,
-        status: PropertyStatus.PENDING,
-        media: {
-          create: data.media.map((m, index) => ({
-            url: m.url,
-            type: m.type as any,
-            publicId: safePublicId(m),
-            thumbnailUrl: m.thumbnailUrl || null,
-            order: index,
-          })),
-        },
-      },
-      include: { media: true },
-    });
+    const mediaWithPublicIds = data.media.map((m, index) => ({
+      url: m.url,
+      type: m.type as any,
+      publicId: safePublicId(m),
+      thumbnailUrl: m.thumbnailUrl || null,
+      order: index,
+    }));
+
+    const property = await createProperty({
+      title: data.title,
+      description: data.description,
+      type: data.type,
+      listingType: data.listingType,
+      price: Math.round(data.price),
+      priceUnit: data.priceUnit,
+      area: data.area,
+      bedrooms: data.bedrooms || null,
+      bathrooms: data.bathrooms || null,
+      address: data.address,
+      city: data.city,
+      locality: data.locality,
+      district: data.district || data.city,
+      pincode: data.pincode || null,
+      latitude: data.latitude || null,
+      longitude: data.longitude || null,
+      amenities: data.amenities,
+      postedById: authUser.uid,
+      status: PropertyStatus.PENDING,
+    }, mediaWithPublicIds);
 
     return NextResponse.json({
       ...property,
