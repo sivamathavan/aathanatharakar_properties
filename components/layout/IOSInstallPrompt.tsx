@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { X, Share } from "lucide-react";
+import { BrandMark } from "@/components/brand/BrandMark";
+import { BRAND } from "@/lib/brand";
 
 export function IOSInstallPrompt() {
   const [showPrompt, setShowPrompt] = useState(false);
@@ -34,16 +36,14 @@ export function IOSInstallPrompt() {
   if (!showPrompt) return null;
 
   return (
-    <div className="fixed bottom-20 xs:bottom-24 left-4 right-4 z-50 max-w-sm sm:mx-auto bg-white/95 backdrop-blur-md text-navy-900 p-4 rounded-2xl shadow-[0_10px_30px_rgba(13,27,42,0.15)] border-t-4 border-t-gold-500 border border-gold-200/50 flex flex-col gap-3 transition-all duration-500 animate-in fade-in slide-in-from-bottom-5">
+    <div className="fixed bottom-20 xs:bottom-24 left-4 right-4 z-50 max-w-sm sm:mx-auto bg-white/95 backdrop-blur-md text-navy-900 p-4 rounded-2xl shadow-[0_10px_30px_rgba(12,43,41,0.15)] border-t-4 border-t-gold-500 border border-gold-200/50 flex flex-col gap-3 transition-all duration-500 animate-in fade-in slide-in-from-bottom-5">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div className="flex gap-3 items-center">
-          <div className="w-10 h-10 bg-gradient-to-tr from-navy-900 to-navy-800 rounded-xl flex items-center justify-center text-gold-500 font-bold text-xl shadow-md border border-gold-400/20">
-            DK
-          </div>
+          <BrandMark className="w-10 h-10 shadow-md rounded-xl" />
           <div>
             <h4 className="font-semibold text-sm text-navy-950 font-sans tracking-wide">
-              Install DK Promoters
+              Install {BRAND.name}
             </h4>
             <p className="text-[10px] text-navy-600 font-tamil leading-normal">
               முகப்புத் திரையில் சேர்த்து எளிதாகப் பயன்படுத்துங்கள்!

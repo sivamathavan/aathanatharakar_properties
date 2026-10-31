@@ -117,10 +117,10 @@ export default function AdminPropertiesPage() {
       
       {/* Page Title */}
       {/* Page Title & Bulk Actions */}
-      <div className="border-b border-[#E8E0D0] pb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      <div className="border-b border-[#E4DED2] pb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="font-display font-bold text-xl md:text-2xl text-navy-900 leading-snug">Properties</h1>
-          <p className="text-xs text-navy-700 mt-0.5">Manage all property listings on DK Promoters.</p>
+          <p className="text-xs text-navy-700 mt-0.5">Every listing on the platform: yours and your agents&apos;.</p>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/admin/properties/new">
@@ -149,7 +149,7 @@ export default function AdminPropertiesPage() {
           {/* Mobile Card List (Visible on <768px, Hidden on Desktop) */}
           <div className="md:hidden space-y-4">
             {properties.map(property => (
-              <Card key={property.id} className="border-[#E8E0D0] bg-white rounded-card shadow-2xs p-4 space-y-3">
+              <Card key={property.id} className="border-[#E4DED2] bg-white rounded-card shadow-2xs p-4 space-y-3">
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">
                     <h3 className="font-semibold text-sm text-navy-900 truncate" title={property.title}>{property.title}</h3>
@@ -172,16 +172,16 @@ export default function AdminPropertiesPage() {
                   <p className="text-[10px] text-navy-700 leading-normal truncate">{property.postedBy?.email}</p>
                 </div>
 
-                <div className="flex justify-between items-center pt-2.5 border-t border-[#E8E0D0] text-xs">
+                <div className="flex justify-between items-center pt-2.5 border-t border-[#E4DED2] text-xs">
                   <span className="text-[10px] text-navy-700">Created: {new Date(property.createdAt).toLocaleDateString()}</span>
                   <div className="flex gap-1.5 flex-wrap">
                     <Link href={`/properties/${property.id}`} target="_blank">
-                      <Button variant="outline" size="sm" className="h-8 px-2.5 text-navy-800 border-[#E8E0D0] hover:bg-navy-50 font-sans text-[10px] font-bold rounded-btn flex items-center gap-1">
+                      <Button variant="outline" size="sm" className="h-8 px-2.5 text-navy-800 border-[#E4DED2] hover:bg-navy-50 font-sans text-[10px] font-bold rounded-btn flex items-center gap-1">
                         <Eye className="w-3.5 h-3.5" /> View
                       </Button>
                     </Link>
                     <Link href={`/admin/properties/${property.id}/edit`}>
-                      <Button variant="outline" size="sm" className="h-8 px-2.5 text-navy-800 border-[#E8E0D0] hover:bg-navy-50 font-sans text-[10px] font-bold rounded-btn flex items-center gap-1">
+                      <Button variant="outline" size="sm" className="h-8 px-2.5 text-navy-800 border-[#E4DED2] hover:bg-navy-50 font-sans text-[10px] font-bold rounded-btn flex items-center gap-1">
                         <Pencil className="w-3.5 h-3.5" /> Edit
                       </Button>
                     </Link>
@@ -204,18 +204,18 @@ export default function AdminPropertiesPage() {
             ))}
 
             {properties.length === 0 && (
-              <div className="text-center py-10 bg-white border border-[#E8E0D0] rounded-card text-xs text-navy-700 italic">
+              <div className="text-center py-10 bg-white border border-[#E4DED2] rounded-card text-xs text-navy-700 italic">
                 No properties found.
               </div>
             )}
           </div>
 
           {/* Desktop Table View (Visible on md+, Hidden on Mobile) */}
-          <Card className="hidden md:block border-[#E8E0D0] bg-white rounded-card shadow-xs overflow-hidden">
+          <Card className="hidden md:block border-[#E4DED2] bg-white rounded-card shadow-xs overflow-hidden">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-navy-50/60 border-b border-[#E8E0D0]/80">
+                  <thead className="bg-navy-50/60 border-b border-[#E4DED2]/80">
                     <tr>
                       <th className="px-6 py-4 w-12">
                         <input type="checkbox" className="rounded border-gray-300" checked={properties.length > 0 && selectedIds.length === properties.length} onChange={toggleAll} />
@@ -227,7 +227,7 @@ export default function AdminPropertiesPage() {
                       <th className="px-6 py-4 font-semibold text-navy-900 text-xs uppercase tracking-wider text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#E8E0D0]/50">
+                  <tbody className="divide-y divide-[#E4DED2]/50">
                     {properties.map(property => (
                       <tr key={property.id} className="hover:bg-navy-50/20 transition-colors">
                         <td className="px-6 py-4">

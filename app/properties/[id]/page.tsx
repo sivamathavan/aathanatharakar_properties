@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getAgentById, getPropertyById, getSiteConfig } from "@/lib/firestore";
@@ -17,13 +18,13 @@ function describe(p: { bedrooms?: number | null; type: string; listingType: stri
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const property = await getPropertyById(params.id);
   if (!property || property.status !== PropertyStatus.ACTIVE) return { title: "Property not found" };
-  const title = `${property.title} | DK Promoters`;
+  const title = property.title;
   const description = describe(property);
   const image = property.media?.find((m) => m.type === "IMAGE")?.url || `${SITE_URL}/icons/icon.svg`;
   return {
     title,
     description,
-    openGraph: { title, description, url: `${SITE_URL}/properties/${property.id}`, siteName: "DK Promoters", images: [{ url: image, width: 1200, height: 630 }], locale: "en_IN", type: "website" },
+    openGraph: { title, description, url: `${SITE_URL}/properties/${property.id}`, images: [{ url: image, width: 1200, height: 630 }], locale: "en_IN", type: "website" },
     twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
@@ -58,11 +59,11 @@ export default async function PropertyDetailPage({ params }: { params: { id: str
   return (
     <PropertyDetail
       property={property}
-      contact={{ name: "DK Promoters", subtitle: "Trusted property broker, Tamil Nadu", phone: waNumber(site.brokerWhatsapp) }}
+      contact={{ name: BRAND.name, subtitle: `Listed by ${BRAND.name}`, phone: waNumber(site.brokerWhatsapp) }}
       source="WEB"
       shareUrl={`${SITE_URL}/properties/${property.id}`}
       breadcrumbs={[{ label: "Home", href: "/" }, { label: "Properties", href: "/properties" }]}
-      privacyNote="Your enquiry is routed through DK Promoters. Owner contact details are never shared publicly."
+      privacyNote={`Your enquiry goes to the ${BRAND.name} team. Owner contact details are never shared publicly.`}
     />
   );
 }

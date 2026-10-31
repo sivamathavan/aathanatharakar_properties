@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, DM_Sans, Noto_Sans_Tamil } from "next/font/google";
 import "./globals.css";
 import { SITE_URL } from "@/lib/site";
+import { BRAND } from "@/lib/brand";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/layout/Header";
@@ -30,8 +31,10 @@ const notoTamil = Noto_Sans_Tamil({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "DK Promoters | டிகே புரமோட்டர்ஸ்",
-  description: "Tamil Nadu's Trusted Property Broker — DK Promoters",
+  title: { default: `${BRAND.name} — ${BRAND.tagline}`, template: `%s | ${BRAND.name}` },
+  description: BRAND.description,
+  applicationName: BRAND.name,
+  openGraph: { siteName: BRAND.name, locale: "en_IN", type: "website" },
 };
 
 export default function RootLayout({
@@ -40,20 +43,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ta" className={`${playfair.variable} ${dmSans.variable} ${notoTamil.variable}`}>
+    <html lang="en" className={`${playfair.variable} ${dmSans.variable} ${notoTamil.variable}`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <meta name="theme-color" content="#0D1B2A" />
+        <meta name="theme-color" content={BRAND.themeColor} />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icons/icon.svg" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
       </head>
-      <body className="font-sans antialiased min-h-screen flex flex-col text-[#0D1B2A] bg-[#FDF8E8]">
+      <body className="font-sans antialiased min-h-screen flex flex-col text-[#0C2B29] bg-[#F8F6F0]">
         <AuthProvider>
           <Header />
-          <main className="flex-1 pb-16 md:pb-0">
+          <main className="flex-1">
             {children}
           </main>
           <HideOnAgentPages>

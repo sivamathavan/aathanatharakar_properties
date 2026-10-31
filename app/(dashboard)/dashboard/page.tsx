@@ -8,7 +8,7 @@ import { CopyButton } from "@/components/dashboard/CopyButton";
 import { ResendVerification } from "@/components/dashboard/ResendVerification";
 import { PropertyStatus } from "@/types";
 
-export const metadata = { title: "Dashboard | DK Promoters" };
+export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
 
 export default async function DashboardOverview() {
@@ -46,7 +46,7 @@ export default async function DashboardOverview() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Link href="/dashboard/properties" className="bg-white rounded-card border border-[#E8E0D0] p-5 hover:shadow-sm">
+        <Link href="/dashboard/properties" className="bg-white rounded-card border border-[#E4DED2] p-5 hover:shadow-sm">
           <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-navy-600">
             Listings <List className="w-4 h-4 text-gold-600" />
           </div>
@@ -55,14 +55,14 @@ export default async function DashboardOverview() {
           </p>
           <p className="text-xs text-navy-600">{active} live on your page</p>
         </Link>
-        <Link href="/dashboard/enquiries" className="bg-white rounded-card border border-[#E8E0D0] p-5 hover:shadow-sm">
+        <Link href="/dashboard/enquiries" className="bg-white rounded-card border border-[#E4DED2] p-5 hover:shadow-sm">
           <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-navy-600">
             Enquiries <MessageSquare className="w-4 h-4 text-gold-600" />
           </div>
           <p className="text-2xl font-bold text-navy-900 mt-2">{leads.length}</p>
           <p className="text-xs text-navy-600">{newLeads} new</p>
         </Link>
-        <div className="bg-white rounded-card border border-[#E8E0D0] p-5">
+        <div className="bg-white rounded-card border border-[#E4DED2] p-5">
           <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-navy-600">
             Page views <Eye className="w-4 h-4 text-gold-600" />
           </div>
@@ -76,7 +76,7 @@ export default async function DashboardOverview() {
         </div>
       </div>
 
-      <div className="bg-white rounded-card border border-[#E8E0D0] p-5">
+      <div className="bg-white rounded-card border border-[#E4DED2] p-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-navy-900">Latest enquiries</h2>
           <Link href="/dashboard/enquiries" className="text-sm underline text-navy-700">See all</Link>
@@ -86,7 +86,7 @@ export default async function DashboardOverview() {
             No enquiries yet. Share your page link on WhatsApp to start getting them.
           </p>
         ) : (
-          <ul className="divide-y divide-[#E8E0D0]">
+          <ul className="divide-y divide-[#E4DED2]">
             {leads.slice(0, 5).map((l) => (
               <li key={l.id} className="py-3 flex items-start justify-between gap-3">
                 <div className="min-w-0">

@@ -11,7 +11,7 @@ import { commissionSummary } from '@/lib/crm/commission';
 import { formatINR, formatDateStr } from './formatters';
 import type { RePerson, ReDeal, ReProperty, ReLedgerEntry, ReActivity } from './re-types';
 
-const PIE_COLORS = ['#D4A017', '#7A8EC2', '#1E8449', '#E0B030', '#5B72B3', '#C0392B'];
+const PIE_COLORS = ['#E39614', '#6FAEA7', '#1E8449', '#EFA92E', '#4A968E', '#C0392B'];
 
 interface Props {
   people: RePerson[];
@@ -112,8 +112,8 @@ export const ReOverviewTab: React.FC<Props> = ({ people, deals, properties, ledg
             <BarChart data={monthlyData}>
               <XAxis dataKey="month" tick={{ fill: '#9ca3af', fontSize: 12 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
-              <Tooltip formatter={(v: number) => formatINR(v)} contentStyle={{ background: '#0D1B2A', border: '1px solid #1E3278', borderRadius: 12, color: '#fff' }} />
-              <Bar dataKey="amount" fill="#D4A017" radius={[8, 8, 0, 0]} />
+              <Tooltip formatter={(v: number) => formatINR(v)} contentStyle={{ background: '#0C2B29', border: '1px solid #1A524C', borderRadius: 12, color: '#fff' }} />
+              <Bar dataKey="amount" fill="#E39614" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -127,7 +127,7 @@ export const ReOverviewTab: React.FC<Props> = ({ people, deals, properties, ledg
                 <Pie data={dealTypePie} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value">
                   {dealTypePie.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                 </Pie>
-                <Tooltip contentStyle={{ background: '#0D1B2A', border: '1px solid #1E3278', borderRadius: 12, color: '#fff' }} />
+                <Tooltip contentStyle={{ background: '#0C2B29', border: '1px solid #1A524C', borderRadius: 12, color: '#fff' }} />
               </PieChart>
             </ResponsiveContainer>
           ) : (

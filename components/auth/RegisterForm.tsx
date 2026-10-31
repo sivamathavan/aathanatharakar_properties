@@ -34,7 +34,7 @@ export function RegisterForm({ trialDays, trialListings }: { trialDays: number; 
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center bg-warm-cream p-4 py-10">
-      <div className="w-full max-w-lg bg-white border border-[#E8E0D0] rounded-card shadow-sm p-6 sm:p-8 space-y-6">
+      <div className="w-full max-w-lg bg-white border border-[#E4DED2] rounded-card shadow-sm p-6 sm:p-8 space-y-6">
         <div className="space-y-1">
           <h1 className="text-2xl font-display font-bold text-navy-900">Get your own property page</h1>
           <p className="text-sm text-navy-700">

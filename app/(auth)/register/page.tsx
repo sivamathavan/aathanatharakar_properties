@@ -1,7 +1,7 @@
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { getPlansConfig } from "@/lib/firestore";
 
-export const metadata = { title: "Start your free trial | DK Promoters" };
+export const metadata = { title: "Start your free trial" };
 export const dynamic = "force-dynamic";
 
 export default async function RegisterPage() {

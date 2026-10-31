@@ -56,15 +56,15 @@ export function AgentListings({ properties, slug, phone, name }: { properties: L
         <label className="relative flex-1">
           <span className="sr-only">Search properties</span>
           <Search className="w-4 h-4 text-navy-500 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search area, e.g. Vadavalli" className="w-full h-11 pl-9 pr-3 rounded-btn border border-[#E8E0D0] bg-white text-sm" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search area, e.g. Vadavalli" className="w-full h-11 pl-9 pr-3 rounded-btn border border-[#E4DED2] bg-white text-sm" />
         </label>
-        <select aria-label="Property type" value={type} onChange={(e) => setType(e.target.value)} className="h-11 px-3 rounded-btn border border-[#E8E0D0] bg-white text-sm">
+        <select aria-label="Property type" value={type} onChange={(e) => setType(e.target.value)} className="h-11 px-3 rounded-btn border border-[#E4DED2] bg-white text-sm">
           <option value="ALL">All types</option>
           {types.map((t) => (
             <option key={t} value={t}>{TYPE_LABEL[t] || t}</option>
           ))}
         </select>
-        <select aria-label="Sale or rent" value={listing} onChange={(e) => setListing(e.target.value)} className="h-11 px-3 rounded-btn border border-[#E8E0D0] bg-white text-sm">
+        <select aria-label="Sale or rent" value={listing} onChange={(e) => setListing(e.target.value)} className="h-11 px-3 rounded-btn border border-[#E4DED2] bg-white text-sm">
           <option value="ALL">Sale &amp; rent</option>
           <option value="SALE">For sale</option>
           <option value="RENT">For rent / lease</option>

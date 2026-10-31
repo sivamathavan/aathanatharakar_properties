@@ -66,7 +66,7 @@ export default function SavedPropertiesPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-card border border-[#E8E0D0] p-12 text-center shadow-sm">
+          <div className="bg-white rounded-card border border-[#E4DED2] p-12 text-center shadow-sm">
             <Heart className="w-16 h-16 text-navy-200 mx-auto mb-4" />
             <h3 className="text-xl font-display font-bold text-navy-900 mb-2">No saved properties yet</h3>
             <p className="text-navy-700 font-sans mb-6">Explore our listings and save your favorites to view them later.</p>

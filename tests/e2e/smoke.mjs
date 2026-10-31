@@ -10,7 +10,7 @@ const env = Object.fromEntries(
 );
 const BASE = process.env.BASE || "http://localhost:3007";
 const AUTH = "http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1";
-const PROJECT = "demo-dkpromoters";
+const PROJECT = "demo-proppage";
 const BUCKET = `${PROJECT}.appspot.com`;
 const IMG = readFileSync(new URL("./sample.jpg", import.meta.url));
 const RUN = Date.now().toString(36);
@@ -80,21 +80,21 @@ async function main() {
   let r = await call("/api/admin/settings", { method: "PUT", cookie: admin, body: {
     plans: { trialDays: 14, boostPricePerWeek: 149, trial: { listingLimit: 5, photoLimit: 6 },
       starter: { priceMonthly: 299, priceYearly: 2999, listingLimit: 25, photoLimit: 10 }, pro: { priceMonthly: 699, priceYearly: 6999, listingLimit: 100, photoLimit: 15 } },
-    site: { upiId: "dkpromoters@okaxis", upiName: "DK Promoters", brokerWhatsapp: "916381169124", gstin: "" } } });
+    site: { upiId: "proppage@okaxis", upiName: "PropPage", brokerWhatsapp: "919000000001", gstin: "" } } });
   check("admin saves prices and UPI details", r.status === 200, r.text);
   const adminMedia = await upload(adminTok.idToken, `properties/${adminTok.localId}/admin-${RUN}.jpg`);
-  r = await call("/api/properties", { method: "POST", cookie: admin, body: listing(`DK own plot ${RUN}`, [adminMedia]) });
+  r = await call("/api/properties", { method: "POST", cookie: admin, body: listing(`Admin own plot ${RUN}`, [adminMedia]) });
   check("admin listing is created", r.status === 201, r.text);
   const adminPropId = r.json?.id;
 
   console.log("Agent signup");
-  const email = `agent-${RUN}@dk.test`, pw = `Pw-${RUN}-x9`;
+  const email = `agent-${RUN}@proppage.test`, pw = `Pw-${RUN}-x9`;
   const phone = `9${String(Date.now()).slice(-9)}`;
   let a = await signUp(email, pw);
   r = await call("/api/register", { method: "POST", bearer: a.idToken, body: { name: "Ravi Kumar", phone, agencyName: `Ravi Realty ${RUN}`, city: "Coimbatore", role: "ADMIN" } });
   check("agent signs up and gets a trial", r.status === 201, r.text);
   const slug = r.json?.slug;
-  const dup = await signUp(`dup-${RUN}@dk.test`, pw);
+  const dup = await signUp(`dup-${RUN}@proppage.test`, pw);
   r = await call("/api/register", { method: "POST", bearer: dup.idToken, body: { name: "Copy", phone, agencyName: "", city: "Coimbatore" } });
   check("one free trial per phone number", r.status === 409, `${r.status} ${r.text}`);
   a = await signIn(email, pw);
@@ -140,9 +140,9 @@ async function main() {
   check("agent sees the enquiry in the inbox", r.text.includes(`Visitor ${RUN}`) && !r.text.includes(">Bot<"));
 
   console.log("Security");
-  const b = await signUp(`b-${RUN}@dk.test`, pw);
+  const b = await signUp(`b-${RUN}@proppage.test`, pw);
   await call("/api/register", { method: "POST", bearer: b.idToken, body: { name: "Other Agent", phone: `8${String(Date.now()).slice(-9)}`, agencyName: "", city: "Salem" } });
-  const agentB = await session((await signIn(`b-${RUN}@dk.test`, pw)).idToken);
+  const agentB = await session((await signIn(`b-${RUN}@proppage.test`, pw)).idToken);
   r = await call(`/api/properties/${agentPropId}`, { method: "PATCH", cookie: agentB, body: { status: "SOLD" } });
   check("an agent can't change another agent's listing", r.status === 403, `${r.status}`);
   r = await call(`/api/properties/${agentPropId}`, { cookie: agentB });

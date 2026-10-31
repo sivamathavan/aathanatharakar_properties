@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useState } from "react";
 import { Menu, LogOut, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,9 +23,7 @@ export function AdminHeader() {
           >
             <Menu className="w-5 h-5" />
           </Button>
-          <span className="font-display font-bold text-base text-gold-500 tracking-wide">
-            டிகே புரமோட்டர்ஸ் Admin
-          </span>
+          <BrandLogo size="sm" />
         </div>
 
         <div className="flex items-center gap-2">

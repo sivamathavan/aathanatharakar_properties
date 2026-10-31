@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { redirect } from "next/navigation";
 import { getServerUser } from "@/lib/auth";
 import Link from "next/link";
@@ -17,15 +18,15 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-64px)] bg-[#FDF8E8]">
+    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-64px)] bg-[#F8F6F0]">
       {/* Mobile Admin Header */}
       <AdminHeader />
 
       {/* Desktop Sidebar (lg+ visible) */}
-      <aside className="w-64 bg-[#0D1B2A] text-white hidden lg:flex flex-col shrink-0 border-r border-[#1E3278]">
-        <div className="p-6 border-b border-[#1E3278]">
-          <h2 className="text-xl font-display font-bold text-gold-500">டிகே புரமோட்டர்ஸ்</h2>
-          <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-sans">Admin Control Panel</p>
+      <aside className="w-64 bg-[#0C2B29] text-white hidden lg:flex flex-col shrink-0 border-r border-[#1A524C]">
+        <div className="p-6 border-b border-[#1A524C]">
+          <BrandLogo size="md" />
+          <p className="text-[10px] text-gray-400 mt-2 uppercase tracking-wider font-sans">Admin</p>
         </div>
         
         <nav className="flex-1 p-4 space-y-1">

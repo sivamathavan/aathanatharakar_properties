@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import { getPublishedBlogPosts, getUserById } from "@/lib/firestore";
 import Link from "next/link";
 import { Calendar, User, Clock, TrendingUp } from "lucide-react";
@@ -6,7 +7,7 @@ import { STATIC_POSTS } from "@/lib/static-blog";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Real Estate Blog | DK Promoters",
+  title: "Real Estate Blog",
   description:
     "Expert tips, market insights, and guides for buying, selling, and renting properties in Tamil Nadu.",
 };
@@ -27,7 +28,7 @@ export default async function BlogPage() {
       const author = await getUserById(post.authorId);
       return {
         ...post,
-        author: author || { name: "DK Promoters Team" },
+        author: author || { name: `${BRAND.name} Team` },
       };
     })
   );
@@ -61,7 +62,7 @@ export default async function BlogPage() {
                 href={`/blog/${post.slug}`}
                 className="group"
               >
-                <article className="bg-white rounded-card border border-[#E8E0D0] shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 h-full flex flex-col">
+                <article className="bg-white rounded-card border border-[#E4DED2] shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 h-full flex flex-col">
                   <div className="relative h-44 sm:h-48 overflow-hidden bg-navy-50">
                     {post.coverImageUrl ? (
                       <img
@@ -80,7 +81,7 @@ export default async function BlogPage() {
                     <h2 className="font-display font-semibold text-navy-900 text-base leading-snug mb-3 group-hover:text-gold-600 transition-colors line-clamp-2">
                       {post.title}
                     </h2>
-                    <div className="flex items-center text-xs text-gray-500 gap-3 mt-auto pt-3 border-t border-[#E8E0D0]">
+                    <div className="flex items-center text-xs text-gray-500 gap-3 mt-auto pt-3 border-t border-[#E4DED2]">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {new Date(
@@ -107,7 +108,7 @@ export default async function BlogPage() {
               href={`/blog/${STATIC_POSTS[0].slug}`}
               className="group sm:col-span-2 lg:col-span-2"
             >
-              <article className="bg-white rounded-card border border-[#E8E0D0] shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 h-full flex flex-col sm:flex-row">
+              <article className="bg-white rounded-card border border-[#E4DED2] shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 h-full flex flex-col sm:flex-row">
                 <div className="relative sm:w-1/2 h-48 sm:h-auto overflow-hidden bg-navy-50 flex-shrink-0">
                   <img
                     src={STATIC_POSTS[0].coverImageUrl}
@@ -138,7 +139,7 @@ export default async function BlogPage() {
                       {STATIC_POSTS[0].excerpt}
                     </p>
                   </div>
-                  <div className="flex items-center text-xs text-gray-500 gap-3 mt-4 pt-4 border-t border-[#E8E0D0]">
+                  <div className="flex items-center text-xs text-gray-500 gap-3 mt-4 pt-4 border-t border-[#E4DED2]">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {new Date(STATIC_POSTS[0].publishedAt).toLocaleDateString(
@@ -157,7 +158,7 @@ export default async function BlogPage() {
 
             {STATIC_POSTS.slice(1).map((post) => (
               <Link key={post.id} href={`/blog/${post.slug}`} className="group">
-                <article className="bg-white rounded-card border border-[#E8E0D0] shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 h-full flex flex-col">
+                <article className="bg-white rounded-card border border-[#E4DED2] shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 h-full flex flex-col">
                   <div className="relative h-40 sm:h-44 overflow-hidden bg-navy-50 flex-shrink-0">
                     <img
                       src={post.coverImageUrl}
@@ -183,7 +184,7 @@ export default async function BlogPage() {
                     <p className="text-gray-500 text-xs leading-relaxed line-clamp-2 mb-3">
                       {post.excerpt}
                     </p>
-                    <div className="flex items-center text-xs text-gray-400 gap-3 mt-auto pt-3 border-t border-[#E8E0D0]">
+                    <div className="flex items-center text-xs text-gray-400 gap-3 mt-auto pt-3 border-t border-[#E4DED2]">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
                         {new Date(post.publishedAt).toLocaleDateString(
@@ -216,10 +217,10 @@ export default async function BlogPage() {
               Browse Properties
             </Link>
             <Link
-              href="/sell-your-property"
+              href="/for-agents"
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-btn font-sans font-medium text-sm border border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-navy-900 transition-all duration-200"
             >
-              List Your Property
+              I&apos;m an agent
             </Link>
           </div>
         </div>

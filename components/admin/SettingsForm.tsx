@@ -38,7 +38,7 @@ export function SettingsForm({ plans, site }: { plans: PlansConfig; site: SiteCo
   };
 
   const tier = (key: "starter" | "pro", name: string) => (
-    <fieldset className="bg-white rounded-card border border-[#E8E0D0] p-4 grid grid-cols-2 gap-3">
+    <fieldset className="bg-white rounded-card border border-[#E4DED2] p-4 grid grid-cols-2 gap-3">
       <legend className="px-1 font-bold text-navy-900">{name}</legend>
       <Field id={`${key}-m`} label="₹ per month" value={p[key].priceMonthly} onChange={(v) => setP({ ...p, [key]: { ...p[key], priceMonthly: v } })} />
       <Field id={`${key}-y`} label="₹ per year" value={p[key].priceYearly} onChange={(v) => setP({ ...p, [key]: { ...p[key], priceYearly: v } })} />
@@ -51,17 +51,17 @@ export function SettingsForm({ plans, site }: { plans: PlansConfig; site: SiteCo
     <form onSubmit={save} className="space-y-6">
       <section className="space-y-3">
         <h2 className="font-bold text-navy-900">Where agents pay you</h2>
-        <div className="bg-white rounded-card border border-[#E8E0D0] p-4 grid sm:grid-cols-2 gap-3">
+        <div className="bg-white rounded-card border border-[#E4DED2] p-4 grid sm:grid-cols-2 gap-3">
           <Field id="upi-id" type="text" label="UPI ID" value={s.upiId} onChange={(v) => setS({ ...s, upiId: v })} hint="Agents see this with a QR code" />
           <Field id="upi-name" type="text" label="Name on UPI" value={s.upiName} onChange={(v) => setS({ ...s, upiName: v })} />
-          <Field id="wa" type="text" label="DK WhatsApp for buyers" value={s.brokerWhatsapp} onChange={(v) => setS({ ...s, brokerWhatsapp: v })} hint="Used on your own listings" />
+          <Field id="wa" type="text" label="Your WhatsApp for buyers" value={s.brokerWhatsapp} onChange={(v) => setS({ ...s, brokerWhatsapp: v })} hint="Shown on your own listings on the main site" />
           <Field id="gstin" type="text" label="GSTIN (optional)" value={s.gstin} onChange={(v) => setS({ ...s, gstin: v })} hint="When set, the tracker adds 18% GST to commission invoices" />
         </div>
       </section>
 
       <section className="space-y-3">
         <h2 className="font-bold text-navy-900">Plans</h2>
-        <fieldset className="bg-white rounded-card border border-[#E8E0D0] p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <fieldset className="bg-white rounded-card border border-[#E4DED2] p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
           <legend className="px-1 font-bold text-navy-900">Free trial</legend>
           <Field id="trial-days" label="Days" value={p.trialDays} onChange={(v) => setP({ ...p, trialDays: Number(v) })} />
           <Field id="trial-l" label="Listings" value={p.trial.listingLimit} onChange={(v) => setP({ ...p, trial: { ...p.trial, listingLimit: Number(v) } })} />

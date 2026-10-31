@@ -65,7 +65,7 @@ export function HomeSearch() {
                   className={`h-10 text-xs font-bold rounded-btn transition-all ${
                     active 
                       ? "bg-gold-500 text-navy-900 shadow-xs" 
-                      : "text-navy-700 hover:text-[#0D1B2A]"
+                      : "text-navy-700 hover:text-[#0C2B29]"
                   }`}
                 >
                   {mode === "BUY" ? "Buy" : mode === "RENT" ? "Rent" : mode === "LEASE" ? "Lease" : "Sell"}

@@ -1,5 +1,6 @@
 "use client";
 
+import { BRAND } from "@/lib/brand";
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { toast } from "sonner";
@@ -74,7 +75,7 @@ export function PaymentRequestForm({
   };
 
   if (!upi.id) {
-    return <p className="text-sm text-navy-700">Online payment details are being set up. Please call DK Promoters to pay.</p>;
+    return <p className="text-sm text-navy-700">Online payment details are being set up. Please contact {BRAND.name} support to pay.</p>;
   }
 
   return (
@@ -108,7 +109,7 @@ export function PaymentRequestForm({
         </div>
       )}
 
-      <div className="rounded-lg border border-[#E8E0D0] bg-cream-50 p-4 space-y-3">
+      <div className="rounded-lg border border-[#E4DED2] bg-cream-50 p-4 space-y-3">
         <p className="text-sm text-navy-900">
           <span className="font-bold">Step 1.</span> Pay <span className="font-bold">{formatINR(amount)}</span> by UPI to <span className="font-mono">{upi.id}</span> ({upi.name}).
         </p>

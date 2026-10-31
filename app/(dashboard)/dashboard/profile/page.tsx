@@ -1,7 +1,7 @@
 import { requireAgentPage } from "@/lib/agent-session";
 import { ProfileForm } from "@/components/dashboard/ProfileForm";
 
-export const metadata = { title: "Profile | DK Promoters" };
+export const metadata = { title: "Profile" };
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {

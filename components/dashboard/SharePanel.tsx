@@ -13,7 +13,7 @@ export function SharePanel({ url, message, slug }: { url: string; message: strin
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-card border border-[#E8E0D0] p-5 space-y-4">
+      <div className="bg-white rounded-card border border-[#E4DED2] p-5 space-y-4">
         <p className="text-xs font-bold uppercase tracking-wider text-navy-600">Your link</p>
         <p className="font-mono text-sm break-all text-navy-900">{url}</p>
         <div className="flex flex-wrap gap-2">
@@ -24,7 +24,7 @@ export function SharePanel({ url, message, slug }: { url: string; message: strin
           <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex h-10 px-4 items-center rounded-btn border text-sm font-semibold">Open page</a>
         </div>
       </div>
-      <div className="bg-white rounded-card border border-[#E8E0D0] p-5 flex flex-col sm:flex-row items-center gap-5">
+      <div className="bg-white rounded-card border border-[#E4DED2] p-5 flex flex-col sm:flex-row items-center gap-5">
         {qr ? <img src={qr} alt={`QR code for ${url}`} width={180} height={180} className="rounded border" /> : <div className="w-[180px] h-[180px] bg-navy-50 rounded" />}
         <div className="space-y-2 text-sm text-navy-800">
           <p className="font-semibold">QR code</p>

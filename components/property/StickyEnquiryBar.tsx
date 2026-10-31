@@ -24,7 +24,7 @@ export function StickyEnquiryBar({
 
   return (
     <>
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8E0D0] px-3 py-3 z-40 pb-safe flex gap-2 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#E4DED2] px-3 py-3 z-40 pb-safe flex gap-2 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
         <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="flex-1 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-btn flex items-center justify-center h-12 shadow-sm">
           <FaWhatsapp className="w-5 h-5" />
         </a>

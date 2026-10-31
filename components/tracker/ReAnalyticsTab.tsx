@@ -9,7 +9,7 @@ import { re_getMonthKey } from './re-hooks';
 import { formatINR } from './formatters';
 import type { RePerson, ReDeal, ReProperty, ReLedgerEntry } from './re-types';
 
-const COLORS = ['#D4A017', '#7A8EC2', '#1E8449', '#E0B030', '#5B72B3', '#C0392B', '#9FAFD4', '#B8880E'];
+const COLORS = ['#E39614', '#6FAEA7', '#1E8449', '#EFA92E', '#4A968E', '#C0392B', '#9CC7C2', '#C47C0B'];
 
 interface Props {
   people: RePerson[];
@@ -110,13 +110,13 @@ export const ReAnalyticsTab: React.FC<Props> = ({ people, deals, properties }) =
           <h4 className="font-heading font-bold text-white mb-4">Monthly Trend (6 Months)</h4>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={monthlyTrend}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1E3278" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1A524C" />
               <XAxis dataKey="month" tick={{ fill: '#9ca3af', fontSize: 12 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 100000).toFixed(0)}L`} />
-              <Tooltip contentStyle={{ background: '#0D1B2A', border: '1px solid #1E3278', borderRadius: 12, color: '#fff' }} formatter={(v: number) => formatINR(v)} />
+              <Tooltip contentStyle={{ background: '#0C2B29', border: '1px solid #1A524C', borderRadius: 12, color: '#fff' }} formatter={(v: number) => formatINR(v)} />
               <Legend />
-              <Line type="monotone" dataKey="value" name="Deal Value" stroke="#D4A017" strokeWidth={2} dot={{ r: 4 }} />
-              <Line type="monotone" dataKey="commission" name="Commission" stroke="#7A8EC2" strokeWidth={2} dot={{ r: 4 }} />
+              <Line type="monotone" dataKey="value" name="Deal Value" stroke="#E39614" strokeWidth={2} dot={{ r: 4 }} />
+              <Line type="monotone" dataKey="commission" name="Commission" stroke="#6FAEA7" strokeWidth={2} dot={{ r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -128,8 +128,8 @@ export const ReAnalyticsTab: React.FC<Props> = ({ people, deals, properties }) =
             <BarChart data={statusFunnel} layout="vertical">
               <XAxis type="number" tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="status" tick={{ fill: '#9ca3af', fontSize: 11 }} width={120} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: '#0D1B2A', border: '1px solid #1E3278', borderRadius: 12, color: '#fff' }} />
-              <Bar dataKey="count" fill="#D4A017" radius={[0, 8, 8, 0]} />
+              <Tooltip contentStyle={{ background: '#0C2B29', border: '1px solid #1A524C', borderRadius: 12, color: '#fff' }} />
+              <Bar dataKey="count" fill="#E39614" radius={[0, 8, 8, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -145,8 +145,8 @@ export const ReAnalyticsTab: React.FC<Props> = ({ people, deals, properties }) =
               <BarChart data={districtData}>
                 <XAxis dataKey="district" tick={{ fill: '#9ca3af', fontSize: 10 }} axisLine={false} tickLine={false} angle={-30} textAnchor="end" height={60} />
                 <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 100000).toFixed(0)}L`} />
-                <Tooltip contentStyle={{ background: '#0D1B2A', border: '1px solid #1E3278', borderRadius: 12, color: '#fff' }} formatter={(v: number) => formatINR(v)} />
-                <Bar dataKey="value" fill="#D4A017" radius={[8, 8, 0, 0]} />
+                <Tooltip contentStyle={{ background: '#0C2B29', border: '1px solid #1A524C', borderRadius: 12, color: '#fff' }} formatter={(v: number) => formatINR(v)} />
+                <Bar dataKey="value" fill="#E39614" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : <div className="flex items-center justify-center h-[250px] text-gray-500 text-sm">No data</div>}
@@ -162,7 +162,7 @@ export const ReAnalyticsTab: React.FC<Props> = ({ people, deals, properties }) =
                   <Pie data={propTypePie} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
                     {propTypePie.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
-                  <Tooltip contentStyle={{ background: '#0D1B2A', border: '1px solid #1E3278', borderRadius: 12, color: '#fff' }} />
+                  <Tooltip contentStyle={{ background: '#0C2B29', border: '1px solid #1A524C', borderRadius: 12, color: '#fff' }} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="flex flex-wrap gap-2 mt-2 justify-center">
@@ -186,7 +186,7 @@ export const ReAnalyticsTab: React.FC<Props> = ({ people, deals, properties }) =
                   <Pie data={personTypePie} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
                     {personTypePie.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
-                  <Tooltip contentStyle={{ background: '#0D1B2A', border: '1px solid #1E3278', borderRadius: 12, color: '#fff' }} />
+                  <Tooltip contentStyle={{ background: '#0C2B29', border: '1px solid #1A524C', borderRadius: 12, color: '#fff' }} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="flex flex-wrap gap-2 mt-2 justify-center">

@@ -27,21 +27,14 @@ interface PropertyCardProps {
   };
   /** Where "View Details" goes. Defaults to the main-site page. */
   href?: string;
-  /** Who gets WhatsApp and calls. Defaults to the DK broker. */
-  contact?: { phone: string; label: string; note: string };
+  /** Who gets WhatsApp and calls (the listing's agent, or the site). No contact = no buttons. */
+  contact?: { phone: string; label: string; note: string } | null;
   showViews?: boolean;
 }
 
-// Broker contact — never expose the listing owner's number publicly.
-const BROKER_PHONE =
-  (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916381169124").replace(
-    /[^0-9]/g,
-    ""
-  );
-
 export function PropertyCard({ property, href, contact, showViews = true }: PropertyCardProps) {
-  const phone = contact?.phone || BROKER_PHONE;
-  const label = contact?.label || "Broker";
+  const phone = contact?.phone || "";
+  const label = contact?.label || "";
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
@@ -113,7 +106,7 @@ export function PropertyCard({ property, href, contact, showViews = true }: Prop
   const callUrl = `tel:+${phone}`;
 
   return (
-    <div className="overflow-hidden group flex flex-col justify-between bg-white rounded-card border border-[#E8E0D0] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+    <div className="overflow-hidden group flex flex-col justify-between bg-white rounded-card border border-[#E4DED2] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
       {/* Image */}
       <div className="relative h-48 sm:h-52 overflow-hidden bg-navy-950 flex-shrink-0">
         {/* Blurred Background to prevent cuts */}
@@ -163,7 +156,7 @@ export function PropertyCard({ property, href, contact, showViews = true }: Prop
 
         {property.isFeatured && (
           <div className="absolute top-12 right-3 z-10">
-            <span className="text-[10px] font-bold px-2.5 py-1 rounded-pill bg-[#D4A017] text-navy-900 shadow-xs uppercase tracking-wide">
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-pill bg-[#E39614] text-navy-900 shadow-xs uppercase tracking-wide">
               Featured
             </span>
           </div>
@@ -195,7 +188,7 @@ export function PropertyCard({ property, href, contact, showViews = true }: Prop
         </div>
 
         <div className="space-y-2.5">
-          <div className="flex items-center gap-3 text-xs text-[#4A5568] border-t border-[#E8E0D0] pt-3 font-sans">
+          <div className="flex items-center gap-3 text-xs text-[#4A5568] border-t border-[#E4DED2] pt-3 font-sans">
             {property.bedrooms ? <span>{property.bedrooms} BHK</span> : null}
             <span>{property.area} {(property.areaUnit || "SQFT").toLowerCase()}</span>
             {showViews && (
@@ -215,6 +208,7 @@ export function PropertyCard({ property, href, contact, showViews = true }: Prop
             </span>
           </Link>
 
+          {phone && (
           <div className="grid grid-cols-2 gap-2">
             <a
               href={waUrl}
@@ -243,11 +237,14 @@ export function PropertyCard({ property, href, contact, showViews = true }: Prop
               Call {label}
             </a>
           </div>
+          )}
 
-          <p className="text-[10px] text-navy-600 flex items-center gap-1 pt-1">
-            <ShieldCheck className="w-3 h-3 text-gold-600" />
-            {contact?.note || "Contact via DK Promoters broker only"}
-          </p>
+          {contact?.note && (
+            <p className="text-[10px] text-navy-600 flex items-center gap-1 pt-1">
+              <ShieldCheck className="w-3 h-3 text-gold-600" />
+              {contact.note}
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -1,9 +1,10 @@
+import { BRAND } from "@/lib/brand";
 import { listAgents, propertiesCol } from "@/lib/firestore";
 import { AgentsTable } from "@/components/admin/AgentsTable";
 import { SITE_URL } from "@/lib/site";
 import { PropertyStatus } from "@/types";
 
-export const metadata = { title: "Agents | DK Promoters Admin" };
+export const metadata = { title: "Agents · Admin" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminAgentsPage() {
@@ -20,9 +21,9 @@ export default async function AdminAgentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-[#E8E0D0] pb-4">
+      <div className="border-b border-[#E4DED2] pb-4">
         <h1 className="font-display font-bold text-xl md:text-2xl text-navy-900">Agents</h1>
-        <p className="text-xs text-navy-700 mt-0.5">Everyone using DK Promoters for their own property page.</p>
+        <p className="text-xs text-navy-700 mt-0.5">Everyone using {BRAND.name} for their own property page.</p>
       </div>
       <AgentsTable agents={JSON.parse(JSON.stringify(agents))} counts={counts} siteUrl={SITE_URL} />
     </div>

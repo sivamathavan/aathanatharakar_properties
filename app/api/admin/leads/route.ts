@@ -5,7 +5,7 @@ import { UserRole } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-// Enquiries on the admin's own listings (the main DK site).
+// Enquiries on the admin's own listings (the main site).
 export async function GET(req: Request) {
   if (!(await requireRole(req, UserRole.ADMIN))) return new NextResponse("Unauthorized", { status: 401 });
   try {

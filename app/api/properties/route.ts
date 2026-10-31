@@ -52,7 +52,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ id }, { status: 201 });
     }
 
-    // Admin: the listing goes on the main DK site straight away.
+    // Admin: the listing goes on the main site straight away.
     const id = await createProperty(
       {
         ...publicFields(input),

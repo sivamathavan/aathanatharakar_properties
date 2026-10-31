@@ -27,7 +27,7 @@ const schema = z.object({
 });
 
 // A visitor's enquiry goes to whoever owns the listing: the agent for agent
-// listings, the DK broker for the admin's own listings.
+// listings, the site team for the admin's own listings.
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
     const ip = clientIp(req);

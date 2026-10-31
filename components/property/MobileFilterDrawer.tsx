@@ -72,7 +72,7 @@ export function MobileFilterDrawer({
             <select
               name="city"
               defaultValue={city || ""}
-              className="w-full h-12 px-3 border border-[#E8E0D0] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+              className="w-full h-12 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
             >
               <option value="">All Cities</option>
               {tnCities.map((c) => (
@@ -90,7 +90,7 @@ export function MobileFilterDrawer({
             <select
               name="type"
               defaultValue={type || ""}
-              className="w-full h-12 px-3 border border-[#E8E0D0] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+              className="w-full h-12 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
             >
               <option value="">All Types</option>
               {propertyTypes.map((t) => (
@@ -108,7 +108,7 @@ export function MobileFilterDrawer({
             <select
               name="listingType"
               defaultValue={listingType || ""}
-              className="w-full h-12 px-3 border border-[#E8E0D0] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+              className="w-full h-12 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
             >
               <option value="">All Listings</option>
               {listingTypes.map((t) => (
@@ -126,7 +126,7 @@ export function MobileFilterDrawer({
             <select
               name="bhk"
               defaultValue={bhk}
-              className="w-full h-12 px-3 border border-[#E8E0D0] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
+              className="w-full h-12 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
             >
               <option value="">Any</option>
               {[1, 2, 3, 4, 5].map((n) => (
@@ -149,7 +149,7 @@ export function MobileFilterDrawer({
                 defaultValue={minPrice}
                 min="0"
                 placeholder="Min"
-                className="h-12 px-3 border border-[#E8E0D0] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                className="h-12 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500"
               />
               <input
                 type="number"
@@ -158,7 +158,7 @@ export function MobileFilterDrawer({
                 defaultValue={maxPrice}
                 min="0"
                 placeholder="Max"
-                className="h-12 px-3 border border-[#E8E0D0] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                className="h-12 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500"
               />
             </div>
           </div>
@@ -174,7 +174,7 @@ export function MobileFilterDrawer({
               <Button
                 type="button"
                 variant="outline"
-                className="w-full h-12 border-[#E8E0D0] text-navy-800 hover:bg-navy-50 font-sans"
+                className="w-full h-12 border-[#E4DED2] text-navy-800 hover:bg-navy-50 font-sans"
               >
                 Clear Filters
               </Button>

@@ -21,7 +21,7 @@ const schema = z.object({
     pro: limits,
   }),
   site: z.object({
-    upiId: z.string().trim().max(80).refine((v) => v === "" || /^[\w.\-]+@[\w.\-]+$/.test(v), "UPI ID looks wrong (example: dkpromoters@okaxis)"),
+    upiId: z.string().trim().max(80).refine((v) => v === "" || /^[\w.\-]+@[\w.\-]+$/.test(v), "UPI ID looks wrong (example: yourname@okaxis)"),
     upiName: z.string().trim().min(2).max(80),
     brokerWhatsapp: z.string().trim().max(20),
     gstin: z.string().trim().toUpperCase().max(15).refine((v) => v === "" || /^[0-9]{2}[A-Z0-9]{13}$/.test(v), "GSTIN must be 15 characters"),

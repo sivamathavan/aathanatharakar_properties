@@ -50,11 +50,11 @@ export function PaymentsReview({ pending, decided }: { pending: Payment[]; decid
       <section className="space-y-3">
         <h2 className="font-bold text-navy-900">Waiting for you ({pending.length})</h2>
         {pending.length === 0 ? (
-          <p className="text-sm text-navy-600 bg-white rounded-card border border-[#E8E0D0] p-6 text-center">Nothing to check.</p>
+          <p className="text-sm text-navy-600 bg-white rounded-card border border-[#E4DED2] p-6 text-center">Nothing to check.</p>
         ) : (
           <ul className="space-y-3">
             {pending.map((p) => (
-              <li key={p.id} className="bg-white rounded-card border border-[#E8E0D0] p-4 flex flex-col md:flex-row md:items-center gap-3">
+              <li key={p.id} className="bg-white rounded-card border border-[#E4DED2] p-4 flex flex-col md:flex-row md:items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-navy-900">{p.agentName} · {formatINR(p.amount)}</p>
                   <p className="text-sm text-navy-700">{what(p)}</p>
@@ -83,14 +83,14 @@ export function PaymentsReview({ pending, decided }: { pending: Payment[]; decid
           <h2 className="font-bold text-navy-900">History</h2>
           <p className="text-sm text-navy-700">Approved this month: <span className="font-bold text-navy-900">{formatINR(total)}</span></p>
         </div>
-        <div className="bg-white rounded-card border border-[#E8E0D0] overflow-x-auto">
+        <div className="bg-white rounded-card border border-[#E4DED2] overflow-x-auto">
           <table className="w-full text-sm min-w-[640px]">
             <thead className="bg-navy-50 text-left text-xs uppercase text-navy-700">
               <tr><th className="p-3">Date</th><th className="p-3">Agent</th><th className="p-3">For</th><th className="p-3">Amount</th><th className="p-3">UTR</th><th className="p-3">Result</th></tr>
             </thead>
             <tbody>
               {decided.map((p) => (
-                <tr key={p.id} className="border-t border-[#E8E0D0]">
+                <tr key={p.id} className="border-t border-[#E4DED2]">
                   <td className="p-3 whitespace-nowrap">{new Date(p.decidedAt || p.createdAt).toLocaleDateString("en-IN")}</td>
                   <td className="p-3">{p.agentName}</td>
                   <td className="p-3">{what(p)}</td>

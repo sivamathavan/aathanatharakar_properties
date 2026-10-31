@@ -2,7 +2,7 @@ import { requireAgentPage } from "@/lib/agent-session";
 import { SITE_URL } from "@/lib/site";
 import { SharePanel } from "@/components/dashboard/SharePanel";
 
-export const metadata = { title: "Share my page | DK Promoters" };
+export const metadata = { title: "Share my page" };
 export const dynamic = "force-dynamic";
 
 export default async function SharePage() {

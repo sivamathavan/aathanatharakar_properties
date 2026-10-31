@@ -34,7 +34,7 @@ function listingBadge(type: string) {
   }
 }
 
-// One property page used by the main DK site and by every agent's share link.
+// One property page used by the main site and by every agent's share link.
 // Only the contact (who gets the call) and the breadcrumbs differ.
 export function PropertyDetail({
   property,
@@ -118,7 +118,7 @@ export function PropertyDetail({
 
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="w-full lg:w-2/3 space-y-6 md:space-y-8">
-            <div className="bg-white p-6 rounded-card border border-[#E8E0D0] shadow-xs">
+            <div className="bg-white p-6 rounded-card border border-[#E4DED2] shadow-xs">
               <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
                 <div className="min-w-0">
                   <div className={`inline-block px-3 py-1 text-[10px] font-bold rounded-pill mb-3 uppercase tracking-wider ${badge.cls}`}>{badge.label}</div>
@@ -133,9 +133,9 @@ export function PropertyDetail({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-5 border-y border-[#E8E0D0] my-6 font-sans">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-5 border-y border-[#E4DED2] my-6 font-sans">
                 {facts.map((f) => (
-                  <div key={f.label} className="flex items-center gap-3 bg-warm-cream/50 p-3 rounded-btn border border-[#E8E0D0]/30">
+                  <div key={f.label} className="flex items-center gap-3 bg-warm-cream/50 p-3 rounded-btn border border-[#E4DED2]/30">
                     <f.icon className="w-5 h-5 text-gold-600 shrink-0" />
                     <div>
                       <div className="text-[10px] text-navy-750 uppercase font-semibold">{f.label}</div>
@@ -150,12 +150,12 @@ export function PropertyDetail({
             </div>
 
             {property.amenities?.length > 0 && (
-              <div className="bg-white p-6 rounded-card border border-[#E8E0D0] shadow-xs">
+              <div className="bg-white p-6 rounded-card border border-[#E4DED2] shadow-xs">
                 <h2 className="text-base font-display font-semibold text-navy-900 mb-4">Amenities</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   {property.amenities.map((a) => (
                     <div key={a} className="flex items-center text-navy-800 text-sm font-sans">
-                      <span className="w-1.5 h-1.5 bg-[#D4A017] rounded-full mr-2.5 shrink-0"></span>
+                      <span className="w-1.5 h-1.5 bg-[#E39614] rounded-full mr-2.5 shrink-0"></span>
                       {a}
                     </div>
                   ))}
@@ -163,10 +163,10 @@ export function PropertyDetail({
               </div>
             )}
 
-            <div className="bg-white p-6 rounded-card border border-[#E8E0D0] shadow-xs space-y-4">
+            <div className="bg-white p-6 rounded-card border border-[#E4DED2] shadow-xs space-y-4">
               <h2 className="text-base font-display font-semibold text-navy-900">Location</h2>
               {mapsApiKey && property.latitude && property.longitude ? (
-                <div className="w-full h-80 bg-navy-50 rounded-lg overflow-hidden border border-[#E8E0D0]">
+                <div className="w-full h-80 bg-navy-50 rounded-lg overflow-hidden border border-[#E4DED2]">
                   <iframe title="Map" width="100%" height="100%" style={{ border: 0 }} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${property.latitude},${property.longitude}`}></iframe>
                 </div>
               ) : null}
@@ -178,7 +178,7 @@ export function PropertyDetail({
 
           {/* Mobile: contact, EMI, share. The sticky bar carries the main action. */}
           <div className="lg:hidden space-y-4">
-            <div className="bg-white p-5 rounded-card border border-[#E8E0D0] shadow-xs space-y-4">
+            <div className="bg-white p-5 rounded-card border border-[#E4DED2] shadow-xs space-y-4">
               {contactCard}
               {actionButtons}
               <a href={visitUrl} target="_blank" rel="noopener noreferrer" className="w-full border border-navy-700 text-navy-800 hover:bg-navy-50 h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2">
@@ -190,11 +190,11 @@ export function PropertyDetail({
           </div>
 
           <div className="hidden lg:block lg:w-1/3 space-y-6">
-            <Card className="border-[#E8E0D0] bg-white rounded-card shadow-sm sticky top-24">
+            <Card className="border-[#E4DED2] bg-white rounded-card shadow-sm sticky top-24">
               <CardContent className="p-6 space-y-5">
                 {contactCard}
                 {actionButtons}
-                <div className="border-t border-[#E8E0D0] pt-5">
+                <div className="border-t border-[#E4DED2] pt-5">
                   <h2 className="font-display font-bold text-base text-navy-900 mb-3">Send an enquiry</h2>
                   <EnquiryForm propertyId={property.id} source={source} privacyNote={privacyNote} idPrefix="side" />
                 </div>

@@ -13,7 +13,7 @@ const DEFAULT_MESSAGE = "I am interested in this property. Please share more det
 export function EnquiryForm({
   propertyId,
   source = "WEB",
-  privacyNote = "Your enquiry is routed through DK Promoters. Owner contact details are never shared publicly.",
+  privacyNote = "Owner contact details are never shared publicly.",
   idPrefix = "enq",
 }: {
   propertyId: string;

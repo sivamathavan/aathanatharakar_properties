@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
@@ -39,7 +40,7 @@ export function MobileAdminMenu({ isOpen, onClose }: MobileAdminMenuProps) {
         {/* Header inside drawer */}
         <div className="flex justify-between items-center pb-4 border-b border-navy-800 mb-6">
           <div>
-            <h2 className="text-lg font-display font-bold text-gold-500">டிகே புரமோட்டர்ஸ்</h2>
+            <BrandLogo size="sm" />
             <p className="text-[10px] text-gray-400">Admin Control Panel</p>
           </div>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-navy-800" onClick={onClose}>

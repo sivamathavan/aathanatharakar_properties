@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   if (!user) return new NextResponse("Please sign in again.", { status: 401 });
   try {
     if (await checkRateLimit(`payreq:${user.uid}`, 10, 24 * 60 * 60 * 1000)) {
-      return new NextResponse("Too many payment submissions today. Please call DK Promoters.", { status: 429 });
+      return new NextResponse("Too many payment submissions today. Please contact support.", { status: 429 });
     }
     const parsed = schema.safeParse(await req.json());
     if (!parsed.success) return new NextResponse(parsed.error.issues[0].message, { status: 400 });

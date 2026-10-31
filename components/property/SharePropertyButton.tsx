@@ -29,7 +29,7 @@ export function SharePropertyButton({ title, url }: { title: string, url: string
     <Button 
       onClick={handleShare}
       variant="outline" 
-      className="w-full border-[#E8E0D0] text-navy-700 hover:bg-navy-50 h-11 text-xs font-medium rounded-btn flex items-center justify-center gap-2"
+      className="w-full border-[#E4DED2] text-navy-700 hover:bg-navy-50 h-11 text-xs font-medium rounded-btn flex items-center justify-center gap-2"
     >
       <Share2 className="w-4 h-4" /> Share This Property
     </Button>

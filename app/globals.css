@@ -9,43 +9,43 @@
 ═══════════════════════════════════════ */
 :root {
   /* Brand */
-  --color-primary:       #0D1B2A;   /* deep navy — hero bg, sidebar */
-  --color-primary-mid:   #1E3278;   /* mid navy — hover states */
-  --color-primary-light: #E8EDF5;   /* light navy — tinted surfaces */
-  --color-accent:        #D4A017;   /* antique gold — CTAs, highlights */
-  --color-accent-light:  #FDF8E8;   /* pale gold — badge bg */
-  --color-accent-dark:   #7D5A05;   /* dark gold — badge text */
+  --color-primary:       #0C2B29;   /* deep teal — hero, header, sidebar */
+  --color-primary-mid:   #1A524C;   /* mid teal — hover states */
+  --color-primary-light: #E7F1F0;   /* light teal — tinted surfaces */
+  --color-accent:        #E39614;   /* saffron — CTAs, highlights */
+  --color-accent-light:  #F8F6F0;   /* pale saffron — badge bg */
+  --color-accent-dark:   #7A4B07;   /* dark saffron — badge text */
 
   /* Backgrounds */
-  --bg-page:    #FDF8E8;   /* warm cream — main page bg */
+  --bg-page:    #F8F6F0;   /* warm off-white — main page bg */
   --bg-surface: #FFFFFF;   /* card surface */
-  --bg-muted:   #F5F0E8;   /* subtle tint for sections */
-  --bg-navy:    #0D1B2A;   /* hero, sidebar, footer */
-  --bg-admin:   #1A2744;   /* admin sidebar */
+  --bg-muted:   #F1EEE6;   /* subtle tint for sections */
+  --bg-navy:    #0C2B29;   /* hero, sidebar, footer */
+  --bg-admin:   #10332F;   /* admin sidebar */
 
   /* Text */
-  --text-primary:   #0D1B2A;   /* main text — navy */
+  --text-primary:   #0C2B29;   /* main text — deep teal */
   --text-secondary: #4A5568;   /* muted text */
   --text-tertiary:  #8A95A3;   /* placeholder, labels */
-  --text-on-dark:   #FFFFFF;   /* text on navy bg */
-  --text-gold:      #D4A017;   /* gold text on dark */
-  --text-gold-dark: #7D5A05;   /* gold text on light */
+  --text-on-dark:   #FFFFFF;   /* text on dark bg */
+  --text-gold:      #E39614;   /* saffron text on dark */
+  --text-gold-dark: #7A4B07;   /* saffron text on light */
 
   /* Borders */
-  --border-light:  #E8E0D0;
-  --border-medium: #C8BCA8;
-  --border-navy:   #2C4490;
+  --border-light:  #E4DED2;
+  --border-medium: #C9C1B0;
+  --border-navy:   #22665F;
 
   /* Listing type badge colors */
-  --badge-buy:   #D4A017;   /* gold */
-  --badge-rent:  #1A5276;   /* deep blue */
+  --badge-buy:   #E39614;   /* saffron */
+  --badge-rent:  #1A524C;   /* deep blue */
   --badge-lease: #6C3483;   /* purple */
   --badge-sell:  #1E8449;   /* green */
 
   /* Shadows */
-  --shadow-card:   0 1px 3px rgba(13,27,42,0.08), 0 1px 2px rgba(13,27,42,0.05);
-  --shadow-hover:  0 4px 12px rgba(13,27,42,0.12);
-  --shadow-gold:   0 2px 8px rgba(212,160,23,0.25);
+  --shadow-card:   0 1px 3px rgba(12,43,41,0.08), 0 1px 2px rgba(12,43,41,0.05);
+  --shadow-hover:  0 4px 12px rgba(12,43,41,0.12);
+  --shadow-gold:   0 2px 8px rgba(227,150,20,0.25);
 
   /* Transitions */
   --transition: all 0.2s ease;
@@ -123,7 +123,7 @@ h1, h2, h3, .font-display {
 
   /* Cards */
   .card {
-    @apply bg-white rounded-card border border-[#E8E0D0] shadow-sm
+    @apply bg-white rounded-card border border-[#E4DED2] shadow-sm
            transition-all duration-200;
   }
 
@@ -162,7 +162,7 @@ h1, h2, h3, .font-display {
   /* Input fields */
   .input-field {
     @apply w-full px-4 py-2.5 rounded-btn text-sm
-           border border-[#E8E0D0] bg-white text-navy-900
+           border border-[#E4DED2] bg-white text-navy-900
            placeholder:text-[#8A95A3]
            focus:outline-none focus:ring-2 focus:ring-gold-400 focus:border-gold-400
            transition-all duration-200;
@@ -189,8 +189,8 @@ h1, h2, h3, .font-display {
 ═══════════════════════════════════════ */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-muted); }
-::-webkit-scrollbar-thumb { background: #9FAFD4; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #3D57A4; }
+::-webkit-scrollbar-thumb { background: #9CC7C2; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2E7D75; }
 
 /* ═══════════════════════════════════════
    ANIMATIONS
@@ -213,7 +213,7 @@ h1, h2, h3, .font-display {
 
 /* Skeleton loading */
 .skeleton {
-  background: linear-gradient(90deg, #E8E0D0 25%, #F5F0E8 50%, #E8E0D0 75%);
+  background: linear-gradient(90deg, #E4DED2 25%, #F1EEE6 50%, #E4DED2 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 6px;

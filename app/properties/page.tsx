@@ -1,4 +1,4 @@
-import { getActiveProperties } from "@/lib/firestore";
+import { getActiveProperties, marketplaceContacts } from "@/lib/firestore";
 import { PropertyStatus } from "@/types";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ export default async function PropertiesPage({
   const bhk = toIntOrUndefined(searchParams.bhk);
   const page = Math.max(1, toIntOrUndefined(searchParams.page) || 1);
 
-  const { properties, total: totalCount } = await getActiveProperties({
+  const result = await getActiveProperties({
     city,
     type,
     listingType,
@@ -45,6 +45,8 @@ export default async function PropertiesPage({
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
   });
+  const { properties, total: totalCount } = result;
+  const contacts = await marketplaceContacts(properties);
 
   const buildUrl = (overrides: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
@@ -82,7 +84,7 @@ export default async function PropertiesPage({
     <div className="min-h-screen bg-warm-cream py-4 md:py-12 pb-24 md:pb-12">
       <div className="container mx-auto px-4 max-w-7xl">
         {/* Header */}
-        <div className="mb-5 md:mb-8 border-b border-[#E8E0D0] pb-4">
+        <div className="mb-5 md:mb-8 border-b border-[#E4DED2] pb-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
             <div>
               <h1 className="font-display font-bold text-xl md:text-3xl text-navy-900 leading-tight">
@@ -99,7 +101,7 @@ export default async function PropertiesPage({
               <Link href="/properties">
                 <Button
                   variant="outline"
-                  className="border-[#E8E0D0] hover:bg-navy-50 text-navy-800 font-sans h-9 text-xs"
+                  className="border-[#E4DED2] hover:bg-navy-50 text-navy-800 font-sans h-9 text-xs"
                 >
                   Clear all filters ({activeFilterCount})
                 </Button>
@@ -129,7 +131,7 @@ export default async function PropertiesPage({
                 name="q"
                 defaultValue={q || ""}
                 placeholder="Search by title, locality or address…"
-                className="w-full h-11 pl-9 pr-24 border border-[#E8E0D0] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
+                className="w-full h-11 pl-9 pr-24 border border-[#E4DED2] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                 aria-label="Search properties"
               />
               <button
@@ -158,7 +160,7 @@ export default async function PropertiesPage({
                   className={`snap-align-start shrink-0 px-4 py-2 text-xs font-sans font-medium rounded-pill border transition-all duration-200 ${
                     sort === value
                       ? "bg-gold-500 text-navy-900 border-gold-500 shadow-sm"
-                      : "bg-white text-navy-700 border-[#E8E0D0] hover:bg-navy-50"
+                      : "bg-white text-navy-700 border-[#E4DED2] hover:bg-navy-50"
                   }`}
                 >
                   {label}
@@ -171,8 +173,8 @@ export default async function PropertiesPage({
         <div className="flex flex-col md:flex-row gap-6 md:gap-8">
           {/* Desktop filters */}
           <aside className="hidden md:block w-full md:w-1/4 shrink-0">
-            <div className="bg-white p-6 rounded-card border border-[#E8E0D0] shadow-sm sticky top-24">
-              <h2 className="font-display font-bold text-lg text-navy-900 mb-5 pb-3 border-b border-[#E8E0D0] flex items-center gap-2">
+            <div className="bg-white p-6 rounded-card border border-[#E4DED2] shadow-sm sticky top-24">
+              <h2 className="font-display font-bold text-lg text-navy-900 mb-5 pb-3 border-b border-[#E4DED2] flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4 text-gold-500" /> Filters
               </h2>
 
@@ -187,7 +189,7 @@ export default async function PropertiesPage({
                   <select
                     name="city"
                     defaultValue={city || ""}
-                    className="w-full h-11 px-3 border border-[#E8E0D0] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
+                    className="w-full h-11 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                   >
                     <option value="">All Cities</option>
                     {TN_CITIES.map((c) => (
@@ -205,7 +207,7 @@ export default async function PropertiesPage({
                   <select
                     name="type"
                     defaultValue={type || ""}
-                    className="w-full h-11 px-3 border border-[#E8E0D0] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
+                    className="w-full h-11 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                   >
                     <option value="">All Types</option>
                     {PROPERTY_TYPES.map((t) => (
@@ -223,7 +225,7 @@ export default async function PropertiesPage({
                   <select
                     name="listingType"
                     defaultValue={listingType || ""}
-                    className="w-full h-11 px-3 border border-[#E8E0D0] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
+                    className="w-full h-11 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                   >
                     <option value="">All Listings</option>
                     {LISTING_TYPES.map((t) => (
@@ -241,7 +243,7 @@ export default async function PropertiesPage({
                   <select
                     name="bhk"
                     defaultValue={bhk?.toString() || ""}
-                    className="w-full h-11 px-3 border border-[#E8E0D0] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
+                    className="w-full h-11 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                   >
                     <option value="">Any</option>
                     {[1, 2, 3, 4, 5].map((n) => (
@@ -263,7 +265,7 @@ export default async function PropertiesPage({
                       defaultValue={minPrice?.toString() || ""}
                       min="0"
                       placeholder="Min"
-                      className="h-11 px-3 border border-[#E8E0D0] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500"
+                      className="h-11 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500"
                     />
                     <input
                       type="number"
@@ -271,7 +273,7 @@ export default async function PropertiesPage({
                       defaultValue={maxPrice?.toString() || ""}
                       min="0"
                       placeholder="Max"
-                      className="h-11 px-3 border border-[#E8E0D0] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500"
+                      className="h-11 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500"
                     />
                   </div>
                 </div>
@@ -287,7 +289,7 @@ export default async function PropertiesPage({
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full h-11 border-[#E8E0D0] text-navy-800 hover:bg-navy-50 font-sans"
+                      className="w-full h-11 border-[#E4DED2] text-navy-800 hover:bg-navy-50 font-sans"
                     >
                       Clear Filters
                     </Button>
@@ -301,12 +303,12 @@ export default async function PropertiesPage({
           <main className="w-full md:w-3/4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
               {serializedProperties.map((property) => (
-                <PropertyCard key={property.id} property={property} />
+                <PropertyCard key={property.id} property={property} contact={contacts[property.id]} />
               ))}
             </div>
 
             {serializedProperties.length === 0 && (
-              <div className="text-center py-12 md:py-20 bg-white rounded-card border border-[#E8E0D0] shadow-xs">
+              <div className="text-center py-12 md:py-20 bg-white rounded-card border border-[#E4DED2] shadow-xs">
                 <h3 className="font-display font-semibold text-base md:text-xl text-navy-900">
                   No properties found
                 </h3>
@@ -326,7 +328,7 @@ export default async function PropertiesPage({
                 {page > 1 && (
                   <Link
                     href={buildUrl({ page: String(page - 1) })}
-                    className="h-10 px-4 rounded-btn border border-[#E8E0D0] text-navy-800 bg-white hover:bg-navy-50 text-xs font-bold flex items-center"
+                    className="h-10 px-4 rounded-btn border border-[#E4DED2] text-navy-800 bg-white hover:bg-navy-50 text-xs font-bold flex items-center"
                   >
                     Previous
                   </Link>

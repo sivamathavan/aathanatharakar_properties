@@ -1,5 +1,6 @@
 "use client";
 
+import { BRAND } from "@/lib/brand";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -71,7 +72,7 @@ export function ListingsTable({
 
   if (properties.length === 0) {
     return (
-      <div className="bg-white rounded-card border border-[#E8E0D0] p-10 text-center space-y-3">
+      <div className="bg-white rounded-card border border-[#E4DED2] p-10 text-center space-y-3">
         <p className="font-semibold text-navy-900">No listings yet</p>
         <p className="text-sm text-navy-700">Add your first property. It appears on your page straight away.</p>
         <Link href="/dashboard/properties/new" className="inline-flex h-10 px-4 items-center rounded-btn bg-navy-900 text-gold-500 font-bold text-sm">Add property</Link>
@@ -87,14 +88,14 @@ export function ListingsTable({
           const boostedUntil = p.boostUntil && new Date(p.boostUntil) > new Date() ? new Date(p.boostUntil) : null;
           const wa = `https://wa.me/?text=${encodeURIComponent(`${p.title} — ${formatINR(p.price)}\n${p.locality}, ${p.city}\n${link}`)}`;
           return (
-            <li key={p.id} className="bg-white rounded-card border border-[#E8E0D0] p-3 sm:p-4 flex flex-col sm:flex-row gap-4">
+            <li key={p.id} className="bg-white rounded-card border border-[#E4DED2] p-3 sm:p-4 flex flex-col sm:flex-row gap-4">
               <div className="relative w-full sm:w-32 h-40 sm:h-24 rounded-lg overflow-hidden bg-navy-50 shrink-0">
                 {p.media[0] && <Image src={p.media[0].url} alt="" fill className="object-cover" sizes="160px" />}
               </div>
               <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-pill ${STATUS_STYLE[p.status] || "bg-gray-100"}`}>{STATUS_LABEL[p.status] || p.status}</span>
-                  {boostedUntil && <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-pill bg-gold-100 text-gold-800">On DK site until {boostedUntil.toLocaleDateString("en-IN")}</span>}
+                  {boostedUntil && <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-pill bg-gold-100 text-gold-800">On home page until {boostedUntil.toLocaleDateString("en-IN")}</span>}
                 </div>
                 <p className="font-semibold text-navy-900 truncate">{p.title}</p>
                 <p className="text-sm text-navy-700">{formatINR(p.price)} · {p.locality}, {p.city}</p>
@@ -151,9 +152,9 @@ export function ListingsTable({
         <div className="fixed inset-0 z-[60] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true" aria-label="Boost listing">
           <div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
             <div>
-              <h2 className="text-lg font-bold text-navy-900">Show on the DK Promoters website</h2>
+              <h2 className="text-lg font-bold text-navy-900">Show on the {BRAND.name} home page</h2>
               <p className="text-sm text-navy-700">
-                &ldquo;{boosting.title}&rdquo; appears on the main DK site, with your number, for the weeks you pay for. {formatINR(boostPricePerWeek)} per week.
+                &ldquo;{boosting.title}&rdquo; appears on the {BRAND.name} home page and search, with your number, for the weeks you pay for. {formatINR(boostPricePerWeek)} per week.
               </p>
             </div>
             <PaymentRequestForm

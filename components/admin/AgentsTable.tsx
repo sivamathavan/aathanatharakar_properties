@@ -1,5 +1,6 @@
 "use client";
 
+import { BRAND } from "@/lib/brand";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -76,7 +77,7 @@ export function AgentsTable({ agents, counts, siteUrl }: { agents: Agent[]; coun
         </div>
       </div>
 
-      <div className="bg-white rounded-card border border-[#E8E0D0] overflow-x-auto">
+      <div className="bg-white rounded-card border border-[#E4DED2] overflow-x-auto">
         <table className="w-full text-sm min-w-[860px]">
           <thead className="bg-navy-50 text-left text-xs uppercase text-navy-700">
             <tr>
@@ -87,9 +88,9 @@ export function AgentsTable({ agents, counts, siteUrl }: { agents: Agent[]; coun
             {rows.map((a) => {
               const st = effectiveStatus(a.plan as any);
               const left = daysLeft(a.plan as any);
-              const reminder = `Hi ${a.displayName}, your DK Promoters property page ${st === "EXPIRED" ? "has paused" : `ends in ${left} days`}. Renew from Plan & billing to keep it live: ${siteUrl}/dashboard/billing`;
+              const reminder = `Hi ${a.displayName}, your ${BRAND.name} property page ${st === "EXPIRED" ? "has paused" : `ends in ${left} days`}. Renew from Plan & billing to keep it live: ${siteUrl}/dashboard/billing`;
               return (
-                <tr key={a.id} className="border-t border-[#E8E0D0] align-top">
+                <tr key={a.id} className="border-t border-[#E4DED2] align-top">
                   <td className="p-3">
                     <a href={`/a/${a.slug}`} target="_blank" className="font-semibold text-navy-900 underline-offset-2 hover:underline">{a.displayName}</a>
                     <p className="text-xs text-navy-600">{a.agencyName || "—"} · {a.city}</p>

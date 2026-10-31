@@ -1,5 +1,5 @@
 /**
- * Create or reset the DK Promoters admin account.
+ * Create or reset the platform admin account.
  *
  *   ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='a-long-password' npm run admin:recover
  *
@@ -25,7 +25,7 @@ async function main() {
     console.log(`Reset password for ${email}`);
   } catch (err: any) {
     if (err.code !== "auth/user-not-found") throw err;
-    const user = await adminAuth.createUser({ email, password, emailVerified: true, displayName: "DK Promoters Admin" });
+    const user = await adminAuth.createUser({ email, password, emailVerified: true, displayName: "Admin" });
     uid = user.uid;
     console.log(`Created admin ${email}`);
   }
@@ -36,7 +36,7 @@ async function main() {
   const ref = adminDb.collection("users").doc(uid);
   const existed = (await ref.get()).exists;
   await ref.set(
-    { name: "DK Promoters Admin", email, role: UserRole.ADMIN, accountStatus: AccountStatus.ACTIVE, updatedAt: now, ...(existed ? {} : { createdAt: now }) },
+    { name: "Admin", email, role: UserRole.ADMIN, accountStatus: AccountStatus.ACTIVE, updatedAt: now, ...(existed ? {} : { createdAt: now }) },
     { merge: true }
   );
   console.log("Admin ready. Sign in at /admin/login");

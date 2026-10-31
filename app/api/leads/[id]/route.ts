@@ -13,7 +13,7 @@ async function loadOwnLead(req: Request, id: string) {
   const user = await getRequestUser(req);
   if (!user) return { error: new NextResponse("Please sign in again.", { status: 401 }) };
   const lead = await getLeadById(id);
-  // Admins manage their own (DK) enquiries; agents' client lists stay private to them.
+  // Admins manage enquiries on their own listings; agents' client lists stay private to them.
   if (!lead || lead.ownerId !== user.uid && !(user.role === UserRole.ADMIN && lead.ownerType === "ADMIN")) {
     return { error: new NextResponse("Enquiry not found.", { status: 404 }) };
   }

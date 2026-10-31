@@ -176,7 +176,7 @@ export function PropertyGallery({ media, title }: PropertyGalleryProps) {
               className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                 idx === activeIndex 
                   ? "border-gold-500 scale-95 shadow-sm" 
-                  : "border-[#E8E0D0] hover:border-navy-200"
+                  : "border-[#E4DED2] hover:border-navy-200"
               }`}
             >
               {item.type === "VIDEO" ? (

@@ -11,7 +11,7 @@ const bytes = (n: number) => new Uint8Array(n);
 
 before(async () => {
   env = await initializeTestEnvironment({
-    projectId: "demo-dkpromoters",
+    projectId: "demo-proppage",
     firestore: { rules: readFileSync("firestore.rules", "utf8"), host: "127.0.0.1", port: 8282 },
     storage: { rules: readFileSync("storage.rules", "utf8"), host: "127.0.0.1", port: 9199 },
   });

@@ -19,6 +19,10 @@ const nextConfig = {
       { protocol: "http", hostname: "127.0.0.1", port: "9199" },
     ],
   },
+  async redirects() {
+    // Old pages from the single-broker site.
+    return [{ source: "/sell-your-property", destination: "/for-agents", permanent: true }];
+  },
   async headers() {
     return [
       {

@@ -2,7 +2,7 @@ import { requireAgentPage } from "@/lib/agent-session";
 import { getLeadsForOwner } from "@/lib/firestore";
 import { LeadsInbox } from "@/components/dashboard/LeadsInbox";
 
-export const metadata = { title: "Enquiries | DK Promoters" };
+export const metadata = { title: "Enquiries" };
 export const dynamic = "force-dynamic";
 
 export default async function EnquiriesPage() {

@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
@@ -26,7 +27,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       to: agent.email,
       subject: approved ? "Payment received — thank you" : "We couldn't find your payment",
       html: approved
-        ? `<p>Hi ${escapeHtml(agent.displayName)},</p><p>We received ${formatINR(payment.amount)} (UTR ${escapeHtml(payment.utr)}). ${payment.kind === "PLAN" ? "Your plan is active" : "Your listing is now on the DK Promoters website"}: ${escapeHtml(summary)}.</p>`
+        ? `<p>Hi ${escapeHtml(agent.displayName)},</p><p>We received ${formatINR(payment.amount)} (UTR ${escapeHtml(payment.utr)}). ${payment.kind === "PLAN" ? "Your plan is active" : `Your listing is now on the ${BRAND.name} home page and search`}: ${escapeHtml(summary)}.</p>`
         : `<p>Hi ${escapeHtml(agent.displayName)},</p><p>We couldn't match UTR ${escapeHtml(payment.utr)} in our bank statement. ${parsed.data.note ? escapeHtml(parsed.data.note) : ""} Please reply to this email or call us.</p>`,
     }).catch(() => {});
     return NextResponse.json({ ok: true, summary });

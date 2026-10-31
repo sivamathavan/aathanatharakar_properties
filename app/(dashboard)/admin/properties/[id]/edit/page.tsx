@@ -4,7 +4,7 @@ import { getPropertyById, getPropertyPrivate } from "@/lib/firestore";
 import { PropertyForm, toFormValues } from "@/components/property/PropertyForm";
 import { UserRole } from "@/types";
 
-export const metadata = { title: "Edit property | DK Promoters Admin" };
+export const metadata = { title: "Edit property · Admin" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminEditPropertyPage({ params }: { params: { id: string } }) {

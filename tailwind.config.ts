@@ -9,57 +9,57 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // PRIMARY — Deep Navy
+        // PRIMARY — deep teal. The token keeps the name "navy" so existing classes work.
         navy: {
-          50:  '#E8EDF5',
-          100: '#C5D0E6',
-          200: '#9FAFD4',
-          300: '#7A8EC2',
-          400: '#5B72B3',
-          500: '#3D57A4',
-          600: '#2C4490',
-          700: '#1E3278',
-          800: '#132360',
-          900: '#0D1B2A',  // ← main dark navy (hero bg, sidebar)
-          950: '#080F1A',
+          50:  '#E7F1F0',
+          100: '#C4DEDB',
+          200: '#9CC7C2',
+          300: '#6FAEA7',
+          400: '#4A968E',
+          500: '#2E7D75',
+          600: '#22665F',
+          700: '#1A524C',
+          800: '#133F3B',
+          900: '#0C2B29',  // ← main dark (hero, header, sidebar)
+          950: '#071A19',
         },
-        // ACCENT — Antique Gold
+        // ACCENT — saffron. Token name "gold" kept for the same reason.
         gold: {
-          50:  '#FDF8E8',
-          100: '#FAF0C0',
-          200: '#F5E090',
-          300: '#EDCA58',
-          400: '#E0B030',
-          500: '#D4A017',  // ← main gold (buttons, highlights)
-          600: '#B8880E',
-          700: '#9A6F08',
-          800: '#7D5A05',
-          900: '#5C4003',
+          50:  '#F8F6F0',
+          100: '#FDEBC4',
+          200: '#FAD78C',
+          300: '#F5C056',
+          400: '#EFA92E',
+          500: '#E39614',  // ← main accent (buttons, highlights)
+          600: '#C47C0B',
+          700: '#9E6208',
+          800: '#7A4B07',
+          900: '#573505',
         },
         // BACKGROUND
         cream: {
-          50:  '#FFFDF7',
-          100: '#FDF8E8',  // ← main page background
-          200: '#FAF0C8',
-          300: '#F5E5A0',
+          50:  '#FFFEFA',
+          100: '#F8F6F0',  // ← main page background
+          200: '#EFEBDF',
+          300: '#E4DDCB',
         },
         // SUPPORTING
         slate: {
-          850: '#1A2744',  // ← admin sidebar
+          850: '#10332F',  // ← admin sidebar
           900: '#111827',
         },
-        // Tracker (back office) — the tracker's dark theme mapped onto DK navy and gold
+        // Tracker (back office) — the tracker's dark theme mapped onto the product palette
         brand: {
-          dark: '#080F1A',
-          card: '#0D1B2A',
-          border: '#1E3278',
-          re: '#D4A017',
+          dark: '#071A19',
+          card: '#0C2B29',
+          border: '#1A524C',
+          re: '#E39614',
         },
         // STATUS COLORS (keep standard)
         success: '#1E8449',
-        warning: '#D4A017',
+        warning: '#E39614',
         danger:  '#C0392B',
-        info:    '#1A5276',
+        info:    '#1A524C',
       },
       fontFamily: {
         display: ['Playfair Display', 'Georgia', 'serif'],

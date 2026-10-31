@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import { getBlogPostBySlug, getUserById } from "@/lib/firestore";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
@@ -29,7 +30,7 @@ async function resolvePost(slug: string): Promise<ResolvedPost | null> {
       coverImageUrl: dbPost.coverImageUrl || null,
       publishedAtIso: new Date(dbPost.publishedAt || dbPost.createdAt).toISOString(),
       updatedAtIso: new Date(dbPost.updatedAt).toISOString(),
-      authorName: author?.name || "DK Promoters Team",
+      authorName: author?.name || `${BRAND.name} Team`,
       excerpt: dbPost.excerpt,
     };
   }
@@ -66,7 +67,7 @@ export async function generateMetadata({
   if (!post) return { title: "Post Not Found" };
 
   return {
-    title: `${post.title} | DK Promoters Blog`,
+    title: `${post.title}`,
     description: post.excerpt,
     openGraph: {
       title: post.title,
@@ -111,7 +112,7 @@ export default async function BlogPostPage({
           </Button>
         </Link>
 
-        <div className="bg-white rounded-card shadow-sm border border-[#E8E0D0] overflow-hidden">
+        <div className="bg-white rounded-card shadow-sm border border-[#E4DED2] overflow-hidden">
           {post.coverImageUrl && (
             <div className="w-full h-52 sm:h-64 md:h-[400px]">
               <img
@@ -132,7 +133,7 @@ export default async function BlogPostPage({
               {post.title}
             </h1>
 
-            <div className="flex flex-wrap items-center text-xs md:text-sm text-navy-700 mb-6 md:mb-8 pb-6 md:pb-8 border-b border-[#E8E0D0] gap-4 md:gap-6">
+            <div className="flex flex-wrap items-center text-xs md:text-sm text-navy-700 mb-6 md:mb-8 pb-6 md:pb-8 border-b border-[#E4DED2] gap-4 md:gap-6">
               <span className="flex items-center">
                 <Calendar className="w-4 h-4 mr-2 text-gold-600" />
                 {new Date(post.publishedAtIso).toLocaleDateString("en-IN", {

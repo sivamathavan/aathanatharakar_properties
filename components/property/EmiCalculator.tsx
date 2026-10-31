@@ -51,7 +51,7 @@ export function EmiCalculator({ propertyPrice }: { propertyPrice: number }) {
   };
 
   return (
-    <Card className="border-[#E8E0D0] bg-white rounded-card shadow-sm">
+    <Card className="border-[#E4DED2] bg-white rounded-card shadow-sm">
       <CardContent className="p-5 md:p-6">
         <div className="flex items-center gap-2 mb-4">
           <Calculator className="w-5 h-5 text-gold-600" />

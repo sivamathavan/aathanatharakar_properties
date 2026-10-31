@@ -86,7 +86,7 @@ export function LeadsInbox({
   const shown = filter === "ALL" ? leads : leads.filter((l) => l.status === filter);
 
   if (leads.length === 0) {
-    return <div className="bg-white rounded-card border border-[#E8E0D0] p-10 text-center text-sm text-navy-700">No enquiries yet. They appear here as soon as someone fills the form on your listings.</div>;
+    return <div className="bg-white rounded-card border border-[#E4DED2] p-10 text-center text-sm text-navy-700">No enquiries yet. They appear here as soon as someone fills the form on your listings.</div>;
   }
 
   return (
@@ -101,7 +101,7 @@ export function LeadsInbox({
 
       <ul className="space-y-3">
         {shown.map((l) => (
-          <li key={l.id} className="bg-white rounded-card border border-[#E8E0D0] p-4 space-y-3">
+          <li key={l.id} className="bg-white rounded-card border border-[#E4DED2] p-4 space-y-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="font-semibold text-navy-900">{l.name}</p>
@@ -130,7 +130,7 @@ export function LeadsInbox({
               {extraActions?.(l)}
             </div>
             {open === l.id && (
-              <div className="border-t border-[#E8E0D0] pt-3 space-y-2">
+              <div className="border-t border-[#E4DED2] pt-3 space-y-2">
                 {(notes[l.id] || []).map((n) => (
                   <p key={n.id} className="text-sm text-navy-800"><span className="text-xs text-navy-500 mr-2">{new Date(n.createdAt).toLocaleDateString("en-IN")}</span>{n.note}</p>
                 ))}

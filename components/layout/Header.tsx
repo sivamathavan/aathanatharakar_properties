@@ -1,219 +1,113 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu, X, Home, FileText, Info, LayoutDashboard, Briefcase, Rocket } from "lucide-react";
 import { useSession } from "@/components/providers/auth-provider";
 import { signOut } from "@/lib/auth-client";
-import { usePathname } from "next/navigation";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { UserRole } from "@/types";
-import { Menu, X, Home, FileText, Info, LayoutDashboard, MessageCircle } from "lucide-react";
 
-const WHATSAPP_NUMBER = (process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916381169124").replace(/\D/g, "");
-const WHATSAPP_MSG = encodeURIComponent("Hi DK Promoters, I'm interested in a property. Please share details.");
+const NAV = [
+  { href: "/properties", label: "Properties", icon: Home },
+  { href: "/for-agents", label: "For agents", icon: Briefcase },
+  { href: "/blog", label: "Blog", icon: FileText },
+  { href: "/about", label: "About", icon: Info },
+];
 
 export function Header() {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(prev => {
-      const nextState = !prev;
-      if (nextState) {
-        document.body.style.overflow = "hidden";
-      } else {
-        document.body.style.overflow = "";
-      }
-      return nextState;
-    });
+  const setMenu = (next: boolean) => {
+    setOpen(next);
+    document.body.style.overflow = next ? "hidden" : "";
   };
 
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
+  useEffect(() => () => {
     document.body.style.overflow = "";
-  };
-
-  // Cleanup body style on unmount
-  useEffect(() => {
-    return () => {
-      document.body.style.overflow = "";
-    };
   }, []);
 
-  const isAdminRoute = pathname?.startsWith('/admin');
   const role = session?.user.role;
   const accountHref = role === UserRole.ADMIN ? "/admin" : role === UserRole.AGENT ? "/dashboard" : "/login";
   const accountLabel = role ? "Dashboard" : "Agent login";
+  const isAdminRoute = pathname?.startsWith("/admin");
 
-  // Agent share pages carry the agent's own branding and contact, not DK's.
+  // Agent share pages carry the agent's own branding and contact.
   if (pathname?.startsWith("/a/")) return null;
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full bg-navy-900 border-b border-navy-800 text-white transition-all duration-300">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14 md:h-[60px] lg:h-[68px]">
-          {/* Logo */}
-          <Link href="/" className="flex items-center shrink-0 z-50 group py-1" onClick={closeMobileMenu}>
-            <Image
-              src="/logo.png"
-              alt="DK Promoters"
-              width={140}
-              height={125}
-              className="h-10 w-auto md:h-12 group-hover:scale-105 transition-transform object-contain"
-              priority
-            />
+      <header className="sticky top-0 z-50 w-full bg-navy-900 border-b border-navy-800 text-white">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14 md:h-16">
+          <Link href="/" className="shrink-0 z-50 py-1" onClick={() => setMenu(false)} aria-label="Home">
+            <BrandLogo size="md" />
           </Link>
 
-          {/* Desktop & Tablet Navigation — Broker-only: Properties, Blog, About */}
           {!isAdminRoute && (
-            <nav className="hidden md:flex items-center space-x-5 lg:space-x-8 text-sm font-sans font-medium">
-              {[
-                { href: "/properties", label: "Properties" },
-                { href: "/for-agents", label: "For agents" },
-                { href: "/blog", label: "Blog" },
-                { href: "/about", label: "About" },
-              ].map((item) => {
+            <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium">
+              {NAV.map((item) => {
                 const active = pathname === item.href || pathname?.startsWith(`${item.href}/`);
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    aria-current={active ? "page" : undefined}
-                    className={`relative py-2 group transition-colors ${
-                      active ? "text-gold-500" : "hover:text-gold-500"
-                    }`}
-                  >
+                  <Link key={item.href} href={item.href} className={`transition-colors ${active ? "text-gold-400" : "text-gray-200 hover:text-gold-400"}`}>
                     {item.label}
-                    <span
-                      className={`absolute bottom-0 left-0 h-0.5 bg-gold-500 transition-all duration-300 ${
-                        active ? "w-full" : "w-0 group-hover:w-full"
-                      }`}
-                    />
                   </Link>
                 );
               })}
             </nav>
           )}
 
-          {/* Actions (Desktop) */}
-          <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
-            {!isAdminRoute && (
-              <a
-                href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button className="bg-gold-500 hover:bg-gold-400 active:bg-gold-600 text-navy-900 font-sans font-medium text-xs lg:text-sm px-4 lg:px-5 py-2 rounded-btn flex items-center gap-1.5">
-                  <MessageCircle className="w-4 h-4" />
-                  Contact Broker
-                </Button>
-              </a>
-            )}
-
-            <div className="flex items-center space-x-2">
-              <Link href={accountHref}>
-                <Button variant="ghost" className="text-white hover:bg-navy-800 text-xs lg:text-sm">
-                  <LayoutDashboard className="w-4 h-4 mr-1" /> {accountLabel}
-                </Button>
+          <div className="hidden md:flex items-center gap-2">
+            <Link href={accountHref}>
+              <Button variant="ghost" className="text-white hover:bg-navy-800 text-sm">
+                <LayoutDashboard className="w-4 h-4 mr-1" /> {accountLabel}
+              </Button>
+            </Link>
+            {session ? (
+              <Button variant="outline" onClick={() => signOut()} className="border-navy-700 text-white bg-transparent hover:bg-navy-800 text-sm h-9">
+                Sign out
+              </Button>
+            ) : (
+              <Link href="/register">
+                <Button className="bg-gold-500 hover:bg-gold-400 text-navy-900 font-semibold text-sm px-4 h-9 rounded-btn">Start free</Button>
               </Link>
-              {session && (
-                <Button
-                  variant="outline"
-                  onClick={() => signOut()}
-                  className="border-navy-800 text-white bg-transparent hover:bg-navy-800 text-xs lg:text-sm h-9"
-                >
-                  Sign out
-                </Button>
-              )}
-            </div>
+            )}
           </div>
 
-          {/* Mobile Menu Toggle */}
           <button
-            className="md:hidden p-2 text-gold-500 hover:text-gold-400 focus:outline-none z-50 h-10 w-10 flex items-center justify-center"
-            onClick={toggleMobileMenu}
-            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            className="md:hidden p-2 text-gold-500 hover:text-gold-400 z-50 h-10 w-10 flex items-center justify-center"
+            onClick={() => setMenu(!open)}
+            aria-label={open ? "Close menu" : "Open menu"}
           >
-            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
       </header>
 
-      {/* Mobile Drawer */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 bg-navy-900 z-40 pt-20 px-6 flex flex-col justify-between pb-safe-bottom animate-in slide-in-from-top duration-300">
-          <nav className="flex flex-col space-y-5 text-lg font-sans font-medium text-white">
-            <Link
-              href="/properties"
-              onClick={closeMobileMenu}
-              className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
-            >
-              <Home className="w-5 h-5 text-gold-500" />
-              <span>Properties</span>
-            </Link>
-
-            <Link
-              href="/blog"
-              onClick={closeMobileMenu}
-              className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
-            >
-              <FileText className="w-5 h-5 text-gold-500" />
-              <span>Blog</span>
-            </Link>
-
-            <Link
-              href="/about"
-              onClick={closeMobileMenu}
-              className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
-            >
-              <Info className="w-5 h-5 text-gold-500" />
-              <span>About Us</span>
-            </Link>
-
-            <Link
-              href="/for-agents"
-              onClick={closeMobileMenu}
-              className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
-            >
-              <Home className="w-5 h-5 text-gold-500" />
-              <span>For agents</span>
-            </Link>
-
-            <Link
-              href={accountHref}
-              onClick={closeMobileMenu}
-              className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
-            >
-              <LayoutDashboard className="w-5 h-5 text-gold-500" />
-              <span>{accountLabel}</span>
-            </Link>
+      {open && (
+        <div className="md:hidden fixed inset-0 bg-navy-900 z-40 pt-20 px-6 flex flex-col justify-between pb-safe-bottom">
+          <nav className="flex flex-col space-y-5 text-lg font-medium text-white">
+            {[...NAV, { href: accountHref, label: accountLabel, icon: LayoutDashboard }].map((item) => (
+              <Link key={item.label} href={item.href} onClick={() => setMenu(false)} className="flex items-center gap-3 py-2 border-b border-navy-800 hover:text-gold-500">
+                <item.icon className="w-5 h-5 text-gold-500" />
+                <span>{item.label}</span>
+              </Link>
+            ))}
           </nav>
-
-          {/* Bottom CTA */}
           <div className="space-y-3 mb-10">
-            <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full"
-              onClick={closeMobileMenu}
-            >
-              <Button className="w-full bg-[#25D366] hover:bg-[#1DA851] text-white font-sans font-bold h-12 shadow-lg flex items-center justify-center gap-2">
-                <MessageCircle className="w-5 h-5" />
-                WhatsApp Us
+            {session ? (
+              <Button variant="outline" onClick={() => { signOut(); setMenu(false); }} className="w-full border-navy-700 text-white bg-transparent hover:bg-navy-800 h-12">
+                Sign out
               </Button>
-            </a>
-
-            {session && (
-              <Button
-                variant="outline"
-                onClick={() => { signOut(); closeMobileMenu(); }}
-                className="w-full border-navy-700 text-white bg-transparent hover:bg-navy-800 h-12"
-              >
-                Sign Out
-              </Button>
+            ) : (
+              <Link href="/register" onClick={() => setMenu(false)} className="block">
+                <Button className="w-full bg-gold-500 hover:bg-gold-400 text-navy-900 font-bold h-12 flex items-center justify-center gap-2">
+                  <Rocket className="w-5 h-5" /> Start your free trial
+                </Button>
+              </Link>
             )}
           </div>
         </div>

@@ -5,7 +5,7 @@ import { getOwnerProperties, getSiteConfig } from "@/lib/firestore";
 import { ListingsTable } from "@/components/dashboard/ListingsTable";
 import { SITE_URL } from "@/lib/site";
 
-export const metadata = { title: "My properties | DK Promoters" };
+export const metadata = { title: "My properties" };
 export const dynamic = "force-dynamic";
 
 export default async function MyPropertiesPage() {

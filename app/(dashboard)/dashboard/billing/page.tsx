@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import { Check } from "lucide-react";
 import { requireAgentPage } from "@/lib/agent-session";
 import { getPaymentRequests, getSiteConfig } from "@/lib/firestore";
@@ -5,7 +6,7 @@ import { daysLeft, effectiveStatus, formatINR, PAID_PLAN_IDS } from "@/lib/plans
 import { PaymentRequestForm } from "@/components/dashboard/PaymentRequestForm";
 import type { PlanDef } from "@/types";
 
-export const metadata = { title: "Plan & billing | DK Promoters" };
+export const metadata = { title: "Plan & billing" };
 export const dynamic = "force-dynamic";
 
 const STATUS: Record<string, string> = { PENDING: "Being checked", APPROVED: "Approved", REJECTED: "Not found — call us" };
@@ -36,14 +37,14 @@ export default async function BillingPage() {
           {status === "EXPIRED"
             ? "Your plan has ended. Your listings are saved; pay below to bring your page back."
             : status === "SUSPENDED"
-            ? "Your account is paused. Please contact DK Promoters."
+            ? `Your account is paused. Please contact ${BRAND.name} support.`
             : `You're on ${limits.name}. ${daysLeft(agent.plan)} days left (until ${new Date(agent.plan.expiresAt).toLocaleDateString("en-IN")}).`}
         </p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         {paid.map((p) => (
-          <div key={p.id} className={`bg-white rounded-card border p-5 space-y-3 ${agent.plan.id === p.id ? "border-gold-500 ring-1 ring-gold-500" : "border-[#E8E0D0]"}`}>
+          <div key={p.id} className={`bg-white rounded-card border p-5 space-y-3 ${agent.plan.id === p.id ? "border-gold-500 ring-1 ring-gold-500" : "border-[#E4DED2]"}`}>
             <div className="flex items-baseline justify-between">
               <h2 className="text-lg font-bold text-navy-900">{p.name}</h2>
               {agent.plan.id === p.id && <span className="text-xs font-bold text-gold-700">Current plan</span>}
@@ -62,14 +63,14 @@ export default async function BillingPage() {
       </div>
 
       {status !== "SUSPENDED" && (
-        <div className="bg-white rounded-card border border-[#E8E0D0] p-5 max-w-xl space-y-3">
+        <div className="bg-white rounded-card border border-[#E4DED2] p-5 max-w-xl space-y-3">
           <h2 className="text-lg font-bold text-navy-900">Pay for a plan</h2>
           <p className="text-sm text-navy-700">Paying before your plan ends adds the time on top. Nothing is lost.</p>
           <PaymentRequestForm kind="PLAN" upi={{ id: site.upiId, name: site.upiName }} plans={paid} initialPlanId={agent.plan.id === "PRO" ? "PRO" : "STARTER"} />
         </div>
       )}
 
-      <div className="bg-white rounded-card border border-[#E8E0D0] p-5">
+      <div className="bg-white rounded-card border border-[#E4DED2] p-5">
         <h2 className="text-lg font-bold text-navy-900 mb-3">Payment history</h2>
         {history.length === 0 ? (
           <p className="text-sm text-navy-600">No payments yet.</p>
@@ -83,7 +84,7 @@ export default async function BillingPage() {
               </thead>
               <tbody>
                 {history.map((h) => (
-                  <tr key={h.id} className="border-t border-[#E8E0D0]">
+                  <tr key={h.id} className="border-t border-[#E4DED2]">
                     <td className="py-2 pr-4 whitespace-nowrap">{new Date(h.createdAt).toLocaleDateString("en-IN")}</td>
                     <td className="py-2 pr-4">{h.kind === "PLAN" ? `${plans.plans[h.planId!]?.name || h.planId} · ${h.period === "YEARLY" ? "1 year" : "1 month"}` : `Boost ${h.weeks}w · ${h.propertyTitle}`}</td>
                     <td className="py-2 pr-4 whitespace-nowrap">{formatINR(h.amount)}</td>

@@ -3,7 +3,7 @@ import { requireAgentPage } from "@/lib/agent-session";
 import { getPropertyById, getPropertyPrivate } from "@/lib/firestore";
 import { PropertyForm, toFormValues } from "@/components/property/PropertyForm";
 
-export const metadata = { title: "Edit property | DK Promoters" };
+export const metadata = { title: "Edit property" };
 export const dynamic = "force-dynamic";
 
 export default async function EditPropertyPage({ params }: { params: { id: string } }) {

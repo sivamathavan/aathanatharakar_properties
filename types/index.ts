@@ -178,7 +178,7 @@ export interface PropertyDoc {
   postedById: string; // owner uid (admin or agent)
   ownerType: OwnerType;
   agentSlug?: string | null;
-  onMarketplace: boolean; // shown on the main DK site
+  onMarketplace: boolean; // shown on the main site (home page and search)
   boostUntil?: Date | null;
   createdAt: Date;
   updatedAt: Date;

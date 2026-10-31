@@ -1,65 +1,55 @@
-# DK Promoters — டிகே புரமோட்டர்ஸ்
+# PropPage
 
-**Tamil Nadu's Trusted Property Broker**
+Property pages for real-estate agents in Tamil Nadu. Each agent lists their
+plots, houses and rentals once and shares one link with clients on WhatsApp.
+The platform owner runs a back office (the Tracker) and approves UPI payments.
 
-A modern real estate marketplace built with Next.js 14, Firebase, and Tailwind CSS. DK Promoters connects property buyers, sellers, renters, agents, and allied service professionals across Tamil Nadu.
+The product name, tagline and support contact live in `lib/brand.ts` and can be
+changed with `NEXT_PUBLIC_*` variables (see `.env.example` and `apphosting.yaml`).
 
-## Tech Stack
+## What's inside
 
-- **Framework**: Next.js 14 (App Router, SSR, API Routes)
-- **Database**: Cloud Firestore
-- **Authentication**: Firebase Auth (Email/Password, Google)
-- **Storage**: Firebase Storage
-- **Hosting**: Firebase Hosting
-- **Styling**: Tailwind CSS v3 (Navy + Gold + Cream palette)
-- **Email**: Nodemailer (Gmail SMTP)
-- **Analytics**: Firebase Analytics
+| Who | Where | What |
+|---|---|---|
+| Visitors | `/`, `/properties`, `/a/{agent}` | Browse listings, call or WhatsApp the agent, send an enquiry |
+| Agents | `/register`, `/dashboard` | Free trial, listings with photos, enquiries inbox, share link + QR, plan & billing (UPI + UTR) |
+| Admin | `/admin` | Overview, own listings, website enquiries, agents, payment approval, plans & prices, Tracker |
+| Admin | `/admin/tracker` | People, deals, property documents, buyer matching, commission ledger, analytics, expenses |
 
-## Getting Started
+## Stack
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Copy `.env.example` to `.env` and fill in your Firebase project credentials
-4. Run the development server:
-   ```bash
-   npm run dev
-   ```
-5. Open [http://localhost:3000](http://localhost:3000)
+- Next.js 14 (App Router) on Firebase App Hosting
+- Firestore (server-only access through firebase-admin), Firebase Auth, Firebase Storage
+- Roles come from server-set custom claims; sessions use 14-day Firebase session cookies
+- Tailwind CSS; charts with Recharts; CSV/PDF exports with papaparse and jsPDF
 
-## Project Structure
-
-```
-app/          → Next.js pages and API routes
-components/   → Reusable UI components
-lib/          → Firebase SDK, Firestore helpers, utilities
-public/       → Static assets, PWA icons, manifest
-```
-
-## Key Features
-
-- 🏠 Property listings with search, filters, and pagination
-- 👤 Role-based access (Admin, Agent, Vendor, Property Lister)
-- 📱 PWA-ready with mobile-optimized layout
-- 🔐 Secure admin panel with Firebase Auth
-- 💬 WhatsApp and call integration for broker contact
-- 📝 Blog with static and dynamic content
-- 📊 Firebase Analytics for user behavior tracking
-
-## Deployment
+## Run locally (emulators, never touches production)
 
 ```bash
-firebase deploy
+npm install
+npm run emulators            # auth, firestore (8282), storage (9199); needs JDK 21
+npm run dev -- -p 3007       # with .env.development.local pointing at the emulators
 ```
 
-## Contact
+Create an admin:
 
-- **Email**: dkpromotersproperty@gmail.com
-- **WhatsApp**: +91 63811 69124
-- **Location**: Vadavalli, Coimbatore, Tamil Nadu
+```bash
+ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='a-long-password' npm run admin:recover
+```
 
----
+## Tests
 
-Developed by [Rturox](https://rturox.com/)
+```bash
+npm test                     # commission maths and plan dates
+npm run test:rules           # Firestore + Storage security rules (emulators)
+node tests/e2e/smoke.mjs     # 54 end-to-end checks against the running dev server
+```
+
+## Deploy
+
+1. Firebase project on the Blaze plan, Firestore in `asia-south1`, Email/Password sign-in on.
+2. Set `NEXT_PUBLIC_SITE_URL`, brand and email values in `apphosting.yaml`, and the SMTP password secret:
+   `firebase apphosting:secrets:set smtp-password`
+3. `firebase deploy --only firestore,storage` (rules + indexes), wait for indexes to finish building.
+4. `firebase deploy --only apphosting`
+5. Create the admin with `npm run admin:recover` using production credentials.

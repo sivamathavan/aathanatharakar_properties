@@ -90,7 +90,7 @@ export function ProfileForm({ agent, canBrand }: { agent: AgentLite; canBrand: b
   );
 
   return (
-    <form onSubmit={save} className="bg-white rounded-card border border-[#E8E0D0] p-5 space-y-5">
+    <form onSubmit={save} className="bg-white rounded-card border border-[#E4DED2] p-5 space-y-5">
       {imagePicker("photo", v.photoUrl, "Photo")}
       {canBrand ? imagePicker("logo", v.logoUrl, "Logo") : <p className="text-xs text-navy-600">Add your agency logo on the Pro plan.</p>}
       <div className="grid sm:grid-cols-2 gap-4">

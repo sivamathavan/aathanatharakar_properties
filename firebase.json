@@ -8,7 +8,7 @@
   },
   "apphosting": [
     {
-      "backendId": "dkpromoters-web",
+      "backendId": "proppage-web",
       "rootDir": "/",
       "ignore": ["node_modules", ".git", ".next", "venv", "firebase-debug.log", ".env*", "tests", "scripts"]
     }

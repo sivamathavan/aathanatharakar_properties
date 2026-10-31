@@ -15,7 +15,7 @@ import type { ReLedgerEntry } from './re-types';
 const CATEGORIES = ['Petrol', 'Travel', 'Rent', 'Phone & WiFi', 'Electricity', 'Salary', 'Food', 'Marketing', 'Portal listings', 'Legal & documents', 'Office supplies', 'Software', 'Other'];
 const MODES = ['Cash', 'UPI', 'Bank transfer', 'Card'];
 const TYPE_LABEL = { EXPENSE: 'Expense', INVESTMENT: 'Investment', DRAWING: 'Owner drawing' } as const;
-const PIE_COLORS = ['#D4A017', '#7A8EC2', '#1E8449', '#E0B030', '#5B72B3', '#C0392B', '#9FAFD4', '#B8880E'];
+const PIE_COLORS = ['#E39614', '#6FAEA7', '#1E8449', '#EFA92E', '#4A968E', '#C0392B', '#9CC7C2', '#C47C0B'];
 
 interface Props {
   expenses: ReExpense[];
@@ -105,7 +105,7 @@ export const ReExpensesTab: React.FC<Props> = ({ expenses, ledger, onSave, onDel
                   <Pie data={pie} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80} stroke="none">
                     {pie.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                   </Pie>
-                  <Tooltip formatter={(v: number) => formatINR(v)} contentStyle={{ background: '#0D1B2A', border: '1px solid #1E3278', borderRadius: 8, color: '#fff' }} />
+                  <Tooltip formatter={(v: number) => formatINR(v)} contentStyle={{ background: '#0C2B29', border: '1px solid #1A524C', borderRadius: 8, color: '#fff' }} />
                 </PieChart>
               </ResponsiveContainer>
               <ul className="space-y-1 text-xs">

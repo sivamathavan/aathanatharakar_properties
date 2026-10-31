@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
@@ -28,7 +29,7 @@ export const sendEmail = async ({ to, subject, html }: { to: string, subject: st
   
   try {
     await transporter.sendMail({
-      from: `"DK Promoters" <${process.env.SMTP_USER}>`,
+      from: `"${BRAND.name}" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,

@@ -29,20 +29,37 @@ env:
     availability: [BUILD, RUNTIME]
   # Set to the real address before the first deploy: the App Hosting URL
   # (shown when the backend is created) or your own domain once it's connected.
+  # Share links and WhatsApp previews are built from it.
   - variable: NEXT_PUBLIC_SITE_URL
-    value: https://www.dkpromoters.in
+    value: https://REPLACE-WITH-YOUR-DOMAIN
     availability: [BUILD, RUNTIME]
-  - variable: NEXT_PUBLIC_WHATSAPP_NUMBER
-    value: "916381169124"
+
+  # Product name and support contact (lib/brand.ts). Rename here, no code change.
+  - variable: NEXT_PUBLIC_BRAND_NAME
+    value: PropPage
     availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_COMPANY_NAME
+    value: Rturox
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_COMPANY_URL
+    value: https://rturox.com
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_SUPPORT_EMAIL
+    value: ""
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_SUPPORT_WHATSAPP
+    value: ""
+    availability: [BUILD, RUNTIME]
+
+  # Where new-signup and payment alerts go, and the Gmail account that sends email.
   - variable: ADMIN_EMAIL
-    value: dkpromotersproperty@gmail.com
+    value: ""
   - variable: SMTP_HOST
     value: smtp.gmail.com
   - variable: SMTP_PORT
     value: "587"
   - variable: SMTP_USER
-    value: dkpromotersproperty@gmail.com
+    value: ""
   # Gmail app password, stored in Secret Manager:
   #   firebase apphosting:secrets:set smtp-password
   - variable: SMTP_PASSWORD

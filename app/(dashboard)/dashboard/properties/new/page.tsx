@@ -4,7 +4,7 @@ import { countOwnerProperties } from "@/lib/firestore";
 import { isPlanLive } from "@/lib/plans";
 import { PropertyForm } from "@/components/property/PropertyForm";
 
-export const metadata = { title: "Add property | DK Promoters" };
+export const metadata = { title: "Add property" };
 export const dynamic = "force-dynamic";
 
 export default async function NewPropertyPage() {
@@ -13,7 +13,7 @@ export default async function NewPropertyPage() {
 
   if (!isPlanLive(agent.plan) || used >= limits.listingLimit) {
     return (
-      <div className="max-w-xl bg-white rounded-card border border-[#E8E0D0] p-6 space-y-3">
+      <div className="max-w-xl bg-white rounded-card border border-[#E4DED2] p-6 space-y-3">
         <h1 className="text-xl font-bold text-navy-900">You can&apos;t add more listings right now</h1>
         <p className="text-sm text-navy-700">
           {isPlanLive(agent.plan)

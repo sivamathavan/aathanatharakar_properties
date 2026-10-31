@@ -1,3 +1,4 @@
+import { BRAND } from "@/lib/brand";
 import Image from "next/image";
 import Link from "next/link";
 import { BadgeCheck, MapPin, Phone } from "lucide-react";
@@ -64,8 +65,8 @@ export function AgentPaused({ agent }: { agent: AgentDoc }) {
 
 export function PoweredBy() {
   return (
-    <footer className="py-6 text-center text-xs text-navy-600 bg-warm-cream border-t border-[#E8E0D0]">
-      Page made with <Link href="/for-agents" className="underline font-semibold text-navy-800">DK Promoters for agents</Link> — get your own property page.
+    <footer className="py-6 text-center text-xs text-navy-600 bg-warm-cream border-t border-[#E4DED2]">
+      Page made with <Link href="/for-agents" className="underline font-semibold text-navy-800">{BRAND.name}</Link> — get your own property page.
     </footer>
   );
 }

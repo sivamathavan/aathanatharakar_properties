@@ -4,12 +4,12 @@ import { getAdminLeads, getPaymentRequests, listAgents, propertiesCol } from "@/
 import { daysLeft, effectiveStatus, formatINR } from "@/lib/plans";
 import { PropertyStatus } from "@/types";
 
-export const metadata = { title: "Admin overview | DK Promoters" };
+export const metadata = { title: "Admin overview" };
 export const dynamic = "force-dynamic";
 
 function Tile({ href, label, value, sub, icon: Icon, alert }: { href: string; label: string; value: string | number; sub: string; icon: typeof Building; alert?: boolean }) {
   return (
-    <Link href={href} className={`bg-white rounded-card border p-5 hover:shadow-sm ${alert ? "border-gold-500" : "border-[#E8E0D0]"}`}>
+    <Link href={href} className={`bg-white rounded-card border p-5 hover:shadow-sm ${alert ? "border-gold-500" : "border-[#E4DED2]"}`}>
       <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-navy-600">
         {label} <Icon className="w-4 h-4 text-gold-600" />
       </div>
@@ -43,7 +43,7 @@ export default async function AdminOverviewPage() {
 
   return (
     <div className="space-y-8 pb-12">
-      <div className="border-b border-[#E8E0D0] pb-4">
+      <div className="border-b border-[#E4DED2] pb-4">
         <h1 className="font-display font-bold text-xl md:text-2xl text-navy-900">Overview</h1>
         <p className="text-xs text-navy-700 mt-0.5">Your listings, your agents and what they paid.</p>
       </div>
@@ -54,10 +54,10 @@ export default async function AdminOverviewPage() {
         <Tile href="/admin/agents" label="Paying agents" value={paying} sub={`${agents.length} agents in total`} icon={Users2} />
         <Tile href="/admin/agents" label="On trial" value={trials} sub="could become paying" icon={Users2} />
         <Tile href="/admin/agents" label="Ending soon" value={expiring} sub="in the next 7 days" icon={AlarmClock} alert={expiring > 0} />
-        <Tile href="/admin/properties" label="Your listings" value={myActive.data().count} sub="live on the DK site" icon={Building} />
+        <Tile href="/admin/properties" label="Your listings" value={myActive.data().count} sub="live on the main site" icon={Building} />
       </div>
 
-      <div className="bg-white rounded-card border border-[#E8E0D0] p-5">
+      <div className="bg-white rounded-card border border-[#E4DED2] p-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-navy-900 flex items-center gap-2"><Zap className="w-4 h-4 text-gold-600" /> New website enquiries ({newLeads.length})</h2>
           <Link href="/admin/leads" className="text-sm underline text-navy-700">All enquiries</Link>
@@ -65,7 +65,7 @@ export default async function AdminOverviewPage() {
         {newLeads.length === 0 ? (
           <p className="text-sm text-navy-600 text-center py-6">No new enquiries.</p>
         ) : (
-          <ul className="divide-y divide-[#E8E0D0]">
+          <ul className="divide-y divide-[#E4DED2]">
             {newLeads.slice(0, 6).map((l) => (
               <li key={l.id} className="py-3 flex items-start justify-between gap-3">
                 <div className="min-w-0">

@@ -13,7 +13,7 @@ interface ScrollableTabBarProps {
 
 export function ScrollableTabBar({ tabs, activeTab, onChange }: ScrollableTabBarProps) {
   return (
-    <div className="w-full border-b border-[#E8E0D0] overflow-x-auto scrollbar-hide py-1">
+    <div className="w-full border-b border-[#E4DED2] overflow-x-auto scrollbar-hide py-1">
       <div className="flex gap-2 whitespace-nowrap min-w-max px-1">
         {tabs.map((tab) => {
           const isActive = tab.value === activeTab;
@@ -24,7 +24,7 @@ export function ScrollableTabBar({ tabs, activeTab, onChange }: ScrollableTabBar
               className={`px-4 py-2 text-sm font-sans font-medium rounded-pill border transition-all duration-200 ${
                 isActive
                   ? "bg-gold-500 text-navy-900 border-gold-500 shadow-sm"
-                  : "bg-white text-navy-700 border-[#E8E0D0] hover:bg-navy-50"
+                  : "bg-white text-navy-700 border-[#E4DED2] hover:bg-navy-50"
               }`}
             >
               {tab.label}

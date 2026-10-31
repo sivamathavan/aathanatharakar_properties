@@ -3,7 +3,8 @@
 // through these helpers from server components or API routes.
 import { unstable_cache } from "next/cache";
 import { adminDb } from "@/lib/firebase-admin";
-import { mergePlans } from "@/lib/plans";
+import { mergePlans, waNumber } from "@/lib/plans";
+import { BRAND } from "@/lib/brand";
 import {
   AgentDoc,
   BlogPostDoc,
@@ -101,8 +102,8 @@ export async function listAgents(): Promise<AgentDoc[]> {
 
 export const DEFAULT_SITE_CONFIG: SiteConfig = {
   upiId: "",
-  upiName: "DK Promoters",
-  brokerWhatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "",
+  upiName: BRAND.company,
+  brokerWhatsapp: BRAND.supportWhatsapp,
   gstin: "",
 };
 
@@ -196,7 +197,7 @@ export function filterProperties(all: PropertyDoc[], options: PropertyFilters = 
   return docs;
 }
 
-/** Listings on the main DK site: the admin's own, plus agent listings with a live boost. */
+/** Listings on the main site: the admin's own, plus agent listings with a live boost. */
 export async function getActiveProperties(options: PropertyFilters = {}): Promise<{ properties: PropertyDoc[]; total: number }> {
   const now = Date.now();
   const candidates = (await loadMarketplaceCandidates())
@@ -206,6 +207,29 @@ export async function getActiveProperties(options: PropertyFilters = {}): Promis
   const limit = options.limit || 12;
   const offset = options.offset || 0;
   return { properties: filtered.slice(offset, offset + limit), total: filtered.length };
+}
+
+export type CardContact = { phone: string; label: string; note: string };
+
+/**
+ * Contact buttons for listing cards on the main site: a boosted agent listing
+ * calls that agent; your own listings call the number in Plans & settings.
+ */
+export async function marketplaceContacts(properties: PropertyDoc[]): Promise<Record<string, CardContact>> {
+  const site = await getSiteConfig();
+  const agentIds = Array.from(new Set(properties.filter((p) => p.ownerType === "AGENT").map((p) => p.postedById)));
+  const agents = agentIds.length ? await adminDb.getAll(...agentIds.map((id) => agentsCol().doc(id))) : [];
+  const byId = new Map(agents.filter((a) => a.exists).map((a) => [a.id, a.data()!]));
+  const out: Record<string, CardContact> = {};
+  for (const p of properties) {
+    if (p.ownerType === "AGENT") {
+      const a = byId.get(p.postedById);
+      if (a) out[p.id] = { phone: waNumber(a.whatsapp), label: "Agent", note: `Listed by ${a.displayName}` };
+    } else if (site.brokerWhatsapp) {
+      out[p.id] = { phone: waNumber(site.brokerWhatsapp), label: "Us", note: `Listed by ${BRAND.name}` };
+    }
+  }
+  return out;
 }
 
 /** An agent's own listings. Bounded by their plan limit (max 100). */
@@ -270,7 +294,7 @@ export async function getLeadsForOwner(uid: string, limit = 200): Promise<LeadDo
   return snap.docs.map((d) => docToTyped<LeadDoc>(d)!);
 }
 
-/** Enquiries on the admin's own listings (the main DK site). */
+/** Enquiries on the admin's own listings (the main site). */
 export async function getAdminLeads(limit = 500): Promise<LeadDoc[]> {
   const snap = await leadsCol().where("ownerType", "==", "ADMIN").orderBy("createdAt", "desc").limit(limit).get();
   return snap.docs.map((d) => docToTyped<LeadDoc>(d)!);
