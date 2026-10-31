@@ -48,6 +48,13 @@ const config: Config = {
           850: '#1A2744',  // ← admin sidebar
           900: '#111827',
         },
+        // Tracker (back office) — the tracker's dark theme mapped onto DK navy and gold
+        brand: {
+          dark: '#080F1A',
+          card: '#0D1B2A',
+          border: '#1E3278',
+          re: '#D4A017',
+        },
         // STATUS COLORS (keep standard)
         success: '#1E8449',
         warning: '#D4A017',
@@ -56,6 +63,7 @@ const config: Config = {
       },
       fontFamily: {
         display: ['Playfair Display', 'Georgia', 'serif'],
+        heading: ['Playfair Display', 'Georgia', 'serif'],
         sans:    ['DM Sans', 'system-ui', 'sans-serif'],
         tamil:   ['Noto Sans Tamil', 'system-ui', 'sans-serif'],
         mono:    ['JetBrains Mono', 'monospace'],
