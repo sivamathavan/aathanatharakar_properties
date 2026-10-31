@@ -13,7 +13,10 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "firebasestorage.googleapis.com" },
+      { protocol: "https", hostname: "*.firebasestorage.app" },
+      // Storage emulator during local development
+      { protocol: "http", hostname: "127.0.0.1", port: "9199" },
     ],
   },
   async headers() {

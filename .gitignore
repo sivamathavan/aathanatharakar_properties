@@ -37,3 +37,13 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
+
+# python scratch env
+venv/
+
+# firebase
+firebase-debug.log
+firestore-debug.log
+storage-debug.log
+ui-debug.log
+.firebase/

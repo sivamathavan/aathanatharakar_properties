@@ -1,63 +1,23 @@
 import { NextResponse } from "next/server";
-import { verifyIdToken } from "@/lib/auth";
-import { propertiesCol, getUserById, getPropertyById } from "@/lib/firestore";
-import { UserRole, PropertyDoc, MediaDoc } from "@/types";
+import { requireRole } from "@/lib/auth";
+import { adminDb } from "@/lib/firebase-admin";
+import { docToTyped, propertiesCol, usersCol } from "@/lib/firestore";
+import { PropertyDoc, UserDoc, UserRole } from "@/types";
 
 export const dynamic = "force-dynamic";
 
+// Every listing on the platform, newest first, with the owner's name.
 export async function GET(req: Request) {
+  if (!(await requireRole(req, UserRole.ADMIN))) return new NextResponse("Unauthorized", { status: 401 });
   try {
-    const authUser = await verifyIdToken(req);
-    if (!authUser || authUser.role !== UserRole.ADMIN) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const propertiesSnap = await propertiesCol().orderBy("createdAt", "desc").get();
-    
-    const enrichedProperties = await Promise.all(
-      propertiesSnap.docs.map(async (doc) => {
-        const data = doc.data()!;
-        const property: any = { id: doc.id };
-        
-        // Convert Firestore Timestamps
-        for (const [key, value] of Object.entries(data)) {
-          if (value && typeof (value as any).toDate === "function") {
-            property[key] = (value as any).toDate();
-          } else {
-            property[key] = value;
-          }
-        }
-
-        // Fetch subcollection media
-        const mediaSnap = await doc.ref.collection("media").orderBy("order").get();
-        property.media = mediaSnap.docs.map((m) => {
-          const mData = m.data()!;
-          const mConv: any = { id: m.id };
-          for (const [k, v] of Object.entries(mData)) {
-            if (v && typeof (v as any).toDate === "function") {
-              mConv[k] = (v as any).toDate();
-            } else {
-              mConv[k] = v;
-            }
-          }
-          return mConv as MediaDoc;
-        });
-
-        // Enrich postedBy user
-        let postedBy = null;
-        if (property.postedById) {
-          postedBy = await getUserById(property.postedById);
-        }
-
-        return {
-          ...property,
-          postedBy,
-          price: property.price.toString(),
-        };
-      })
+    const snap = await propertiesCol().orderBy("createdAt", "desc").limit(1000).get();
+    const properties = snap.docs.map((d) => docToTyped<PropertyDoc>(d)!);
+    const ownerIds = Array.from(new Set(properties.map((p) => p.postedById).filter(Boolean)));
+    const owners = ownerIds.length ? await adminDb.getAll(...ownerIds.map((id) => usersCol().doc(id))) : [];
+    const byId = new Map(owners.map((o) => [o.id, docToTyped<UserDoc>(o)]));
+    return NextResponse.json(
+      properties.map((p) => ({ ...p, media: p.media || [], postedBy: byId.get(p.postedById) || null }))
     );
-
-    return NextResponse.json(enrichedProperties);
   } catch (error) {
     console.error("[ADMIN_PROPERTIES_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });

@@ -1,95 +1,48 @@
 /**
- * Non-destructive admin recovery script.
+ * Create or reset the DK Promoters admin account.
  *
- * Usage:
- *   ADMIN_EMAIL=you@example.com ADMIN_PASSWORD=NewPass@2025 \
- *     npx tsx scripts/admin-recover.ts
+ *   ADMIN_EMAIL=you@example.com ADMIN_PASSWORD='a-long-password' npm run admin:recover
  *
- * Optionally reactivates a regular user that got suspended during testing:
- *   REACTIVATE_EMAIL=test-user@example.com npx tsx scripts/admin-recover.ts
- *
- * Without any env vars, defaults to:
- *   admin@dkpromoters.in / Admin@2025
+ * Against the emulators, also set FIREBASE_AUTH_EMULATOR_HOST and FIRESTORE_EMULATOR_HOST.
+ * Passwords live only in Firebase Auth; nothing about them is written to Firestore.
  */
-
 import { adminAuth, adminDb } from "../lib/firebase-admin";
-import * as bcrypt from "bcryptjs";
-import { UserRole, AccountStatus } from "../types";
+import { AccountStatus, UserRole } from "../types";
 
 async function main() {
-  const adminEmail = (process.env.ADMIN_EMAIL || "admin@dkpromoters.in")
-    .toLowerCase()
-    .trim();
-  const adminPassword = process.env.ADMIN_PASSWORD || "Admin@2025";
-  const reactivateEmail = process.env.REACTIVATE_EMAIL?.toLowerCase().trim();
+  const email = (process.env.ADMIN_EMAIL || "").toLowerCase().trim();
+  const password = process.env.ADMIN_PASSWORD || "";
+  if (!email || password.length < 10) {
+    console.error("Set ADMIN_EMAIL and ADMIN_PASSWORD (at least 10 characters).");
+    process.exit(1);
+  }
 
-  let uid = "";
+  let uid: string;
   try {
-    const authUser = await adminAuth.getUserByEmail(adminEmail);
-    uid = authUser.uid;
-    await adminAuth.updateUser(uid, {
-      password: adminPassword,
-      disabled: false,
-    });
-    console.log(`Updated existing Firebase Auth admin user password: ${adminEmail}`);
+    const user = await adminAuth.getUserByEmail(email);
+    uid = user.uid;
+    await adminAuth.updateUser(uid, { password, disabled: false, emailVerified: true });
+    console.log(`Reset password for ${email}`);
   } catch (err: any) {
-    if (err.code === "auth/user-not-found") {
-      const authUser = await adminAuth.createUser({
-        email: adminEmail,
-        emailVerified: true,
-        displayName: "DK Promoters Admin",
-        password: adminPassword,
-      });
-      uid = authUser.uid;
-      console.log(`Created new Firebase Auth admin user: ${adminEmail}`);
-    } else {
-      throw err;
-    }
+    if (err.code !== "auth/user-not-found") throw err;
+    const user = await adminAuth.createUser({ email, password, emailVerified: true, displayName: "DK Promoters Admin" });
+    uid = user.uid;
+    console.log(`Created admin ${email}`);
   }
 
-  // Set admin custom claims
   await adminAuth.setCustomUserClaims(uid, { role: UserRole.ADMIN });
-
-  // Update Firestore user document
-  const hashed = await bcrypt.hash(adminPassword, 10);
-  await adminDb.collection("users").doc(uid).set({
-    name: "DK Promoters Admin",
-    email: adminEmail,
-    role: UserRole.ADMIN,
-    accountStatus: AccountStatus.ACTIVE,
-    password: hashed,
-    updatedAt: new Date(),
-  }, { merge: true });
-
-  console.log("\n✓ Admin ready");
-  console.log(`  Email:    ${adminEmail}`);
-  console.log(`  Password: ${adminPassword}`);
-  console.log(`  Login at: /admin/login\n`);
-
-  if (reactivateEmail) {
-    const usersSnap = await adminDb.collection("users").where("email", "==", reactivateEmail).limit(1).get();
-    if (usersSnap.empty) {
-      console.warn(
-        `! No user found with email "${reactivateEmail}" — skipping reactivation.\n`
-      );
-    } else {
-      const userDoc = usersSnap.docs[0];
-      const userId = userDoc.id;
-      
-      await adminDb.collection("users").doc(userId).update({
-        accountStatus: AccountStatus.ACTIVE,
-        updatedAt: new Date(),
-      });
-
-      await adminAuth.updateUser(userId, { disabled: false }).catch(() => {});
-      
-      console.log(`✓ Reactivated user ${reactivateEmail} (now ACTIVE)\n`);
-    }
-  }
+  await adminAuth.revokeRefreshTokens(uid);
+  const now = new Date();
+  const ref = adminDb.collection("users").doc(uid);
+  const existed = (await ref.get()).exists;
+  await ref.set(
+    { name: "DK Promoters Admin", email, role: UserRole.ADMIN, accountStatus: AccountStatus.ACTIVE, updatedAt: now, ...(existed ? {} : { createdAt: now }) },
+    { merge: true }
+  );
+  console.log("Admin ready. Sign in at /admin/login");
 }
 
-main()
-  .catch((e) => {
-    console.error("Recovery failed:", e);
-    process.exit(1);
-  });
+main().catch((e) => {
+  console.error("Failed:", e.message || e);
+  process.exit(1);
+});

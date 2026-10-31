@@ -1,145 +1,117 @@
 import { NextResponse } from "next/server";
-import { getUserByEmail, createUser, usersCol, agentProfilesCol, vendorProfilesCol } from "@/lib/firestore";
+import { z } from "zod";
 import { adminAuth, adminDb } from "@/lib/firebase-admin";
+import { agentSlugsCol, agentsCol, getPlansConfig, trialPhonesCol, usersCol } from "@/lib/firestore";
+import { checkRateLimit, clientIp } from "@/lib/rate-limit";
+import { RESERVED_SLUGS, slugify, trialPlan } from "@/lib/plans";
 import { sendEmail } from "@/lib/mail";
-import { UserRole, AccountStatus } from "@/types";
+import { AccountStatus, UserRole } from "@/types";
 
-const ALLOWED_ROLES: UserRole[] = [
-  UserRole.PROPERTY_LISTER,
-  UserRole.AGENT,
-  UserRole.VENDOR,
-];
+const schema = z.object({
+  name: z.string().trim().min(2, "Enter your name").max(80),
+  phone: z.string().trim().max(20),
+  agencyName: z.string().trim().max(80).optional().default(""),
+  city: z.string().trim().min(2, "Choose your city").max(60),
+});
 
-const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
-const isValidPhone = (s: string) => /^[0-9+\-\s()]{7,20}$/.test(s);
+function normalizeIndianMobile(raw: string): string | null {
+  let digits = raw.replace(/[^0-9]/g, "");
+  if (digits.length === 12 && digits.startsWith("91")) digits = digits.slice(2);
+  if (digits.length === 11 && digits.startsWith("0")) digits = digits.slice(1);
+  return /^[6-9][0-9]{9}$/.test(digits) ? digits : null;
+}
 
+async function pickSlug(base: string): Promise<string> {
+  const root = base && !RESERVED_SLUGS.has(base) ? base : `agent-${Math.random().toString(36).slice(2, 7)}`;
+  for (let i = 0; i < 20; i++) {
+    const candidate = i === 0 ? root : `${root}-${i + 1}`;
+    if (!(await agentSlugsCol().doc(candidate).get()).exists) return candidate;
+  }
+  return `${root}-${Date.now().toString(36)}`;
+}
+
+// Agent signup. The caller proves who they are with a fresh Firebase ID token;
+// the uid and email come from that token, never from the request body.
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { uid, name, email, phone, role, agentDetails, vendorDetails } = body;
-
-    if (!uid || !name || !email || !phone || !role) {
-      return new NextResponse("Missing required fields", { status: 400 });
+    if (await checkRateLimit(`signup:${clientIp(req)}`, 5, 60 * 60 * 1000)) {
+      return new NextResponse("Too many signups from this network. Try again in an hour.", { status: 429 });
     }
 
-    if (!isValidEmail(email)) {
-      return new NextResponse("Invalid email address", { status: 400 });
-    }
+    const authHeader = req.headers.get("Authorization") || "";
+    if (!authHeader.startsWith("Bearer ")) return new NextResponse("Unauthorized", { status: 401 });
+    const decoded = await adminAuth.verifyIdToken(authHeader.slice(7));
+    if ((decoded as any).role) return new NextResponse("This account is already registered.", { status: 400 });
+    if (!decoded.email) return new NextResponse("An email address is required.", { status: 400 });
 
-    if (!isValidPhone(phone)) {
-      return new NextResponse("Invalid phone number", { status: 400 });
-    }
+    const parsed = schema.safeParse(await req.json());
+    if (!parsed.success) return new NextResponse(parsed.error.issues[0].message, { status: 400 });
+    const { name, agencyName, city } = parsed.data;
+    const phone = normalizeIndianMobile(parsed.data.phone);
+    if (!phone) return new NextResponse("Enter a valid 10-digit mobile number.", { status: 400 });
 
-    if (!ALLOWED_ROLES.includes(role)) {
-      return new NextResponse("Invalid role", { status: 400 });
-    }
+    const plans = await getPlansConfig();
+    const slug = await pickSlug(slugify(agencyName || name));
+    const now = new Date();
+    const email = decoded.email.toLowerCase();
 
-    const normalizedEmail = email.toLowerCase().trim();
-    const trimmedName = String(name).trim().slice(0, 120);
-    const trimmedPhone = String(phone).trim().slice(0, 20);
+    await adminDb.runTransaction(async (tx) => {
+      const phoneRef = trialPhonesCol().doc(phone);
+      const slugRef = agentSlugsCol().doc(slug);
+      const [phoneSnap, slugSnap] = await Promise.all([tx.get(phoneRef), tx.get(slugRef)]);
+      if (phoneSnap.exists) throw new Error("PHONE_TAKEN");
+      if (slugSnap.exists) throw new Error("SLUG_TAKEN");
 
-    const existingUser = await getUserByEmail(normalizedEmail);
-
-    if (existingUser) {
-      if (existingUser.accountStatus === AccountStatus.SUSPENDED) {
-        return new NextResponse(
-          "This account has been suspended. Please contact support.",
-          { status: 403 }
-        );
-      }
-      return new NextResponse("Email already registered", { status: 400 });
-    }
-
-    const initialStatus = AccountStatus.ACTIVE;
-
-    // Use a batch to create the User and their Profile in Firestore
-    const batch = adminDb.batch();
-    const userRef = usersCol().doc(uid);
-
-    const userData = {
-      name: trimmedName,
-      email: normalizedEmail,
-      phone: trimmedPhone,
-      role,
-      accountStatus: initialStatus,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    batch.set(userRef, userData);
-
-    if (role === UserRole.AGENT && agentDetails) {
-      const agentRef = agentProfilesCol().doc(uid);
-      batch.set(agentRef, {
-        userId: uid,
-        fullName: trimmedName,
-        mobile: trimmedPhone,
-        reraNumber: agentDetails.reraNumber || null,
-        officeAddress:
-          agentDetails.officeAddress ||
-          agentDetails.agencyName ||
-          "Not Provided",
-        operatingCities: Array.isArray(agentDetails.operatingCities)
-          ? agentDetails.operatingCities
-          : [],
-        experience: parseInt(String(agentDetails.experienceYears ?? "0")) || 0,
-        bio: agentDetails.bio || null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      tx.set(usersCol().doc(decoded.uid), {
+        name,
+        email,
+        phone,
+        role: UserRole.AGENT,
+        accountStatus: AccountStatus.ACTIVE,
+        createdAt: now,
+        updatedAt: now,
       });
-    }
-
-    if (role === UserRole.VENDOR && vendorDetails) {
-      const vendorRef = vendorProfilesCol().doc(uid);
-      batch.set(vendorRef, {
-        userId: uid,
-        businessName: vendorDetails.businessName || trimmedName,
-        ownerName: trimmedName,
-        mobile: trimmedPhone,
-        email: normalizedEmail,
-        category: vendorDetails.category || "CIVIL_CONTRACTOR",
-        description: vendorDetails.description || "",
-        serviceAreas: Array.isArray(vendorDetails.operatingCities)
-          ? vendorDetails.operatingCities
-          : [],
-        yearsInBusiness: parseInt(String(vendorDetails.experienceYears ?? "0")) || 0,
-        websiteUrl: vendorDetails.websiteUrl || null,
-        isVerified: false,
-        isFeatured: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      tx.set(agentsCol().doc(decoded.uid), {
+        slug,
+        displayName: name,
+        agencyName: agencyName || null,
+        email,
+        phone,
+        whatsapp: phone,
+        city,
+        bio: null,
+        reraNumber: null,
+        photoUrl: null,
+        logoUrl: null,
+        emailVerified: !!decoded.email_verified,
+        plan: trialPlan(plans.trialDays, now),
+        createdAt: now,
+        updatedAt: now,
       });
-    }
+      tx.set(slugRef, { uid: decoded.uid, createdAt: now });
+      tx.set(phoneRef, { uid: decoded.uid, createdAt: now });
+    });
 
-    await batch.commit();
-
-    // Set custom claims (roles) on the Firebase Auth user object
-    await adminAuth.setCustomUserClaims(uid, { role });
+    await adminAuth.setCustomUserClaims(decoded.uid, { role: UserRole.AGENT });
+    await adminAuth.updateUser(decoded.uid, { displayName: name }).catch(() => {});
 
     if (process.env.ADMIN_EMAIL) {
       sendEmail({
-        to: process.env.ADMIN_EMAIL as string,
-        subject: `New ${role} Registration: ${trimmedName}`,
-        html: `
-          <h3>New User Registration</h3>
-          <p><strong>Name:</strong> ${trimmedName}</p>
-          <p><strong>Email:</strong> ${normalizedEmail}</p>
-          <p><strong>Phone:</strong> ${trimmedPhone}</p>
-          <p><strong>Role:</strong> ${role}</p>
-          <p><strong>Status:</strong> ${initialStatus}</p>
-          <p>Please log in to the admin dashboard to review this account.</p>
-        `,
-      }).catch(console.error);
+        to: process.env.ADMIN_EMAIL,
+        subject: `New agent signup: ${name}`,
+        html: `<p><strong>${name}</strong> (${agencyName || "no agency"}) from ${city} started a free trial.</p><p>Phone: ${phone}<br/>Email: ${email}<br/>Page: /a/${slug}</p>`,
+      }).catch(() => {});
     }
 
-    return NextResponse.json({
-      id: uid,
-      email: normalizedEmail,
-      role,
-      accountStatus: initialStatus,
-    });
-  } catch (error) {
-    console.error("[REGISTER_ERROR]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return NextResponse.json({ success: true, slug }, { status: 201 });
+  } catch (error: any) {
+    if (error?.message === "PHONE_TAKEN") {
+      return new NextResponse("This mobile number already has an account. Sign in instead.", { status: 409 });
+    }
+    if (error?.message === "SLUG_TAKEN") {
+      return new NextResponse("Please try again.", { status: 409 });
+    }
+    console.error("[REGISTER_POST]", error);
+    return new NextResponse("Signup failed. Please try again.", { status: 500 });
   }
 }

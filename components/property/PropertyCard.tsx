@@ -19,11 +19,17 @@ interface PropertyCardProps {
     bedrooms?: number | null;
     area: number;
     viewCount: number;
+    areaUnit?: string | null;
     media?: Array<{
       url: string;
       thumbnailUrl?: string | null;
     }>;
   };
+  /** Where "View Details" goes. Defaults to the main-site page. */
+  href?: string;
+  /** Who gets WhatsApp and calls. Defaults to the DK broker. */
+  contact?: { phone: string; label: string; note: string };
+  showViews?: boolean;
 }
 
 // Broker contact — never expose the listing owner's number publicly.
@@ -33,7 +39,9 @@ const BROKER_PHONE =
     ""
   );
 
-export function PropertyCard({ property }: PropertyCardProps) {
+export function PropertyCard({ property, href, contact, showViews = true }: PropertyCardProps) {
+  const phone = contact?.phone || BROKER_PHONE;
+  const label = contact?.label || "Broker";
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
@@ -99,10 +107,10 @@ export function PropertyCard({ property }: PropertyCardProps) {
       : "Selling";
 
   const waMessage = encodeURIComponent(
-    `Hi DK Promoters, I'm interested in "${property.title}" in ${property.locality}, ${property.city} (ID: ${property.id}). Please share more details.`
+    `Hi, I'm interested in "${property.title}" in ${property.locality}, ${property.city} (ID: ${property.id}). Please share more details.`
   );
-  const waUrl = `https://wa.me/${BROKER_PHONE}?text=${waMessage}`;
-  const callUrl = `tel:+${BROKER_PHONE}`;
+  const waUrl = `https://wa.me/${phone}?text=${waMessage}`;
+  const callUrl = `tel:+${phone}`;
 
   return (
     <div className="overflow-hidden group flex flex-col justify-between bg-white rounded-card border border-[#E8E0D0] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
@@ -189,14 +197,16 @@ export function PropertyCard({ property }: PropertyCardProps) {
         <div className="space-y-2.5">
           <div className="flex items-center gap-3 text-xs text-[#4A5568] border-t border-[#E8E0D0] pt-3 font-sans">
             {property.bedrooms ? <span>{property.bedrooms} BHK</span> : null}
-            <span>{property.area} sqft</span>
-            <span className="ml-auto text-[#8A95A3]">
-              {property.viewCount} views
-            </span>
+            <span>{property.area} {(property.areaUnit || "SQFT").toLowerCase()}</span>
+            {showViews && (
+              <span className="ml-auto text-[#8A95A3]">
+                {property.viewCount} views
+              </span>
+            )}
           </div>
 
           <Link
-            href={`/properties/${property.id}`}
+            href={href || `/properties/${property.id}`}
             className="block w-full"
             aria-label={`View details of ${property.title}`}
           >
@@ -212,7 +222,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               className="flex items-center justify-center gap-1.5 h-9 rounded-btn bg-[#25D366] hover:bg-[#1ebe5c] text-white text-xs font-bold transition-colors"
-              aria-label="Contact broker on WhatsApp"
+              aria-label={`Contact ${label.toLowerCase()} on WhatsApp`}
             >
               <svg
                 viewBox="0 0 24 24"
@@ -227,16 +237,16 @@ export function PropertyCard({ property }: PropertyCardProps) {
               href={callUrl}
               onClick={(e) => e.stopPropagation()}
               className="flex items-center justify-center gap-1.5 h-9 rounded-btn bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold transition-colors"
-              aria-label="Call broker"
+              aria-label={`Call ${label.toLowerCase()}`}
             >
               <Phone className="w-3.5 h-3.5 shrink-0" />
-              Call Broker
+              Call {label}
             </a>
           </div>
 
           <p className="text-[10px] text-navy-600 flex items-center gap-1 pt-1">
             <ShieldCheck className="w-3 h-3 text-gold-600" />
-            Contact via DK Promoters broker only
+            {contact?.note || "Contact via DK Promoters broker only"}
           </p>
         </div>
       </div>

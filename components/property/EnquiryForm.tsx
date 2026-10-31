@@ -8,140 +8,93 @@ import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Loader2, ShieldCheck } from "lucide-react";
 
-const DEFAULT_MESSAGE =
-  "I am interested in this property. Please share more details.";
+const DEFAULT_MESSAGE = "I am interested in this property. Please share more details.";
 
-const isValidEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
-const isValidPhone = (s: string) => /^[0-9+\-\s()]{7,20}$/.test(s);
-
-export function EnquiryForm({ propertyId }: { propertyId: string }) {
+export function EnquiryForm({
+  propertyId,
+  source = "WEB",
+  privacyNote = "Your enquiry is routed through DK Promoters. Owner contact details are never shared publicly.",
+  idPrefix = "enq",
+}: {
+  propertyId: string;
+  source?: "WEB" | "AGENT_PAGE";
+  privacyNote?: string;
+  idPrefix?: string;
+}) {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    message: DEFAULT_MESSAGE,
-  });
+  const [sent, setSent] = useState(false);
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: DEFAULT_MESSAGE, website: "" });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!formData.name.trim()) return toast.error("Please enter your name");
-    if (!isValidEmail(formData.email))
-      return toast.error("Please enter a valid email");
-    if (!isValidPhone(formData.phone))
-      return toast.error("Please enter a valid phone number");
+    if (formData.phone.replace(/[^0-9]/g, "").length < 10) return toast.error("Please enter a valid phone number");
 
     setLoading(true);
     try {
       const res = await fetch(`/api/properties/${propertyId}/enquiry`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, source }),
       });
-
       if (res.ok) {
-        toast.success(
-          "Enquiry received. Our broker team will contact you shortly."
-        );
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          message: DEFAULT_MESSAGE,
-        });
+        setSent(true);
+        toast.success("Enquiry sent. You'll get a call back shortly.");
+        setFormData({ name: "", email: "", phone: "", message: DEFAULT_MESSAGE, website: "" });
       } else {
-        const txt = await res.text();
-        toast.error(txt || "Failed to submit enquiry. Please try again.");
+        toast.error((await res.text()) || "Could not send your enquiry. Please try again.");
       }
-    } catch (error) {
-      toast.error("Network error. Please try again.");
+    } catch {
+      toast.error("No internet connection. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  if (sent) {
+    return (
+      <div className="rounded-btn border border-green-200 bg-green-50 p-4 text-sm text-green-900 space-y-2">
+        <p className="font-semibold">Enquiry sent.</p>
+        <p>You&apos;ll get a call back shortly.</p>
+        <button type="button" className="text-xs underline" onClick={() => setSent(false)}>
+          Send another enquiry
+        </button>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Your Name</Label>
-        <Input
-          id="name"
-          value={formData.name}
-          onChange={(e) =>
-            setFormData({ ...formData, name: e.target.value })
-          }
-          required
-          placeholder="Full Name"
-          autoComplete="name"
-        />
+        <Label htmlFor={`${idPrefix}-name`}>Your name</Label>
+        <Input id={`${idPrefix}-name`} value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required placeholder="Full name" autoComplete="name" />
       </div>
-
       <div className="space-y-2">
-        <Label htmlFor="email">Email Address</Label>
-        <Input
-          id="email"
-          type="email"
-          value={formData.email}
-          onChange={(e) =>
-            setFormData({ ...formData, email: e.target.value })
-          }
-          required
-          placeholder="you@example.com"
-          autoComplete="email"
-          inputMode="email"
-        />
+        <Label htmlFor={`${idPrefix}-phone`}>Phone number</Label>
+        <Input id={`${idPrefix}-phone`} type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} required placeholder="98765 43210" autoComplete="tel" inputMode="tel" />
       </div>
-
       <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number</Label>
-        <Input
-          id="phone"
-          type="tel"
-          value={formData.phone}
-          onChange={(e) =>
-            setFormData({ ...formData, phone: e.target.value })
-          }
-          required
-          placeholder="+91 98765 43210"
-          autoComplete="tel"
-          inputMode="tel"
-        />
+        <Label htmlFor={`${idPrefix}-email`}>Email (optional)</Label>
+        <Input id={`${idPrefix}-email`} type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="you@example.com" autoComplete="email" inputMode="email" />
       </div>
-
       <div className="space-y-2">
-        <Label htmlFor="message">Message</Label>
-        <Textarea
-          id="message"
-          value={formData.message}
-          onChange={(e) =>
-            setFormData({ ...formData, message: e.target.value })
-          }
-          required
-          rows={4}
-          maxLength={2000}
-        />
+        <Label htmlFor={`${idPrefix}-message`}>Message</Label>
+        <Textarea id={`${idPrefix}-message`} value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} rows={3} maxLength={2000} />
       </div>
-
-      <Button
-        type="submit"
-        className="w-full h-11 bg-navy-900 text-gold-500 hover:bg-navy-950 hover:text-gold-400 font-bold rounded-btn shadow-sm disabled:opacity-60"
-        disabled={loading}
-      >
+      {/* Hidden from people; bots fill it in and get silently dropped. */}
+      <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" value={formData.website} onChange={(e) => setFormData({ ...formData, website: e.target.value })} />
+      <Button type="submit" className="w-full h-11 bg-navy-900 text-gold-500 hover:bg-navy-950 hover:text-gold-400 font-bold rounded-btn shadow-sm disabled:opacity-60" disabled={loading}>
         {loading ? (
           <>
-            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            Submitting...
+            <Loader2 className="w-4 h-4 animate-spin mr-2" /> Sending…
           </>
         ) : (
-          "Submit Enquiry"
+          "Send enquiry"
         )}
       </Button>
-
       <p className="text-[11px] text-navy-700 flex items-start gap-1.5 leading-relaxed">
         <ShieldCheck className="w-3.5 h-3.5 text-gold-600 shrink-0 mt-0.5" />
-        Your enquiry is routed through DK Promoters. Owner contact details
-        are never shared publicly.
+        {privacyNote}
       </p>
     </form>
   );

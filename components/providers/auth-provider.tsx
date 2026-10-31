@@ -1,17 +1,16 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
-import { UserRole, AccountStatus } from "@/types";
+import { onIdTokenChanged, User } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { UserRole } from "@/types";
 
 interface AuthUser {
   id: string;
   name: string | null;
   email: string | null;
-  role: UserRole;
-  accountStatus: AccountStatus;
+  emailVerified: boolean;
+  role: UserRole | null;
   image?: string | null;
 }
 
@@ -29,63 +28,37 @@ const AuthContext = createContext<AuthContextType>({
   status: "loading",
 });
 
+// Client-side auth state for UI only (menus, buttons). Pages and APIs check
+// the session cookie on the server, so nothing here grants access.
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+    const unsubscribe = onIdTokenChanged(auth, async (fbUser) => {
       if (fbUser) {
         setFirebaseUser(fbUser);
-        try {
-          // Fetch role and status from Firestore
-          const userDoc = await getDoc(doc(db, "users", fbUser.uid));
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            setUser({
-              id: fbUser.uid,
-              name: data.name || fbUser.displayName,
-              email: fbUser.email,
-              role: data.role || UserRole.PROPERTY_LISTER,
-              accountStatus: data.accountStatus || AccountStatus.ACTIVE,
-              image: data.image || fbUser.photoURL,
-            });
-          } else {
-            // User exists in Firebase Auth but not Firestore — fallback
-            setUser({
-              id: fbUser.uid,
-              name: fbUser.displayName,
-              email: fbUser.email,
-              role: UserRole.PROPERTY_LISTER,
-              accountStatus: AccountStatus.PENDING,
-            });
-          }
-        } catch (err) {
-          console.error("[AuthProvider] Error fetching user doc:", err);
-          setUser({
-            id: fbUser.uid,
-            name: fbUser.displayName,
-            email: fbUser.email,
-            role: UserRole.PROPERTY_LISTER,
-            accountStatus: AccountStatus.PENDING,
-          });
-        }
+        const token = await fbUser.getIdTokenResult().catch(() => null);
+        const role = token?.claims.role as string | undefined;
+        setUser({
+          id: fbUser.uid,
+          name: fbUser.displayName,
+          email: fbUser.email,
+          emailVerified: fbUser.emailVerified,
+          role: role === UserRole.ADMIN || role === UserRole.AGENT ? (role as UserRole) : null,
+          image: fbUser.photoURL,
+        });
       } else {
         setFirebaseUser(null);
         setUser(null);
       }
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
-  const status = loading
-    ? "loading"
-    : user
-    ? "authenticated"
-    : "unauthenticated";
+  const status = loading ? "loading" : user ? "authenticated" : "unauthenticated";
 
   return (
     <AuthContext.Provider value={{ user, firebaseUser, loading, status }}>
@@ -94,29 +67,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * Hook to access current auth state.
- * Returns { user, firebaseUser, loading, status }
- * 
- * Replacement for NextAuth's useSession():
- *   const { data: session } = useSession()
- * becomes:
- *   const { user } = useAuth()
- *   // user.role, user.email, user.id etc.
- */
 export function useAuth() {
   return useContext(AuthContext);
 }
 
-/**
- * Compatibility shim — returns data shaped like NextAuth session.
- * Use this during migration to minimize changes in components.
- */
 export function useSession() {
-  const { user, loading, status } = useAuth();
-  return {
-    data: user ? { user } : null,
-    status,
-    update: async () => {}, // no-op for compatibility
-  };
+  const { user, status } = useAuth();
+  return { data: user ? { user } : null, status };
 }

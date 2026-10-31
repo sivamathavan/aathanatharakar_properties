@@ -1,48 +1,30 @@
 import { NextResponse } from "next/server";
-import { verifyIdToken } from "@/lib/auth";
-import { propertiesCol } from "@/lib/firestore";
-import { UserRole, PropertyStatus } from "@/types";
+import { z } from "zod";
+import { requireRole } from "@/lib/auth";
 import { adminDb } from "@/lib/firebase-admin";
+import { propertiesCol, writeAudit } from "@/lib/firestore";
+import { refreshListingCaches } from "@/lib/property-input";
+import { PropertyStatus, UserRole } from "@/types";
 
-const ALLOWED_STATUSES: PropertyStatus[] = [
-  PropertyStatus.PENDING,
-  PropertyStatus.ACTIVE,
-  PropertyStatus.SOLD,
-  PropertyStatus.RENTED,
-  PropertyStatus.REJECTED,
-  PropertyStatus.INACTIVE,
-];
+const schema = z.object({
+  propertyIds: z.array(z.string().min(1).max(60)).min(1).max(400),
+  status: z.nativeEnum(PropertyStatus),
+});
 
 export async function PATCH(req: Request) {
+  const admin = await requireRole(req, UserRole.ADMIN);
+  if (!admin) return new NextResponse("Unauthorized", { status: 401 });
   try {
-    const authUser = await verifyIdToken(req);
-    if (!authUser || authUser.role !== UserRole.ADMIN) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const body = await req.json();
-    const { propertyIds, status } = body;
-
-    if (!Array.isArray(propertyIds) || propertyIds.length === 0) {
-      return new NextResponse("Invalid property list", { status: 400 });
-    }
-    if (!ALLOWED_STATUSES.includes(status)) {
-      return new NextResponse("Invalid status", { status: 400 });
-    }
-
-    const safeIds = propertyIds.filter(
-      (id) => typeof id === "string" && id.length < 60
-    );
-
+    const parsed = schema.safeParse(await req.json());
+    if (!parsed.success) return new NextResponse("Invalid request", { status: 400 });
     const batch = adminDb.batch();
-    safeIds.forEach((id) => {
-      const docRef = propertiesCol().doc(id);
-      batch.update(docRef, { status, updatedAt: new Date() });
-    });
-
+    parsed.data.propertyIds.forEach((id) =>
+      batch.update(propertiesCol().doc(id), { status: parsed.data.status, updatedAt: new Date() })
+    );
     await batch.commit();
-
-    return NextResponse.json({ success: true, count: safeIds.length });
+    await writeAudit(admin.uid, "property.bulkStatus", parsed.data.propertyIds.join(","), { status: parsed.data.status });
+    refreshListingCaches();
+    return NextResponse.json({ success: true, count: parsed.data.propertyIds.length });
   } catch (error) {
     console.error("[ADMIN_PROPERTIES_BULK_PATCH]", error);
     return new NextResponse("Internal error", { status: 500 });

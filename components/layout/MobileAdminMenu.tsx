@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { X, LayoutDashboard, Home, Store, Handshake, Zap, CheckCircle2, Receipt } from "lucide-react";
+import { X } from "lucide-react";
+import { ADMIN_LINKS } from "@/lib/admin-nav";
 import { Button } from "@/components/ui/button";
 
 interface MobileAdminMenuProps {
@@ -10,15 +11,6 @@ interface MobileAdminMenuProps {
   onClose: () => void;
 }
 
-const ADMIN_LINKS = [
-  { href: "/admin", label: "Overview", icon: LayoutDashboard },
-  { href: "/admin/properties", label: "Properties", icon: Home },
-  { href: "/admin/vendors", label: "Vendors & Services", icon: Store },
-  { href: "/admin/co-brokers", label: "Co-Brokers / Dealers", icon: Handshake },
-  { href: "/admin/leads", label: "Active Deals", icon: Zap },
-  { href: "/admin/completed-deals", label: "Completed Deals", icon: CheckCircle2 },
-  { href: "/admin/commissions", label: "Revenue Tracker", icon: Receipt },
-];
 
 export function MobileAdminMenu({ isOpen, onClose }: MobileAdminMenuProps) {
   useEffect(() => {

@@ -1,13 +1,12 @@
-"use client";
+import { Suspense } from "react";
+import { LoginForm } from "@/components/auth/LoginForm";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+export const metadata = { title: "Agent login | DK Promoters" };
 
 export default function LoginPage() {
-  const router = useRouter();
-  useEffect(() => {
-    router.replace("/admin/login");
-  }, [router]);
-
-  return null;
+  return (
+    <Suspense>
+      <LoginForm title="Agent login" subtitle="Manage your listings and enquiries." />
+    </Suspense>
+  );
 }

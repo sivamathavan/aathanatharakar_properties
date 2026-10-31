@@ -10,6 +10,16 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+/** Escape text typed by visitors before putting it in an email body. */
+export function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export const sendEmail = async ({ to, subject, html }: { to: string, subject: string, html: string }) => {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
     console.warn("SMTP credentials not configured. Skipping email send.");

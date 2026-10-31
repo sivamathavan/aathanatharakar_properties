@@ -1,83 +1,74 @@
-// Firestore collection helpers and CRUD functions
-// Server-side: uses firebase-admin. Client-side: uses firebase client SDK.
+// Firestore collection helpers. Server-side only (firebase-admin).
+// Browsers never talk to Firestore directly; every read and write goes
+// through these helpers from server components or API routes.
+import { unstable_cache } from "next/cache";
 import { adminDb } from "@/lib/firebase-admin";
+import { mergePlans } from "@/lib/plans";
 import {
-  PropertyDoc,
-  PropertyStatus,
-  UserDoc,
-  UserRole,
-  AccountStatus,
-  LeadDoc,
-  LeadStatus,
-  LeadSource,
-  LeadNoteDoc,
-  VendorProfileDoc,
-  VendorEnquiryDoc,
-  CommissionDoc,
+  AgentDoc,
   BlogPostDoc,
-  AgentProfileDoc,
-  MediaDoc,
+  LeadDoc,
+  LeadNoteDoc,
+  PaymentRequestDoc,
+  PlansConfig,
+  PropertyDoc,
+  PropertyPrivateDoc,
+  PropertyStatus,
   RateLimitDoc,
-  VerificationTokenDoc,
+  SiteConfig,
+  UserDoc,
 } from "@/types";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
 // ─── Collection References ──────────────────────────────────────────────────
 
 export const usersCol = () => adminDb.collection("users");
-export const agentProfilesCol = () => adminDb.collection("agentProfiles");
-export const vendorProfilesCol = () => adminDb.collection("vendorProfiles");
+export const agentsCol = () => adminDb.collection("agents");
+export const agentSlugsCol = () => adminDb.collection("agentSlugs");
+export const trialPhonesCol = () => adminDb.collection("trialPhones");
 export const propertiesCol = () => adminDb.collection("properties");
 export const leadsCol = () => adminDb.collection("leads");
 export const leadNotesCol = () => adminDb.collection("leadNotes");
-export const vendorEnquiriesCol = () => adminDb.collection("vendorEnquiries");
-export const commissionsCol = () => adminDb.collection("commissions");
+export const paymentRequestsCol = () => adminDb.collection("paymentRequests");
+export const configCol = () => adminDb.collection("config");
 export const blogPostsCol = () => adminDb.collection("blogPosts");
 export const rateLimitsCol = () => adminDb.collection("rateLimits");
-export const verificationTokensCol = () => adminDb.collection("verificationTokens");
+export const auditLogCol = () => adminDb.collection("auditLog");
 
-// ─── Firestore Timestamp Helpers ────────────────────────────────────────────
+export const privateDetailsRef = (propertyId: string) =>
+  propertiesCol().doc(propertyId).collection("private").doc("details");
 
-function toDate(val: any): Date {
-  if (val instanceof Timestamp) return val.toDate();
-  if (val instanceof Date) return val;
-  if (typeof val === "string" || typeof val === "number") return new Date(val);
-  return new Date();
-}
+// ─── Timestamp Helpers ──────────────────────────────────────────────────────
 
-function docToTyped<T>(doc: FirebaseFirestore.DocumentSnapshot): T | null {
-  if (!doc.exists) return null;
-  const data = doc.data()!;
-  // Convert all Timestamp fields to Date
-  const converted: any = { id: doc.id };
-  for (const [key, value] of Object.entries(data)) {
-    if (value instanceof Timestamp) {
-      converted[key] = value.toDate();
-    } else {
-      converted[key] = value;
-    }
+function convert(value: any): any {
+  if (value instanceof Timestamp) return value.toDate();
+  if (Array.isArray(value)) return value.map(convert);
+  if (value && typeof value === "object" && !(value instanceof Date)) {
+    const out: any = {};
+    for (const [k, v] of Object.entries(value)) out[k] = convert(v);
+    return out;
   }
-  return converted as T;
+  return value;
 }
 
-// ─── User Operations ────────────────────────────────────────────────────────
+export function docToTyped<T>(doc: FirebaseFirestore.DocumentSnapshot): T | null {
+  if (!doc.exists) return null;
+  return { id: doc.id, ...convert(doc.data()) } as T;
+}
+
+const DATE_FIELDS = ["createdAt", "updatedAt", "boostUntil"];
+
+// unstable_cache serialises to JSON, so dates come back as strings.
+function reviveDates<T>(item: any): T {
+  const out = { ...item };
+  for (const f of DATE_FIELDS) if (out[f]) out[f] = new Date(out[f]);
+  return out as T;
+}
+
+// ─── Users ──────────────────────────────────────────────────────────────────
 
 export async function getUserById(uid: string): Promise<UserDoc | null> {
-  const doc = await usersCol().doc(uid).get();
-  return docToTyped<UserDoc>(doc);
-}
-
-export async function getUserByEmail(email: string): Promise<UserDoc | null> {
-  const snap = await usersCol().where("email", "==", email.toLowerCase().trim()).limit(1).get();
-  if (snap.empty) return null;
-  return docToTyped<UserDoc>(snap.docs[0]);
-}
-
-export async function createUser(uid: string, data: Omit<UserDoc, "id" | "createdAt" | "updatedAt">): Promise<UserDoc> {
-  const now = new Date();
-  const doc = { ...data, createdAt: now, updatedAt: now };
-  await usersCol().doc(uid).set(doc);
-  return { id: uid, ...doc };
+  return docToTyped<UserDoc>(await usersCol().doc(uid).get());
 }
 
 export async function updateUser(uid: string, data: Partial<UserDoc>): Promise<void> {
@@ -89,21 +80,88 @@ export async function getAllUsers(): Promise<UserDoc[]> {
   return snap.docs.map((d) => docToTyped<UserDoc>(d)!);
 }
 
-// ─── Property Operations ────────────────────────────────────────────────────
+// ─── Agents ─────────────────────────────────────────────────────────────────
+
+export async function getAgentById(uid: string): Promise<AgentDoc | null> {
+  return docToTyped<AgentDoc>(await agentsCol().doc(uid).get());
+}
+
+export async function getAgentBySlug(slug: string): Promise<AgentDoc | null> {
+  const slugDoc = await agentSlugsCol().doc(slug.toLowerCase()).get();
+  if (!slugDoc.exists) return null;
+  return getAgentById(slugDoc.data()!.uid);
+}
+
+export async function listAgents(): Promise<AgentDoc[]> {
+  const snap = await agentsCol().orderBy("createdAt", "desc").get();
+  return snap.docs.map((d) => docToTyped<AgentDoc>(d)!);
+}
+
+// ─── Config ─────────────────────────────────────────────────────────────────
+
+export const DEFAULT_SITE_CONFIG: SiteConfig = {
+  upiId: "",
+  upiName: "DK Promoters",
+  brokerWhatsapp: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "",
+  gstin: "",
+};
+
+// Defaults keep pages working (e.g. during a build) if config can't be read.
+export async function getPlansConfig(): Promise<PlansConfig> {
+  try {
+    const doc = await configCol().doc("plans").get();
+    return mergePlans(doc.exists ? (doc.data() as Partial<PlansConfig>) : null);
+  } catch (err) {
+    console.error("[config/plans]", err);
+    return mergePlans(null);
+  }
+}
+
+export async function getSiteConfig(): Promise<SiteConfig> {
+  try {
+    const doc = await configCol().doc("site").get();
+    return { ...DEFAULT_SITE_CONFIG, ...(doc.exists ? (doc.data() as Partial<SiteConfig>) : {}) };
+  } catch (err) {
+    console.error("[config/site]", err);
+    return DEFAULT_SITE_CONFIG;
+  }
+}
+
+// ─── Properties ─────────────────────────────────────────────────────────────
 
 export async function getPropertyById(id: string): Promise<PropertyDoc | null> {
-  const doc = await propertiesCol().doc(id).get();
-  const property = docToTyped<PropertyDoc>(doc);
-  if (!property) return null;
-
-  // Fetch subcollection media
-  const mediaSnap = await propertiesCol().doc(id).collection("media").orderBy("order").get();
-  property.media = mediaSnap.docs.map((m) => docToTyped<MediaDoc>(m)!);
+  const property = docToTyped<PropertyDoc>(await propertiesCol().doc(id).get());
+  if (property && !Array.isArray(property.media)) property.media = [];
   return property;
 }
 
-export async function getActiveProperties(options?: {
+export async function getPropertyPrivate(id: string): Promise<PropertyPrivateDoc> {
+  const doc = await privateDetailsRef(id).get();
+  return (doc.exists ? convert(doc.data()) : {}) as PropertyPrivateDoc;
+}
+
+const MARKETPLACE_CAP = 300;
+
+// One indexed query (status, onMarketplace, createdAt) shared by every visitor
+// for 60 seconds. Filters run on this bounded set, so a search never scans the
+// collection and Firestore reads stay flat as traffic grows.
+const loadMarketplaceCandidates = unstable_cache(
+  async () => {
+    const snap = await propertiesCol()
+      .where("status", "==", PropertyStatus.ACTIVE)
+      .where("onMarketplace", "==", true)
+      .orderBy("createdAt", "desc")
+      .limit(MARKETPLACE_CAP)
+      .get();
+    return snap.docs.map((d) => JSON.parse(JSON.stringify(docToTyped<PropertyDoc>(d))));
+  },
+  ["marketplace-candidates"],
+  { revalidate: 60, tags: ["properties"] }
+);
+
+export interface PropertyFilters {
   limit?: number;
+  offset?: number;
   featured?: boolean;
   type?: string;
   city?: string;
@@ -111,143 +169,110 @@ export async function getActiveProperties(options?: {
   minPrice?: number;
   maxPrice?: number;
   bedrooms?: number;
-  offset?: number;
   listingType?: string;
   sort?: string;
-}): Promise<{ properties: PropertyDoc[]; total: number }> {
-  let query: FirebaseFirestore.Query = propertiesCol()
-    .where("status", "==", PropertyStatus.ACTIVE);
-
-  if (options?.featured) {
-    query = query.where("isFeatured", "==", true);
-  }
-  if (options?.type) {
-    query = query.where("type", "==", options.type);
-  }
-  if (options?.city) {
-    query = query.where("city", "==", options.city);
-  }
-  if (options?.bedrooms) {
-    query = query.where("bedrooms", "==", options.bedrooms);
-  }
-  if (options?.listingType) {
-    query = query.where("listingType", "==", options.listingType);
-  }
-
-  // Get total records matching query
-  const allSnap = await query.get();
-  let docs = allSnap.docs;
-
-  // Client-side filters for text search and price range
-  if (options?.search) {
-    const searchLower = options.search.toLowerCase();
-    docs = docs.filter((d) => {
-      const data = d.data();
-      return (
-        data.title?.toLowerCase().includes(searchLower) ||
-        data.locality?.toLowerCase().includes(searchLower) ||
-        data.address?.toLowerCase().includes(searchLower) ||
-        data.description?.toLowerCase().includes(searchLower)
-      );
-    });
-  }
-  if (options?.minPrice !== undefined) {
-    docs = docs.filter((d) => d.data().price >= options.minPrice!);
-  }
-  if (options?.maxPrice !== undefined) {
-    docs = docs.filter((d) => d.data().price <= options.maxPrice!);
-  }
-
-  // Apply sorting
-  if (options?.sort === "price_asc") {
-    docs.sort((a, b) => Number(a.data().price || 0) - Number(b.data().price || 0));
-  } else if (options?.sort === "price_desc") {
-    docs.sort((a, b) => Number(b.data().price || 0) - Number(a.data().price || 0));
-  } else {
-    // default / newest (createdAt desc)
-    docs.sort((a, b) => {
-      const timeA = a.data().createdAt?.seconds ? a.data().createdAt.seconds * 1000 : new Date(a.data().createdAt || 0).getTime();
-      const timeB = b.data().createdAt?.seconds ? b.data().createdAt.seconds * 1000 : new Date(b.data().createdAt || 0).getTime();
-      return timeB - timeA;
-    });
-  }
-
-  const total = docs.length;
-
-  // Apply pagination
-  const limit = options?.limit || 12;
-  const offset = options?.offset || 0;
-  const paginatedDocs = docs.slice(offset, offset + limit);
-
-  const properties: PropertyDoc[] = [];
-  for (const d of paginatedDocs) {
-    const prop = docToTyped<PropertyDoc>(d)!;
-    // Fetch media subcollection
-    const mediaSnap = await propertiesCol().doc(d.id).collection("media").orderBy("order").get();
-    prop.media = mediaSnap.docs.map((m) => docToTyped<MediaDoc>(m)!);
-    properties.push(prop);
-  }
-
-  return { properties, total };
 }
 
-export async function createProperty(data: Omit<PropertyDoc, "id" | "createdAt" | "updatedAt" | "viewCount" | "isFeatured">, media: Omit<MediaDoc, "id" | "createdAt">[]): Promise<PropertyDoc> {
+export function filterProperties(all: PropertyDoc[], options: PropertyFilters = {}) {
+  let docs = all;
+  if (options.featured) docs = docs.filter((p) => p.isFeatured);
+  if (options.type) docs = docs.filter((p) => p.type === options.type);
+  if (options.city) docs = docs.filter((p) => p.city === options.city);
+  if (options.bedrooms) docs = docs.filter((p) => p.bedrooms === options.bedrooms);
+  if (options.listingType) docs = docs.filter((p) => p.listingType === options.listingType);
+  if (options.minPrice !== undefined) docs = docs.filter((p) => p.price >= options.minPrice!);
+  if (options.maxPrice !== undefined) docs = docs.filter((p) => p.price <= options.maxPrice!);
+  if (options.search) {
+    const words = options.search.toLowerCase().split(/\s+/).filter(Boolean);
+    docs = docs.filter((p) => {
+      const hay = `${p.title} ${p.locality} ${p.city} ${p.address} ${p.description}`.toLowerCase();
+      return words.every((w) => hay.includes(w));
+    });
+  }
+  docs = [...docs];
+  if (options.sort === "price_asc") docs.sort((a, b) => a.price - b.price);
+  else if (options.sort === "price_desc") docs.sort((a, b) => b.price - a.price);
+  else docs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  return docs;
+}
+
+/** Listings on the main DK site: the admin's own, plus agent listings with a live boost. */
+export async function getActiveProperties(options: PropertyFilters = {}): Promise<{ properties: PropertyDoc[]; total: number }> {
+  const now = Date.now();
+  const candidates = (await loadMarketplaceCandidates())
+    .map((p: any) => reviveDates<PropertyDoc>(p))
+    .filter((p) => p.ownerType !== "AGENT" || (p.boostUntil && new Date(p.boostUntil).getTime() > now));
+  const filtered = filterProperties(candidates, options);
+  const limit = options.limit || 12;
+  const offset = options.offset || 0;
+  return { properties: filtered.slice(offset, offset + limit), total: filtered.length };
+}
+
+/** An agent's own listings. Bounded by their plan limit (max 100). */
+export async function getOwnerProperties(uid: string, opts: { activeOnly?: boolean } = {}): Promise<PropertyDoc[]> {
+  let query: FirebaseFirestore.Query = propertiesCol().where("postedById", "==", uid);
+  if (opts.activeOnly) query = query.where("status", "==", PropertyStatus.ACTIVE);
+  const snap = await query.orderBy("createdAt", "desc").limit(200).get();
+  return snap.docs.map((d) => docToTyped<PropertyDoc>(d)!).map((p) => ({ ...p, media: p.media || [] }));
+}
+
+export async function countOwnerProperties(uid: string): Promise<number> {
+  const agg = await propertiesCol().where("postedById", "==", uid).count().get();
+  return agg.data().count;
+}
+
+export async function createProperty(
+  data: Omit<PropertyDoc, "id" | "createdAt" | "updatedAt" | "viewCount" | "isFeatured">,
+  privateDetails?: PropertyPrivateDoc
+): Promise<string> {
   const now = new Date();
-  const { ...propData } = data;
-  const docRef = await propertiesCol().add({
-    ...propData,
-    isFeatured: false,
-    viewCount: 0,
-    createdAt: now,
-    updatedAt: now,
-  });
-
-  // Add media as subcollection
-  for (const m of media) {
-    await docRef.collection("media").add({
-      ...m,
-      createdAt: now,
-    });
-  }
-
-  return { id: docRef.id, ...propData, isFeatured: false, viewCount: 0, createdAt: now, updatedAt: now, media: [] };
+  const ref = propertiesCol().doc();
+  const batch = adminDb.batch();
+  batch.set(ref, { ...data, isFeatured: false, viewCount: 0, createdAt: now, updatedAt: now });
+  if (privateDetails) batch.set(ref.collection("private").doc("details"), privateDetails);
+  await batch.commit();
+  return ref.id;
 }
 
-export async function updateProperty(id: string, data: Partial<PropertyDoc>): Promise<void> {
-  const { media, ...rest } = data as any;
-  await propertiesCol().doc(id).update({ ...rest, updatedAt: new Date() });
+export async function updateProperty(id: string, data: Partial<PropertyDoc>, privateDetails?: PropertyPrivateDoc): Promise<void> {
+  const { id: _ignored, createdAt, ...rest } = data as any;
+  const batch = adminDb.batch();
+  batch.update(propertiesCol().doc(id), { ...rest, updatedAt: new Date() });
+  if (privateDetails) batch.set(privateDetailsRef(id), privateDetails, { merge: true });
+  await batch.commit();
 }
 
 export async function deleteProperty(id: string): Promise<void> {
-  // Delete media subcollection first
-  const mediaSnap = await propertiesCol().doc(id).collection("media").get();
   const batch = adminDb.batch();
-  mediaSnap.docs.forEach((doc) => batch.delete(doc.ref));
+  batch.delete(privateDetailsRef(id));
   batch.delete(propertiesCol().doc(id));
   await batch.commit();
 }
 
 export async function incrementViewCount(id: string): Promise<void> {
-  await propertiesCol().doc(id).update({
-    viewCount: FieldValue.increment(1),
-  });
+  await propertiesCol().doc(id).update({ viewCount: FieldValue.increment(1) });
 }
 
-// ─── Lead Operations ────────────────────────────────────────────────────────
+// ─── Leads ──────────────────────────────────────────────────────────────────
 
 export async function createLead(data: Omit<LeadDoc, "id" | "createdAt" | "updatedAt">): Promise<LeadDoc> {
   const now = new Date();
-  const docRef = await leadsCol().add({ ...data, createdAt: now, updatedAt: now });
-  return { id: docRef.id, ...data, createdAt: now, updatedAt: now };
+  const ref = await leadsCol().add({ ...data, createdAt: now, updatedAt: now });
+  return { id: ref.id, ...data, createdAt: now, updatedAt: now };
 }
 
 export async function getLeadById(id: string): Promise<LeadDoc | null> {
-  const doc = await leadsCol().doc(id).get();
-  return docToTyped<LeadDoc>(doc);
+  return docToTyped<LeadDoc>(await leadsCol().doc(id).get());
 }
 
-export async function getAllLeads(): Promise<LeadDoc[]> {
-  const snap = await leadsCol().orderBy("createdAt", "desc").get();
+export async function getLeadsForOwner(uid: string, limit = 200): Promise<LeadDoc[]> {
+  const snap = await leadsCol().where("ownerId", "==", uid).orderBy("createdAt", "desc").limit(limit).get();
+  return snap.docs.map((d) => docToTyped<LeadDoc>(d)!);
+}
+
+/** Enquiries on the admin's own listings (the main DK site). */
+export async function getAdminLeads(limit = 500): Promise<LeadDoc[]> {
+  const snap = await leadsCol().where("ownerType", "==", "ADMIN").orderBy("createdAt", "desc").limit(limit).get();
   return snap.docs.map((d) => docToTyped<LeadDoc>(d)!);
 }
 
@@ -262,65 +287,27 @@ export async function getLeadNotes(leadId: string): Promise<LeadNoteDoc[]> {
 
 export async function createLeadNote(data: Omit<LeadNoteDoc, "id" | "createdAt">): Promise<LeadNoteDoc> {
   const now = new Date();
-  const docRef = await leadNotesCol().add({ ...data, createdAt: now });
-  return { id: docRef.id, ...data, createdAt: now };
+  const ref = await leadNotesCol().add({ ...data, createdAt: now });
+  return { id: ref.id, ...data, createdAt: now };
 }
 
-// ─── Vendor Operations ──────────────────────────────────────────────────────
+// ─── Payments ───────────────────────────────────────────────────────────────
 
-export async function getVendorProfileById(id: string): Promise<VendorProfileDoc | null> {
-  const doc = await vendorProfilesCol().doc(id).get();
-  return docToTyped<VendorProfileDoc>(doc);
+export async function getPaymentRequests(filter: { agentId?: string; status?: string } = {}): Promise<PaymentRequestDoc[]> {
+  let query: FirebaseFirestore.Query = paymentRequestsCol();
+  if (filter.agentId) query = query.where("agentId", "==", filter.agentId);
+  if (filter.status) query = query.where("status", "==", filter.status);
+  const snap = await query.orderBy("createdAt", "desc").limit(300).get();
+  return snap.docs.map((d) => docToTyped<PaymentRequestDoc>(d)!);
 }
 
-export async function getVendorProfileByUserId(userId: string): Promise<VendorProfileDoc | null> {
-  const snap = await vendorProfilesCol().where("userId", "==", userId).limit(1).get();
-  if (snap.empty) return null;
-  return docToTyped<VendorProfileDoc>(snap.docs[0]);
+// ─── Audit ──────────────────────────────────────────────────────────────────
+
+export async function writeAudit(actorId: string, action: string, target: string, detail: Record<string, unknown> = {}) {
+  await auditLogCol().add({ actorId, action, target, detail, createdAt: new Date() });
 }
 
-export async function getAllVendorProfiles(): Promise<VendorProfileDoc[]> {
-  const snap = await vendorProfilesCol().orderBy("createdAt", "desc").get();
-  return snap.docs.map((d) => docToTyped<VendorProfileDoc>(d)!);
-}
-
-export async function createVendorEnquiry(data: Omit<VendorEnquiryDoc, "id" | "createdAt">): Promise<VendorEnquiryDoc> {
-  const now = new Date();
-  const docRef = await vendorEnquiriesCol().add({ ...data, createdAt: now });
-  return { id: docRef.id, ...data, createdAt: now };
-}
-
-export async function getAllVendorEnquiries(): Promise<VendorEnquiryDoc[]> {
-  const snap = await vendorEnquiriesCol().orderBy("createdAt", "desc").get();
-  return snap.docs.map((d) => docToTyped<VendorEnquiryDoc>(d)!);
-}
-
-// ─── Agent Operations ───────────────────────────────────────────────────────
-
-export async function getAgentProfileByUserId(userId: string): Promise<AgentProfileDoc | null> {
-  const snap = await agentProfilesCol().where("userId", "==", userId).limit(1).get();
-  if (snap.empty) return null;
-  return docToTyped<AgentProfileDoc>(snap.docs[0]);
-}
-
-// ─── Commission Operations ──────────────────────────────────────────────────
-
-export async function getAllCommissions(): Promise<CommissionDoc[]> {
-  const snap = await commissionsCol().orderBy("createdAt", "desc").get();
-  return snap.docs.map((d) => docToTyped<CommissionDoc>(d)!);
-}
-
-export async function createCommission(data: Omit<CommissionDoc, "id" | "createdAt">): Promise<CommissionDoc> {
-  const now = new Date();
-  const docRef = await commissionsCol().add({ ...data, createdAt: now });
-  return { id: docRef.id, ...data, createdAt: now };
-}
-
-export async function updateCommission(id: string, data: Partial<CommissionDoc>): Promise<void> {
-  await commissionsCol().doc(id).update(data);
-}
-
-// ─── Blog Operations ────────────────────────────────────────────────────────
+// ─── Blog ───────────────────────────────────────────────────────────────────
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPostDoc | null> {
   const snap = await blogPostsCol().where("slug", "==", slug).limit(1).get();
@@ -329,18 +316,14 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPostDoc | nul
 }
 
 export async function getPublishedBlogPosts(): Promise<BlogPostDoc[]> {
-  const snap = await blogPostsCol()
-    .where("isPublished", "==", true)
-    .orderBy("publishedAt", "desc")
-    .get();
+  const snap = await blogPostsCol().where("isPublished", "==", true).orderBy("publishedAt", "desc").get();
   return snap.docs.map((d) => docToTyped<BlogPostDoc>(d)!);
 }
 
-// ─── Rate Limit Operations ──────────────────────────────────────────────────
+// ─── Rate Limits ────────────────────────────────────────────────────────────
 
 export async function getRateLimit(key: string): Promise<RateLimitDoc | null> {
-  const doc = await rateLimitsCol().doc(key).get();
-  return docToTyped<RateLimitDoc>(doc);
+  return docToTyped<RateLimitDoc>(await rateLimitsCol().doc(key).get());
 }
 
 export async function upsertRateLimit(key: string, count: number, resetAt: Date): Promise<void> {
@@ -348,43 +331,9 @@ export async function upsertRateLimit(key: string, count: number, resetAt: Date)
 }
 
 export async function incrementRateLimit(key: string, resetAt: Date): Promise<void> {
-  const doc = await rateLimitsCol().doc(key).get();
-  if (doc.exists) {
-    await rateLimitsCol().doc(key).update({
-      count: FieldValue.increment(1),
-      resetAt,
-    });
-  } else {
-    await rateLimitsCol().doc(key).set({ key, count: 1, resetAt });
-  }
+  await rateLimitsCol().doc(key).set({ key, count: FieldValue.increment(1), resetAt }, { merge: true });
 }
 
 export async function deleteRateLimit(key: string): Promise<void> {
   await rateLimitsCol().doc(key).delete();
-}
-
-// ─── Verification Token Operations ──────────────────────────────────────────
-
-export async function createVerificationToken(data: VerificationTokenDoc): Promise<void> {
-  await verificationTokensCol().add(data);
-}
-
-export async function findVerificationToken(identifier: string, token: string): Promise<VerificationTokenDoc | null> {
-  const snap = await verificationTokensCol()
-    .where("identifier", "==", identifier)
-    .where("token", "==", token)
-    .limit(1)
-    .get();
-  if (snap.empty) return null;
-  return docToTyped<VerificationTokenDoc>(snap.docs[0]);
-}
-
-export async function deleteVerificationTokens(identifier: string, token: string): Promise<void> {
-  const snap = await verificationTokensCol()
-    .where("identifier", "==", identifier)
-    .where("token", "==", token)
-    .get();
-  const batch = adminDb.batch();
-  snap.docs.forEach((doc) => batch.delete(doc.ref));
-  await batch.commit();
 }

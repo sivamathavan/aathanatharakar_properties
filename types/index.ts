@@ -1,11 +1,8 @@
-// TypeScript enums — replaces @prisma/client enums
-// These mirror the exact values from the old Prisma schema
+// Shared enums and Firestore document shapes.
 
 export enum UserRole {
   ADMIN = "ADMIN",
   AGENT = "AGENT",
-  VENDOR = "VENDOR",
-  PROPERTY_LISTER = "PROPERTY_LISTER",
 }
 
 export enum AccountStatus {
@@ -13,21 +10,6 @@ export enum AccountStatus {
   ACTIVE = "ACTIVE",
   REJECTED = "REJECTED",
   SUSPENDED = "SUSPENDED",
-}
-
-export enum VendorCategory {
-  BUILDER = "BUILDER",
-  INTERIOR_DESIGNER = "INTERIOR_DESIGNER",
-  PAINTER = "PAINTER",
-  ELECTRICIAN = "ELECTRICIAN",
-  PLUMBER = "PLUMBER",
-  CARPENTER = "CARPENTER",
-  ARCHITECT = "ARCHITECT",
-  VASTU_CONSULTANT = "VASTU_CONSULTANT",
-  HOME_LOAN_ADVISOR = "HOME_LOAN_ADVISOR",
-  MOVERS_PACKERS = "MOVERS_PACKERS",
-  TILES_FLOORING = "TILES_FLOORING",
-  CIVIL_CONTRACTOR = "CIVIL_CONTRACTOR",
 }
 
 export enum PropertyType {
@@ -55,6 +37,7 @@ export enum PriceUnit {
   PER_YEAR = "PER_YEAR",
 }
 
+// INACTIVE doubles as "draft / not on the website" for admin inventory.
 export enum PropertyStatus {
   PENDING = "PENDING",
   ACTIVE = "ACTIVE",
@@ -80,39 +63,59 @@ export enum LeadStatus {
 
 export enum LeadSource {
   WEB = "WEB",
+  AGENT_PAGE = "AGENT_PAGE",
   WHATSAPP = "WHATSAPP",
   REFERRAL = "REFERRAL",
   DIRECT = "DIRECT",
 }
 
-export enum CommissionType {
-  PROPERTY_SALE = "PROPERTY_SALE",
-  PROPERTY_RENTAL = "PROPERTY_RENTAL",
-  PROPERTY_LEASE = "PROPERTY_LEASE",
-  BUILDER_REFERRAL = "BUILDER_REFERRAL",
-  INTERIOR_REFERRAL = "INTERIOR_REFERRAL",
-  PAINTER_REFERRAL = "PAINTER_REFERRAL",
-  ELECTRICIAN_REFERRAL = "ELECTRICIAN_REFERRAL",
-  HOME_LOAN_REFERRAL = "HOME_LOAN_REFERRAL",
-  OTHER_SERVICE = "OTHER_SERVICE",
-  PLATFORM_FEE = "PLATFORM_FEE",
+export type OwnerType = "ADMIN" | "AGENT";
+
+// ─── Plans ───────────────────────────────────────────────────────────────────
+
+export type PlanId = "TRIAL" | "STARTER" | "PRO";
+export type PlanStatus = "TRIAL" | "ACTIVE" | "EXPIRED" | "SUSPENDED";
+export type BillingPeriod = "MONTHLY" | "YEARLY";
+
+export interface PlanDef {
+  id: PlanId;
+  name: string;
+  priceMonthly: number; // rupees
+  priceYearly: number; // rupees
+  listingLimit: number;
+  photoLimit: number;
+  branding: boolean; // logo + cover on share page
+  viewStats: boolean;
+  verifiedBadge: boolean;
 }
 
-export enum CommissionStatus {
-  EXPECTED = "EXPECTED",
-  RECEIVED = "RECEIVED",
-  CANCELLED = "CANCELLED",
+export interface PlansConfig {
+  trialDays: number;
+  boostPricePerWeek: number;
+  plans: Record<PlanId, PlanDef>;
 }
 
-// ─── Firestore Document Types ────────────────────────────────────────────────
+export interface SiteConfig {
+  upiId: string;
+  upiName: string;
+  brokerWhatsapp: string;
+  gstin: string;
+}
+
+export interface AgentPlan {
+  id: PlanId;
+  status: PlanStatus;
+  expiresAt: Date;
+  period?: BillingPeriod | null;
+  previousStatus?: PlanStatus | null; // kept while suspended
+}
+
+// ─── Firestore documents ─────────────────────────────────────────────────────
 
 export interface UserDoc {
   id: string; // Firebase UID
   name: string;
   email: string;
-  emailVerified?: Date | null;
-  image?: string | null;
-  password?: string | null;
   role: UserRole;
   accountStatus: AccountStatus;
   phone?: string | null;
@@ -120,52 +123,29 @@ export interface UserDoc {
   updatedAt: Date;
 }
 
-export interface AgentProfileDoc {
-  id: string; // same as userId
-  userId: string;
-  fullName: string;
-  mobile: string;
-  reraNumber?: string | null;
-  officeAddress: string;
-  operatingCities: string[];
-  experience: number;
-  bio?: string | null;
-  profilePhoto?: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface VendorProfileDoc {
-  id: string; // same as userId
-  userId: string;
-  businessName: string;
-  ownerName: string;
-  mobile: string;
+export interface AgentDoc {
+  id: string; // same as uid
+  slug: string;
+  displayName: string;
+  agencyName?: string | null;
   email: string;
-  category: VendorCategory;
-  description: string;
-  serviceAreas: string[];
-  yearsInBusiness: number;
-  projectsDone?: number | null;
-  priceRangeMin?: number | null;
-  priceRangeMax?: number | null;
-  websiteUrl?: string | null;
-  isVerified: boolean;
-  isFeatured: boolean;
-  rating?: number | null;
+  phone: string;
+  whatsapp: string;
+  city: string;
+  bio?: string | null;
+  reraNumber?: string | null;
+  photoUrl?: string | null;
+  logoUrl?: string | null;
+  emailVerified: boolean;
+  plan: AgentPlan;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface MediaDoc {
-  id: string;
+export interface MediaItem {
   url: string;
-  thumbnailUrl?: string | null;
-  publicId: string;
-  type: MediaType;
-  caption?: string | null;
-  order: number;
-  createdAt: Date;
+  type: "IMAGE" | "VIDEO";
+  path?: string | null; // storage path, for deletes
 }
 
 export interface PropertyDoc {
@@ -177,6 +157,7 @@ export interface PropertyDoc {
   price: number;
   priceUnit: PriceUnit;
   area: number;
+  areaUnit?: string | null; // SQFT, CENT, ACRE, GROUND
   bedrooms?: number | null;
   bathrooms?: number | null;
   floors?: number | null;
@@ -187,24 +168,45 @@ export interface PropertyDoc {
   pincode?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  roadFacing?: string | null;
+  mapsLink?: string | null;
   amenities: string[];
+  media: MediaItem[];
   isFeatured: boolean;
   status: PropertyStatus;
   viewCount: number;
-  postedById: string;
+  postedById: string; // owner uid (admin or agent)
+  ownerType: OwnerType;
+  agentSlug?: string | null;
+  onMarketplace: boolean; // shown on the main DK site
+  boostUntil?: Date | null;
   createdAt: Date;
   updatedAt: Date;
-  media?: MediaDoc[];
+}
+
+export type DocStatus = "PENDING" | "RECEIVED" | "VERIFIED";
+
+export interface PropertyPrivateDoc {
+  ownerName?: string | null;
+  ownerPhone?: string | null;
+  surveyNumber?: string | null;
+  notes?: string | null;
+  sourceName?: string | null; // who brought the listing
+  sourcePhone?: string | null;
+  docChecklist?: Record<string, { status: DocStatus; fileUrl?: string | null; filePath?: string | null }>;
 }
 
 export interface LeadDoc {
   id: string;
   propertyId?: string | null;
+  propertyTitle?: string | null;
+  ownerId: string;
+  ownerType: OwnerType;
   name: string;
-  email: string;
+  phone: string;
+  email?: string | null;
   message: string;
   status: LeadStatus;
-  assignedToId?: string | null;
   source: LeadSource;
   siteVisitDate?: Date | null;
   createdAt: Date;
@@ -218,27 +220,25 @@ export interface LeadNoteDoc {
   createdAt: Date;
 }
 
-export interface VendorEnquiryDoc {
-  id: string;
-  vendorId: string;
-  name: string;
-  email: string;
-  message: string;
-  status: LeadStatus;
-  createdAt: Date;
-}
+export type PaymentKind = "PLAN" | "BOOST";
+export type PaymentRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
 
-export interface CommissionDoc {
+export interface PaymentRequestDoc {
   id: string;
-  leadId?: string | null;
+  agentId: string;
+  agentName: string;
+  kind: PaymentKind;
+  planId?: PlanId | null;
+  period?: BillingPeriod | null;
   propertyId?: string | null;
-  type: CommissionType;
+  propertyTitle?: string | null;
+  weeks?: number | null;
   amount: number;
-  status: CommissionStatus;
-  notes?: string | null;
-  dueDate?: Date | null;
-  receivedDate?: Date | null;
-  createdBy: string;
+  utr: string;
+  status: PaymentRequestStatus;
+  decidedBy?: string | null;
+  decidedAt?: Date | null;
+  note?: string | null;
   createdAt: Date;
 }
 
@@ -249,7 +249,6 @@ export interface BlogPostDoc {
   content: string;
   excerpt: string;
   coverImageUrl?: string | null;
-  coverPublicId?: string | null;
   tags: string[];
   metaTitle?: string | null;
   metaDescription?: string | null;
@@ -265,10 +264,4 @@ export interface RateLimitDoc {
   key: string;
   count: number;
   resetAt: Date;
-}
-
-export interface VerificationTokenDoc {
-  identifier: string;
-  token: string;
-  expires: Date;
 }

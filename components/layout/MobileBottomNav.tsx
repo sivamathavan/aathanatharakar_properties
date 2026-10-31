@@ -12,7 +12,13 @@ export function MobileBottomNav() {
   const pathname = usePathname();
 
   // Hide on desktop, hide on dashboard/admin (which have their own nav)
-  if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/admin")) {
+  // Property pages and agent pages have their own sticky contact bar.
+  if (
+    pathname?.startsWith("/dashboard") ||
+    pathname?.startsWith("/admin") ||
+    pathname?.startsWith("/a/") ||
+    /^\/properties\/[^/]+$/.test(pathname || "")
+  ) {
     return null;
   }
 

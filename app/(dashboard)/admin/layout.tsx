@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerUser } from "@/lib/auth";
 import Link from "next/link";
-import { LayoutDashboard, Home, Store, Users2, Zap, CheckCircle2, Receipt, Handshake } from "lucide-react";
+import { ADMIN_LINKS } from "@/lib/admin-nav";
 import { UserRole } from "@/types";
 import { AdminHeader } from "@/components/layout/AdminHeader";
 
@@ -29,45 +29,17 @@ export default async function AdminLayout({
         </div>
         
         <nav className="flex-1 p-4 space-y-1">
-          <Link href="/admin" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
-            <LayoutDashboard className="w-5 h-5 text-gold-500" />
-            <span>Overview</span>
-          </Link>
-          
-          <Link href="/admin/properties" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
-            <Home className="w-5 h-5 text-gold-500" />
-            <span>Properties</span>
-          </Link>
-
-          <Link href="/admin/vendors" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
-            <Store className="w-5 h-5 text-gold-500" />
-            <span>Vendors &amp; Services</span>
-          </Link>
-
-          <Link href="/admin/co-brokers" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
-            <Handshake className="w-5 h-5 text-gold-500" />
-            <span>Co-Brokers / Dealers</span>
-          </Link>
-
-          <Link href="/admin/leads" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
-            <Zap className="w-5 h-5 text-gold-500" />
-            <span>Active Deals</span>
-          </Link>
-
-          <Link href="/admin/completed-deals" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
-            <CheckCircle2 className="w-5 h-5 text-gold-500" />
-            <span>Completed Deals</span>
-          </Link>
-
-          <Link href="/admin/commissions" className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
-            <Receipt className="w-5 h-5 text-gold-500" />
-            <span>Revenue Tracker</span>
-          </Link>
+          {ADMIN_LINKS.map((l) => (
+            <Link key={l.href} href={l.href} className="flex items-center space-x-3 px-4 py-3 text-gray-300 rounded-lg hover:bg-navy-800 hover:text-white transition-all text-sm font-medium">
+              <l.icon className="w-5 h-5 text-gold-500" />
+              <span>{l.label}</span>
+            </Link>
+          ))}
         </nav>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 overflow-x-hidden pb-safe">
+      <main className="flex-1 min-w-0 p-4 md:p-8 overflow-x-hidden pb-safe">
         {children}
       </main>
     </div>

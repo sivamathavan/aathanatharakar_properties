@@ -1,39 +1,62 @@
 rules_version = '2';
 
+// Photos and videos are uploaded straight from the browser into a folder named
+// after the uploader's uid, so nobody can overwrite someone else's files.
 service firebase.storage {
   match /b/{bucket}/o {
-    // Helper check for admin
-    function isAdmin() {
-      return request.auth != null && request.auth.token.role == 'ADMIN';
-    }
 
-    // Helper check for authenticated user
-    function isAuthed() {
+    function signedIn() {
       return request.auth != null;
     }
 
-    // Properties media (images/videos)
-    match /properties/{allPaths=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+    function isAdmin() {
+      return signedIn() && request.auth.token.get('role', '') == 'ADMIN';
     }
 
-    // Vendor profile portfolios
-    match /vendors/{allPaths=**} {
-      allow read: if true;
-      allow write: if isAuthed(); // simplified for client-side uploads, validated securely at profile save
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid && request.auth.token.get('role', '') in ['AGENT', 'ADMIN'];
     }
 
-    // Agent profile portfolios
-    match /agents/{allPaths=**} {
-      allow read: if true;
-      allow write: if isAuthed();
+    function isImage(maxMb) {
+      return request.resource.contentType.matches('image/(jpeg|png|webp)')
+        && request.resource.size < maxMb * 1024 * 1024;
     }
 
-    // Generic media fallbacks
-    match /media/{allPaths=**} {
+    function isVideo(maxMb) {
+      return request.resource.contentType.matches('video/(mp4|quicktime|webm)')
+        && request.resource.size < maxMb * 1024 * 1024;
+    }
+
+    // Listing media: properties/{ownerUid}/{file}. Agents upload photos only
+    // (bandwidth is the main running cost); the admin may also add videos.
+    match /properties/{ownerUid}/{fileName} {
       allow read: if true;
-      allow write: if isAuthed();
+      allow create, update: if (isOwner(ownerUid) && isImage(3))
+        || (isAdmin() && (isImage(10) || isVideo(60)));
+      allow delete: if isOwner(ownerUid) || isAdmin();
+    }
+
+    // Agent photo and logo: agents/{uid}/{file}
+    match /agents/{uid}/{fileName} {
+      allow read: if true;
+      allow create, update: if isOwner(uid) && isImage(2);
+      allow delete: if isOwner(uid) || isAdmin();
+    }
+
+    // Payment QR shown on the billing page.
+    match /site/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() && isImage(2);
+    }
+
+    // Title documents (Patta, Chitta, EC…): admin only, never public.
+    match /crm-docs/{allPaths=**} {
+      allow read, write: if isAdmin()
+        && (request.resource == null || request.resource.size < 15 * 1024 * 1024);
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }

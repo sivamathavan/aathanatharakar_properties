@@ -43,6 +43,12 @@ export function Header() {
   }, []);
 
   const isAdminRoute = pathname?.startsWith('/admin');
+  const role = session?.user.role;
+  const accountHref = role === UserRole.ADMIN ? "/admin" : role === UserRole.AGENT ? "/dashboard" : "/login";
+  const accountLabel = role ? "Dashboard" : "Agent login";
+
+  // Agent share pages carry the agent's own branding and contact, not DK's.
+  if (pathname?.startsWith("/a/")) return null;
 
   return (
     <>
@@ -65,6 +71,7 @@ export function Header() {
             <nav className="hidden md:flex items-center space-x-5 lg:space-x-8 text-sm font-sans font-medium">
               {[
                 { href: "/properties", label: "Properties" },
+                { href: "/for-agents", label: "For agents" },
                 { href: "/blog", label: "Blog" },
                 { href: "/about", label: "About" },
               ].map((item) => {
@@ -105,23 +112,22 @@ export function Header() {
               </a>
             )}
 
-            {/* Admin: show dashboard / sign-out if logged in as admin */}
-            {session && session.user.role === UserRole.ADMIN && (
-              <div className="flex items-center space-x-2">
-                <Link href="/admin">
-                  <Button variant="ghost" className="text-white hover:bg-navy-800 text-xs lg:text-sm">
-                    <LayoutDashboard className="w-4 h-4 mr-1" /> Admin
-                  </Button>
-                </Link>
+            <div className="flex items-center space-x-2">
+              <Link href={accountHref}>
+                <Button variant="ghost" className="text-white hover:bg-navy-800 text-xs lg:text-sm">
+                  <LayoutDashboard className="w-4 h-4 mr-1" /> {accountLabel}
+                </Button>
+              </Link>
+              {session && (
                 <Button
                   variant="outline"
                   onClick={() => signOut()}
                   className="border-navy-800 text-white bg-transparent hover:bg-navy-800 text-xs lg:text-sm h-9"
                 >
-                  Sign Out
+                  Sign out
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -166,16 +172,23 @@ export function Header() {
               <span>About Us</span>
             </Link>
 
-            {session && session.user.role === UserRole.ADMIN && (
-              <Link
-                href="/admin"
-                onClick={closeMobileMenu}
-                className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
-              >
-                <LayoutDashboard className="w-5 h-5 text-gold-500" />
-                <span>Admin Control</span>
-              </Link>
-            )}
+            <Link
+              href="/for-agents"
+              onClick={closeMobileMenu}
+              className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
+            >
+              <Home className="w-5 h-5 text-gold-500" />
+              <span>For agents</span>
+            </Link>
+
+            <Link
+              href={accountHref}
+              onClick={closeMobileMenu}
+              className="flex items-center space-x-3 py-2 border-b border-navy-800 hover:text-gold-500 transition-colors"
+            >
+              <LayoutDashboard className="w-5 h-5 text-gold-500" />
+              <span>{accountLabel}</span>
+            </Link>
           </nav>
 
           {/* Bottom CTA */}
@@ -193,7 +206,7 @@ export function Header() {
               </Button>
             </a>
 
-            {session && session.user.role === UserRole.ADMIN && (
+            {session && (
               <Button
                 variant="outline"
                 onClick={() => { signOut(); closeMobileMenu(); }}

@@ -1,4 +1,40 @@
 {
-  "indexes": [],
+  "indexes": [
+    { "collectionGroup": "properties", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status", "order": "ASCENDING" },
+      { "fieldPath": "onMarketplace", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "properties", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "postedById", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "properties", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "postedById", "order": "ASCENDING" },
+      { "fieldPath": "status", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "properties", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "ownerType", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "properties", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "ownerType", "order": "ASCENDING" },
+      { "fieldPath": "status", "order": "ASCENDING" } ] },
+    { "collectionGroup": "leads", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "ownerId", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "leads", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "ownerType", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "leadNotes", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "leadId", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "paymentRequests", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "agentId", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "paymentRequests", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "status", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "blogPosts", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "isPublished", "order": "ASCENDING" },
+      { "fieldPath": "publishedAt", "order": "DESCENDING" } ] }
+  ],
   "fieldOverrides": []
 }
