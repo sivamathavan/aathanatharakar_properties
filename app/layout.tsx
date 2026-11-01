@@ -53,9 +53,12 @@ export default function RootLayout({
         <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
       </head>
       <body className="font-sans antialiased min-h-screen flex flex-col text-[#0C2B29] bg-[#F8F6F0]">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-navy-900 focus:px-4 focus:py-2 focus:rounded-btn focus:shadow-lg">
+          Skip to content
+        </a>
         <AuthProvider>
           <Header />
-          <main className="flex-1">
+          <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
             {children}
           </main>
           <HideOnAgentPages alsoApp>

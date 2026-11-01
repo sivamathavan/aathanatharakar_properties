@@ -24,6 +24,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   return {
     title,
     description,
+    alternates: { canonical: `${SITE_URL}/properties/${property.id}` },
     openGraph: { title, description, url: `${SITE_URL}/properties/${property.id}`, images: [{ url: image, width: 1200, height: 630 }], locale: "en_IN", type: "website" },
     twitter: { card: "summary_large_image", title, description, images: [image] },
   };
