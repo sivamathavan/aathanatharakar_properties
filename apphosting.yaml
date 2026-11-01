@@ -68,6 +68,10 @@ env:
   #   firebase apphosting:secrets:set smtp-password
   - variable: SMTP_PASSWORD
     secret: smtp-password
+  # Shared secret for the daily reminder job (Cloud Scheduler → /api/cron/daily):
+  #   firebase apphosting:secrets:set cron-secret
+  - variable: CRON_SECRET
+    secret: cron-secret
 
   # Voice listing ("Speak or paste your listing"). Claude API key in Secret Manager:
   #   firebase apphosting:secrets:set anthropic-api-key

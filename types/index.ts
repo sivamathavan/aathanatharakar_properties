@@ -156,7 +156,8 @@ export interface AgentDoc {
   firstListingAt?: Date | null;
   firstSharedAt?: Date | null;
   firstPaidAt?: Date | null;
-  lastReminderKey?: string | null;
+  lastReminderKey?: string | null; // last plan-ending email sent, e.g. "2026-11-15:3"
+  lastDigestDate?: string | null; // last daily follow-up email (IST date)
   createdAt: Date;
   updatedAt: Date;
 }

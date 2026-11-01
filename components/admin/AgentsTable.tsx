@@ -1,11 +1,11 @@
 "use client";
 
-import { BRAND } from "@/lib/brand";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { FaWhatsapp } from "react-icons/fa";
 import { daysLeft, effectiveStatus, waNumber } from "@/lib/plans";
+import { renewalWhatsappText } from "@/lib/reminder-text";
 
 interface Agent {
   id: string;
@@ -36,7 +36,7 @@ const FILTERS = [
   { key: "SUSPENDED", label: "Suspended" },
 ];
 
-export function AgentsTable({ agents, counts, siteUrl }: { agents: Agent[]; counts: Record<string, { total: number; live: number }>; siteUrl: string }) {
+export function AgentsTable({ agents, counts, siteUrl, renewPrice }: { agents: Agent[]; counts: Record<string, { total: number; live: number }>; siteUrl: string; renewPrice: Record<string, number> }) {
   const router = useRouter();
   const [filter, setFilter] = useState("ALL");
   const [q, setQ] = useState("");
@@ -88,7 +88,7 @@ export function AgentsTable({ agents, counts, siteUrl }: { agents: Agent[]; coun
             {rows.map((a) => {
               const st = effectiveStatus(a.plan as any);
               const left = daysLeft(a.plan as any);
-              const reminder = `Hi ${a.displayName}, your ${BRAND.name} property page ${st === "EXPIRED" ? "has paused" : `ends in ${left} days`}. Renew from Plan & billing to keep it live: ${siteUrl}/dashboard/billing`;
+              const reminder = renewalWhatsappText(a.displayName, a.plan.expiresAt, renewPrice[a.plan.id] || renewPrice.STARTER);
               return (
                 <tr key={a.id} className="border-t border-[#E4DED2] align-top">
                   <td className="p-3">
@@ -102,7 +102,7 @@ export function AgentsTable({ agents, counts, siteUrl }: { agents: Agent[]; coun
                   <td className="p-3">{counts[a.id]?.live || 0} live / {counts[a.id]?.total || 0}</td>
                   <td className="p-3">
                     <div className="flex flex-wrap gap-2">
-                      <a href={`https://wa.me/${waNumber(a.phone)}?text=${encodeURIComponent(reminder)}`} target="_blank" rel="noopener noreferrer" className="h-8 px-2 rounded-btn bg-[#25D366] text-white text-xs font-semibold inline-flex items-center gap-1"><FaWhatsapp /> Remind</a>
+                      <a href={`https://wa.me/${waNumber(a.phone)}?text=${encodeURIComponent(reminder)}`} target="_blank" rel="noopener noreferrer" className="h-8 px-2 rounded-btn bg-[#25D366] text-[#0B3B1E] text-xs font-semibold inline-flex items-center gap-1"><FaWhatsapp /> Remind</a>
                       <button type="button" onClick={() => setRecording(a)} className="h-8 px-2 rounded-btn border text-xs font-semibold">Record payment</button>
                       {st === "SUSPENDED" ? (
                         <button type="button" disabled={busy} onClick={() => act(a.id, { action: "restore" }, "Agent restored.")} className="h-8 px-2 rounded-btn border text-xs">Restore</button>
