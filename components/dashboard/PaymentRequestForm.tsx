@@ -2,6 +2,7 @@
 
 import { BRAND } from "@/lib/brand";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ export function PaymentRequestForm({
   onDone?: () => void;
 }) {
   const t = useT();
+  const router = useRouter();
   const [planId, setPlanId] = useState(initialPlanId || plans[0]?.id || "");
   const [period, setPeriod] = useState<"MONTHLY" | "YEARLY">("MONTHLY");
   const [weeks, setWeeks] = useState(1);
@@ -71,6 +73,8 @@ export function PaymentRequestForm({
       toast.success(t("Payment sent for checking. We'll switch it on within a few hours."));
       setUtr("");
       onDone?.();
+      // Show the new "Being checked" row in the payment history straight away.
+      router.refresh();
     } finally {
       setSaving(false);
     }

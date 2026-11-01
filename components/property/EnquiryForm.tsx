@@ -8,7 +8,8 @@ import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Loader2, ShieldCheck } from "lucide-react";
 
-const DEFAULT_MESSAGE = "I am interested in this property. Please share more details.";
+// Ends with a space so anything the visitor adds starts as a new sentence (the server trims it).
+const DEFAULT_MESSAGE = "I am interested in this property. Please share more details. ";
 
 export function EnquiryForm({
   propertyId,
