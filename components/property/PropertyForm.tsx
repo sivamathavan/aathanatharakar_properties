@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { FirebaseUpload, type UploadedMedia } from "@/components/ui/FirebaseUpload";
 import { LISTING_TYPES, PROPERTY_TYPES, TN_CITIES } from "@/lib/constants";
+import { SpeakListingPanel, type DraftValues } from "@/components/voice/SpeakListingPanel";
 
 export interface PropertyFormValues {
   title: string;
@@ -116,7 +117,20 @@ export function PropertyForm({
     }
   };
 
+  // Only overwrite fields the draft actually filled; photos are kept.
+  const applyDraft = (d: DraftValues) => {
+    setV((prev) => {
+      const next = { ...prev };
+      for (const [k, val] of Object.entries(d)) {
+        if (val && k in next && k !== "media") (next as any)[k] = val;
+      }
+      return next;
+    });
+  };
+
   return (
+    <div className="space-y-5">
+    {!propertyId && <SpeakListingPanel onFill={applyDraft} />}
     <Card>
       <CardContent className="p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -274,6 +288,7 @@ export function PropertyForm({
         </form>
       </CardContent>
     </Card>
+    </div>
   );
 }
 

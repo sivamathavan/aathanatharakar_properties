@@ -139,6 +139,20 @@ async function main() {
   r = await call("/dashboard/enquiries", { cookie: agent });
   check("agent sees the enquiry in the inbox", r.text.includes(`Visitor ${RUN}`) && !r.text.includes(">Bot<"));
 
+  console.log("Voice listing");
+  r = await call("/api/ai/listing-draft", { method: "POST", body: { text: "5 cent plot in Coimbatore, 25 lakhs" } });
+  check("voice listing needs sign-in", r.status === 401, `${r.status}`);
+  r = await call("/api/ai/listing-draft", { method: "POST", cookie: agent, body: { text: "plot" } });
+  check("too little text is refused politely", r.status === 400, `${r.status}`);
+  r = await call("/api/ai/listing-draft", { method: "POST", cookie: agent, body: { text: "5 cent plot in Coimbatore, 30 ft road, 25 lakhs" } });
+  check("spoken listing fills price, size and city", r.status === 200 && r.json?.values?.price === "2500000" && r.json?.values?.areaUnit === "CENT" && r.json?.values?.city === "Coimbatore", r.text.slice(0, 200));
+  check("trial shows voice listings left this month", r.json?.remaining === 9, JSON.stringify(r.json?.remaining));
+  for (let i = 0; i < 9; i++) await call("/api/ai/listing-draft", { method: "POST", cookie: agent, body: { text: "3 acre farm land near Madurai, 60 lakhs" } });
+  r = await call("/api/ai/listing-draft", { method: "POST", cookie: agent, body: { text: "3 acre farm land near Madurai, 60 lakhs" } });
+  check("trial stops at 10 voice listings a month", r.status === 429 && r.text.includes("10"), `${r.status} ${r.text}`);
+  r = await call("/api/ai/listing-draft", { method: "POST", cookie: admin, body: { text: "2BHK house for rent in Salem, 15k per month" } });
+  check("admin voice listing has no monthly cap", r.status === 200 && r.json?.remaining === null && r.json?.values?.priceUnit === "PER_MONTH", r.text.slice(0, 200));
+
   console.log("Security");
   const b = await signUp(`b-${RUN}@proppage.test`, pw);
   await call("/api/register", { method: "POST", bearer: b.idToken, body: { name: "Other Agent", phone: `8${String(Date.now()).slice(-9)}`, agencyName: "", city: "Salem" } });

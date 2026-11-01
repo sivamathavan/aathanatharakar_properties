@@ -1,3 +1,4 @@
+import { DictationDock } from "@/components/voice/DictationDock";
 import { BRAND } from "@/lib/brand";
 import Link from "next/link";
 import { Home, List, MessageSquare, UserCircle, PlusCircle, Share2, CreditCard } from "lucide-react";
@@ -61,6 +62,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="p-4 md:p-8">{children}</div>
       </main>
 
+      <DictationDock mobileBottom={92} />
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E4DED2] grid grid-cols-5 items-end py-2 pb-safe shadow-lg font-sans">
         {[NAV[0], NAV[1], NAV[2], NAV[3], NAV[6]].map((n) =>
           n.href === "/dashboard/properties/new" ? (

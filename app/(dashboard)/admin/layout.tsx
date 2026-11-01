@@ -1,3 +1,4 @@
+import { DictationDock } from "@/components/voice/DictationDock";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { redirect } from "next/navigation";
 import { getServerUser } from "@/lib/auth";
@@ -43,6 +44,7 @@ export default async function AdminLayout({
       <main className="flex-1 min-w-0 p-4 md:p-8 overflow-x-hidden pb-safe">
         {children}
       </main>
+      <DictationDock />
     </div>
   );
 }

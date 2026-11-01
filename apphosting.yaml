@@ -64,3 +64,12 @@ env:
   #   firebase apphosting:secrets:set smtp-password
   - variable: SMTP_PASSWORD
     secret: smtp-password
+
+  # Voice listing ("Speak or paste your listing"). Claude API key in Secret Manager:
+  #   firebase apphosting:secrets:set anthropic-api-key
+  - variable: ANTHROPIC_API_KEY
+    secret: anthropic-api-key
+  # Which Claude model reads listings. claude-opus-5-5 is the default; claude-haiku-5-5
+  # costs far less per listing. Monthly limits per plan are in Admin → Plans & settings.
+  - variable: LISTING_AI_MODEL
+    value: claude-opus-5-5

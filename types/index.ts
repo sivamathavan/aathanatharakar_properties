@@ -87,6 +87,7 @@ export interface PlanDef {
   branding: boolean; // logo + cover on share page
   viewStats: boolean;
   verifiedBadge: boolean;
+  aiDraftsPerMonth: number; // "speak or paste your listing" uses
 }
 
 export interface PlansConfig {

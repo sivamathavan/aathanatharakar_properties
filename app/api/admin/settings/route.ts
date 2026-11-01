@@ -10,13 +10,14 @@ const limits = z.object({
   priceYearly: z.coerce.number().int().min(0).max(1000000),
   listingLimit: z.coerce.number().int().min(1).max(100),
   photoLimit: z.coerce.number().int().min(1).max(20),
+  aiDraftsPerMonth: z.coerce.number().int().min(0).max(2000).optional(),
 });
 
 const schema = z.object({
   plans: z.object({
     trialDays: z.coerce.number().int().min(1).max(60),
     boostPricePerWeek: z.coerce.number().int().min(0).max(100000),
-    trial: limits.pick({ listingLimit: true, photoLimit: true }),
+    trial: limits.pick({ listingLimit: true, photoLimit: true, aiDraftsPerMonth: true }),
     starter: limits,
     pro: limits,
   }),
@@ -39,7 +40,8 @@ export async function PUT(req: Request) {
   await configCol().doc("plans").set({
     trialDays: plans.trialDays,
     boostPricePerWeek: plans.boostPricePerWeek,
-    plans: { TRIAL: plans.trial, STARTER: plans.starter, PRO: plans.pro },
+    // JSON round-trip drops unset optional fields; Firestore rejects undefined.
+    plans: JSON.parse(JSON.stringify({ TRIAL: plans.trial, STARTER: plans.starter, PRO: plans.pro })),
   }, { merge: true });
   await configCol().doc("site").set(site, { merge: true });
   await writeAudit(admin.uid, "settings.update", "config", parsed.data);

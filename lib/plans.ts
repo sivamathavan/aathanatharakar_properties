@@ -16,6 +16,7 @@ export const DEFAULT_PLANS: PlansConfig = {
       branding: false,
       viewStats: false,
       verifiedBadge: false,
+      aiDraftsPerMonth: 10,
     },
     STARTER: {
       id: "STARTER",
@@ -27,6 +28,7 @@ export const DEFAULT_PLANS: PlansConfig = {
       branding: false,
       viewStats: false,
       verifiedBadge: false,
+      aiDraftsPerMonth: 50,
     },
     PRO: {
       id: "PRO",
@@ -38,6 +40,7 @@ export const DEFAULT_PLANS: PlansConfig = {
       branding: true,
       viewStats: true,
       verifiedBadge: true,
+      aiDraftsPerMonth: 300,
     },
   },
 };
