@@ -44,7 +44,7 @@ export function keysIn(source: string): string[] {
     // Skip strings that are only compared (kind === "logo"), not shown.
     // Lookup keys (TABLE[x || ""]) are not shown text.
     arg = arg.replace(/\[[^\]]*\]/g, "");
-    for (const s of arg.matchAll(/([=!]==\s*)?"((?:[^"\\]|\\.)*)"/g)) if (!s[1]) out.push(JSON.parse(`"${s[2]}"`));
+    for (const s of Array.from(arg.matchAll(/([=!]==\s*)?"((?:[^"\\]|\\.)*)"/g))) if (!s[1]) out.push(JSON.parse(`"${s[2]}"`));
   }
   return out;
 }
