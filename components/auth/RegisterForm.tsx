@@ -23,7 +23,7 @@ export function RegisterForm({ trialDays, trialListings }: { trialDays: number; 
     try {
       await signUpAgent(v);
       toast.success("Your trial has started. Check your email to confirm your address.");
-      router.push("/dashboard/properties/new");
+      router.push("/dashboard?welcome=1");
       router.refresh();
     } catch (err) {
       toast.error(friendlyAuthError(err));

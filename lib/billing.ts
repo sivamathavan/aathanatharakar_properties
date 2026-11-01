@@ -35,7 +35,7 @@ export async function decidePaymentRequest(requestId: string, adminUid: string, 
 
     if (req.kind === "PLAN") {
       const expiresAt = extendExpiry(toDate(agent.plan?.expiresAt), req.period as BillingPeriod, now);
-      tx.update(agentRef, { plan: { id: req.planId, status: "ACTIVE", expiresAt, period: req.period }, updatedAt: now });
+      tx.update(agentRef, { plan: { id: req.planId, status: "ACTIVE", expiresAt, period: req.period }, firstPaidAt: agent.firstPaidAt || now, lastReminderKey: null, updatedAt: now });
       tx.update(reqRef, { status: "APPROVED", decidedBy: adminUid, decidedAt: now, note: note || null });
       return { agent, req, summary: `${req.planId} until ${expiresAt.toDateString()}` };
     }
@@ -66,7 +66,7 @@ export async function recordManualPlanPayment(agentId: string, adminUid: string,
     const agent = snap.data()!;
     const now = new Date();
     const expiresAt = extendExpiry(toDate(agent.plan?.expiresAt), period, now);
-    tx.update(agentRef, { plan: { id: planId, status: "ACTIVE", expiresAt, period }, updatedAt: now });
+    tx.update(agentRef, { plan: { id: planId, status: "ACTIVE", expiresAt, period }, firstPaidAt: agent.firstPaidAt || now, lastReminderKey: null, updatedAt: now });
     tx.set(ref, {
       agentId,
       agentName: agent.displayName,

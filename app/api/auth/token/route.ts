@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     if (role === UserRole.AGENT && decoded.email_verified) {
       const agent = await getAgentById(decoded.uid);
       if (agent && !agent.emailVerified) {
-        await agentsCol().doc(decoded.uid).update({ emailVerified: true });
+        await agentsCol().doc(decoded.uid).update({ emailVerified: true, emailVerifiedAt: new Date() });
         revalidatePath(`/a/${agent.slug}`);
       }
     }

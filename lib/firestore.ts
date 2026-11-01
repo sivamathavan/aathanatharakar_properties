@@ -240,8 +240,13 @@ export async function getOwnerProperties(uid: string, opts: { activeOnly?: boole
   return snap.docs.map((d) => docToTyped<PropertyDoc>(d)!).map((p) => ({ ...p, media: p.media || [] }));
 }
 
+/** Listings that use a plan slot: live and hidden ones. Sold and rented ones don't. */
 export async function countOwnerProperties(uid: string): Promise<number> {
-  const agg = await propertiesCol().where("postedById", "==", uid).count().get();
+  const agg = await propertiesCol()
+    .where("postedById", "==", uid)
+    .where("status", "in", [PropertyStatus.ACTIVE, PropertyStatus.INACTIVE, PropertyStatus.PENDING])
+    .count()
+    .get();
   return agg.data().count;
 }
 

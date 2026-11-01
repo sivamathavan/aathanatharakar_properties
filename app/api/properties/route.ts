@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getRequestUser } from "@/lib/auth";
-import { countOwnerProperties, createProperty, getAgentById, getPlansConfig, writeAudit } from "@/lib/firestore";
+import { agentsCol, countOwnerProperties, createProperty, getAgentById, getPlansConfig, writeAudit } from "@/lib/firestore";
 import { isPlanLive } from "@/lib/plans";
 import { mediaBelongsTo, privateFields, propertyInputSchema, publicFields, refreshListingCaches } from "@/lib/property-input";
 import { PropertyStatus, UserRole } from "@/types";
@@ -48,6 +48,7 @@ export async function POST(req: Request) {
         },
         privateFields(input)
       );
+      if (!agent.firstListingAt) await agentsCol().doc(user.uid).update({ firstListingAt: new Date() });
       refreshListingCaches(agent.slug, id);
       return NextResponse.json({ id }, { status: 201 });
     }
