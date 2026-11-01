@@ -50,6 +50,10 @@ env:
   - variable: NEXT_PUBLIC_SUPPORT_WHATSAPP
     value: ""
     availability: [BUILD, RUNTIME]
+  # Name of the grievance officer shown in the privacy policy (DPDP Act).
+  - variable: NEXT_PUBLIC_GRIEVANCE_OFFICER
+    value: ""
+    availability: [BUILD, RUNTIME]
 
   # Where new-signup and payment alerts go, and the Gmail account that sends email.
   - variable: ADMIN_EMAIL

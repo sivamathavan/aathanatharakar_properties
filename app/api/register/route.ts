@@ -5,6 +5,7 @@ import { agentSlugsCol, agentsCol, getPlansConfig, trialPhonesCol, usersCol } fr
 import { checkRateLimit, clientIp } from "@/lib/rate-limit";
 import { RESERVED_SLUGS, slugify, trialPlan } from "@/lib/plans";
 import { sendEmail } from "@/lib/mail";
+import { trialPhoneKey } from "@/lib/account";
 import { AccountStatus, UserRole } from "@/types";
 
 const schema = z.object({
@@ -56,10 +57,11 @@ export async function POST(req: Request) {
     const email = decoded.email.toLowerCase();
 
     await adminDb.runTransaction(async (tx) => {
-      const phoneRef = trialPhonesCol().doc(phone);
+      // One free trial per mobile number; the record is keyed by a hash, not the number.
+      const phoneRef = trialPhonesCol().doc(trialPhoneKey(phone));
       const slugRef = agentSlugsCol().doc(slug);
       const [phoneSnap, slugSnap] = await Promise.all([tx.get(phoneRef), tx.get(slugRef)]);
-      if (phoneSnap.exists) throw new Error("PHONE_TAKEN");
+      if (phoneSnap.exists) throw new Error(phoneSnap.data()!.uid ? "PHONE_TAKEN" : "PHONE_USED");
       if (slugSnap.exists) throw new Error("SLUG_TAKEN");
 
       tx.set(usersCol().doc(decoded.uid), {
@@ -107,6 +109,9 @@ export async function POST(req: Request) {
   } catch (error: any) {
     if (error?.message === "PHONE_TAKEN") {
       return new NextResponse("This mobile number already has an account. Sign in instead.", { status: 409 });
+    }
+    if (error?.message === "PHONE_USED") {
+      return new NextResponse("This mobile number already used its free trial. Contact us to start a paid plan.", { status: 409 });
     }
     if (error?.message === "SLUG_TAKEN") {
       return new NextResponse("Please try again.", { status: 409 });

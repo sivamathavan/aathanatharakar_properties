@@ -10,10 +10,10 @@ export default function PrivacyPage() {
       <section>
         <h2>What we collect</h2>
         <ul>
-          <li><strong>Agents:</strong> name, email, mobile number, city, agency name, RERA number and photo you add, and the UTR numbers of your payments.</li>
-          <li><strong>Listings:</strong> the details and photos you publish, plus private notes such as owner name and phone and survey number, which only you can see.</li>
-          <li><strong>Enquiries:</strong> the name, phone number, optional email and message a visitor sends, delivered only to the agent who owns the listing.</li>
-          <li><strong>Usage:</strong> listing view counts, and basic analytics about how the site is used.</li>
+          <li><strong>Agents:</strong> name, email, mobile number, city, agency name, RERA number, photo, logo, page colour, tagline, office address, languages and social links you add, and the UTR numbers of your payments.</li>
+          <li><strong>Listings:</strong> the details and photos you publish, plus private notes such as owner name and phone, survey number, final sale price and title documents (Patta, EC and so on), which only you can see.</li>
+          <li><strong>Enquiries and buyers:</strong> the name, phone number, optional email and message a visitor sends, delivered only to the agent who owns the listing; clients an agent adds by hand; follow-up and site-visit dates; buyer requirements an agent saves. Only that agent sees them.</li>
+          <li><strong>Usage:</strong> counts of page visits, listing views and taps on WhatsApp, call and share buttons (no names or numbers), and basic analytics about how the site is used.</li>
         </ul>
       </section>
       <section>
@@ -30,15 +30,15 @@ export default function PrivacyPage() {
       </section>
       <section>
         <h2>Your rights</h2>
-        <p>Under India&apos;s Digital Personal Data Protection Act you can ask to see, correct or delete your data. Agents can edit their profile and delete listings at any time. To close your account or for any request, write to {contact}.</p>
+        <p>Under India&apos;s Digital Personal Data Protection Act, 2023 you can see, correct and delete your data. Agents can do this themselves: edit the profile and listings at any time, and in <strong>Dashboard → Account &amp; data</strong> download everything we hold in one file or delete the account. Visitors who sent an enquiry can ask the agent, or write to {contact}.</p>
       </section>
       <section>
         <h2>How long we keep it</h2>
-        <p>While your account is open, and for up to 60 days after a plan ends so you can renew. Payment records are kept as long as tax law requires.</p>
+        <p>While your account is open, and for up to 60 days after a plan ends so you can renew. When you delete your account, your page, listings, photos, documents, enquiries, buyers and stats are erased straight away. Payment records are kept as long as tax law requires, and a one-way coded copy of your mobile number is kept so the free trial is used once per number.</p>
       </section>
       <section>
-        <h2>Contact</h2>
-        <p>{BRAND.company}, operator of {BRAND.name}: {contact}.</p>
+        <h2>Grievance officer and contact</h2>
+        <p>{BRAND.grievanceOfficer ? `${BRAND.grievanceOfficer}, ` : ""}{BRAND.company}, operator of {BRAND.name}: {contact}. We reply within 7 days.</p>
       </section>
     </LegalPage>
   );
