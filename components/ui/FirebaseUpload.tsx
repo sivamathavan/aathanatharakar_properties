@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Loader2, UploadCloud, X, ArrowLeft, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
+import { useT } from "@/components/i18n/I18nProvider";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -48,6 +49,7 @@ export async function compressImage(file: File, maxEdge = MAX_EDGE): Promise<Blo
 }
 
 export function FirebaseUpload({ onUpload, storageFolder, maxFiles = 10, existingMedia = [], allowVideo = false }: FirebaseUploadProps) {
+  const t = useT();
   const [uploading, setUploading] = useState<string | null>(null);
   const [mediaList, setMediaList] = useState<UploadedMedia[]>(existingMedia);
 
@@ -59,9 +61,9 @@ export function FirebaseUpload({ onUpload, storageFolder, maxFiles = 10, existin
   const validate = (file: File): string | null => {
     const isImage = /^image\/(jpeg|png|webp|heic|heif)$/.test(file.type);
     const isVideo = /^video\/(mp4|quicktime|webm)$/.test(file.type);
-    if (isVideo && !allowVideo) return `${file.name}: only photos can be uploaded`;
-    if (!isImage && !isVideo) return `${file.name}: use a JPG, PNG or WebP photo`;
-    if (isImage && file.size > MAX_SOURCE_IMAGE_BYTES) return `${file.name}: photo is larger than 20 MB`;
+    if (isVideo && !allowVideo) return `${file.name}: ${t("only photos can be uploaded")}`;
+    if (!isImage && !isVideo) return `${file.name}: ${t("use a JPG, PNG or WebP photo")}`;
+    if (isImage && file.size > MAX_SOURCE_IMAGE_BYTES) return `${file.name}: ${t("photo is larger than 20 MB")}`;
     if (isVideo && file.size > MAX_VIDEO_BYTES) return `${file.name}: video is larger than 60 MB`;
     return null;
   };
@@ -82,7 +84,7 @@ export function FirebaseUpload({ onUpload, storageFolder, maxFiles = 10, existin
     input.value = "";
     if (files.length === 0) return;
     if (mediaList.length + files.length > maxFiles) {
-      toast.error(`You can add up to ${maxFiles} photos on your plan.`);
+      toast.error(t("You can add up to {n} photos on your plan.", { n: maxFiles }));
       return;
     }
     for (const f of files) {
@@ -93,7 +95,7 @@ export function FirebaseUpload({ onUpload, storageFolder, maxFiles = 10, existin
     const uploaded: UploadedMedia[] = [];
     let failed = 0;
     for (let i = 0; i < files.length; i++) {
-      setUploading(`Uploading ${i + 1} of ${files.length}…`);
+      setUploading(t("Uploading {i} of {n}…", { i: i + 1, n: files.length }));
       try {
         uploaded.push(await uploadOne(files[i]));
       } catch (err) {
@@ -103,7 +105,7 @@ export function FirebaseUpload({ onUpload, storageFolder, maxFiles = 10, existin
     }
     setUploading(null);
     if (uploaded.length) update([...mediaList, ...uploaded]);
-    if (failed) toast.error(`${failed} file${failed === 1 ? "" : "s"} could not be uploaded. Check your connection and try again.`);
+    if (failed) toast.error(t("{n} photo(s) could not be uploaded. Check your connection and try again.", { n: failed }));
   };
 
   const move = (idx: number, dir: -1 | 1) => {
@@ -118,9 +120,9 @@ export function FirebaseUpload({ onUpload, storageFolder, maxFiles = 10, existin
     <div className="w-full space-y-4">
       <label className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 flex flex-col items-center justify-center text-center relative hover:bg-gray-100 transition-colors cursor-pointer w-full">
         <UploadCloud className="w-10 h-10 text-gray-400 mb-2" />
-        <span className="text-sm font-semibold text-gray-700">Tap to add photos</span>
+        <span className="text-sm font-semibold text-gray-700">{t("Tap to add photos")}</span>
         <span className="text-xs text-gray-500 mt-1">
-          {mediaList.length} of {maxFiles} added · photos are resized automatically
+          {t("{added} of {max} added · photos are resized automatically", { added: mediaList.length, max: maxFiles })}
         </span>
         <input
           type="file"
@@ -147,15 +149,15 @@ export function FirebaseUpload({ onUpload, storageFolder, maxFiles = 10, existin
               ) : (
                 <video src={media.url} className="w-full h-full object-cover" muted playsInline />
               )}
-              {idx === 0 && <span className="absolute top-1 left-1 bg-navy-900 text-gold-500 text-[10px] font-bold px-1.5 py-0.5 rounded">COVER</span>}
-              <button type="button" onClick={() => update(mediaList.filter((_, i) => i !== idx))} className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1" aria-label={`Remove photo ${idx + 1}`}>
+              {idx === 0 && <span className="absolute top-1 left-1 bg-navy-900 text-gold-500 text-[10px] font-bold px-1.5 py-0.5 rounded">{t("COVER")}</span>}
+              <button type="button" onClick={() => update(mediaList.filter((_, i) => i !== idx))} className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1" aria-label={t("Remove photo {n}", { n: idx + 1 })}>
                 <X className="w-4 h-4" />
               </button>
               <div className="absolute bottom-1 inset-x-1 flex justify-between">
-                <button type="button" onClick={() => move(idx, -1)} disabled={idx === 0} className="bg-white/90 rounded p-1 disabled:opacity-30" aria-label="Move earlier">
+                <button type="button" onClick={() => move(idx, -1)} disabled={idx === 0} className="bg-white/90 rounded p-1 disabled:opacity-30" aria-label={t("Move earlier")}>
                   <ArrowLeft className="w-3.5 h-3.5" />
                 </button>
-                <button type="button" onClick={() => move(idx, 1)} disabled={idx === mediaList.length - 1} className="bg-white/90 rounded p-1 disabled:opacity-30" aria-label="Move later">
+                <button type="button" onClick={() => move(idx, 1)} disabled={idx === mediaList.length - 1} className="bg-white/90 rounded p-1 disabled:opacity-30" aria-label={t("Move later")}>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>

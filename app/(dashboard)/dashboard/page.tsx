@@ -54,7 +54,7 @@ export default async function DashboardOverview({ searchParams }: { searchParams
         <div className="flex flex-wrap items-center gap-3 pt-1">
           <code className="bg-navy-800 text-gold-400 px-3 py-2 rounded text-xs sm:text-sm break-all">{pageUrl}</code>
           <div className="flex gap-2 [&_button]:bg-white">
-            <CopyButton text={pageUrl} />
+            <CopyButton text={pageUrl} share />
           </div>
           <Link href={`/a/${agent.slug}`} target="_blank" className="text-sm underline text-gold-400">{t("Open my page")}</Link>
         </div>

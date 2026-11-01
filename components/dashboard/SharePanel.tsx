@@ -80,7 +80,7 @@ export function SharePanel({ url, message, slug, agent }: { url: string; message
         <p className="text-xs font-bold uppercase tracking-wider text-navy-600">{t("Your link")}</p>
         <p className="font-mono text-sm break-all text-navy-900">{url}</p>
         <div className="flex flex-wrap gap-2">
-          <CopyButton text={url} />
+          <CopyButton text={url} share />
           <a href={`https://wa.me/?text=${encodeURIComponent(message)}`} onClick={markShared} target="_blank" rel="noopener noreferrer" className="inline-flex h-10 px-4 items-center gap-2 rounded-btn bg-[#25D366] text-[#0B3B1E] text-sm font-semibold">
             <FaWhatsapp className="w-4 h-4" /> {t("Send on WhatsApp")}
           </a>

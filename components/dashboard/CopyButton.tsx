@@ -5,15 +5,15 @@ import { Check, Copy } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
 import { markShared } from "@/components/dashboard/markShared";
 
-/** Copies the agent's link; the first copy counts as "shared" for onboarding. */
-export function CopyButton({ text, label }: { text: string; label?: string }) {
+/** Copies text. With `share`, the first copy counts as "shared" for onboarding. */
+export function CopyButton({ text, label, share = false }: { text: string; label?: string; share?: boolean }) {
   const t = useT();
   const [copied, setCopied] = useState(false);
   return (
     <button
       type="button"
       onClick={async () => {
-        markShared();
+        if (share) markShared();
         try {
           await navigator.clipboard.writeText(text);
           setCopied(true);
