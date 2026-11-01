@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { requireAgentPage } from "@/lib/agent-session";
 import { getPropertyById, getPropertyPrivate } from "@/lib/firestore";
 import { serverT } from "@/lib/i18n/server";
-import { PropertyForm, toFormValues } from "@/components/property/PropertyForm";
+import { PropertyForm } from "@/components/property/PropertyForm";
+import { toFormValues } from "@/lib/property-form-values";
 import { DocsChecklist } from "@/components/dashboard/DocsChecklist";
 
 export const metadata = { title: "Edit property" };

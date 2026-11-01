@@ -368,6 +368,17 @@ async function main() {
   r = await call(`/api/properties/${cIds[0]}`, { method: "PATCH", cookie: agentC, body: { status: "ACTIVE" } });
   check("bringing it back needs a free slot", r.status === 402, `${r.status}`);
 
+  console.log("Every screen renders");
+  const broken = (t) => t.includes("This page didn") || t.includes("Application error") || t.includes("is not a function");
+  for (const path of ["/dashboard", "/dashboard/properties", "/dashboard/properties/new", `/dashboard/properties/${agentPropId}/edit`, "/dashboard/enquiries", "/dashboard/enquiries?view=today", "/dashboard/buyers", "/dashboard/stats", "/dashboard/share", "/dashboard/profile", "/dashboard/billing", "/dashboard/account"]) {
+    r = await call(path, { cookie: agent });
+    check(`agent screen ${path} renders`, r.status === 200 && !broken(r.text), `${r.status}`);
+  }
+  for (const path of ["/admin", "/admin/properties", `/admin/properties/${adminPropId}/edit`, "/admin/leads", "/admin/agents", "/admin/payments", "/admin/analytics", "/admin/settings", "/admin/tracker"]) {
+    r = await call(path, { cookie: admin });
+    check(`admin screen ${path} renders`, r.status === 200 && !broken(r.text), `${r.status}`);
+  }
+
   console.log("Tamil, reminders, analytics");
   r = await call("/api/agent/prefs", { method: "PUT", cookie: agent, body: { uiLang: "ta", shared: true } });
   check("agent saves language and first share", r.status === 200, r.text);

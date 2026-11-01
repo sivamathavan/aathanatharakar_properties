@@ -1,7 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { getServerUser } from "@/lib/auth";
 import { getPropertyById, getPropertyPrivate } from "@/lib/firestore";
-import { PropertyForm, toFormValues } from "@/components/property/PropertyForm";
+import { PropertyForm } from "@/components/property/PropertyForm";
+import { toFormValues } from "@/lib/property-form-values";
 import { UserRole } from "@/types";
 
 export const metadata = { title: "Edit property · Admin" };
