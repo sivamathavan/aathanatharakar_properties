@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { incrementViewCount } from "@/lib/firestore";
+import { getPropertyById, incrementViewCount } from "@/lib/firestore";
+import { recordStat } from "@/lib/stats";
 
 // Lightweight IP rate-limit so refreshes don't inflate counts.
 // One increment per IP+property every 30 minutes.
@@ -22,8 +23,13 @@ export async function POST(
       return NextResponse.json({ counted: false });
     }
     buckets.set(key, now);
+    if (buckets.size > 50000) buckets.clear();
 
-    await incrementViewCount(params.id);
+    // Agent listings also count toward the agent's daily stats.
+    const property = await getPropertyById(params.id);
+    if (!property) return NextResponse.json({ counted: false });
+    if (property.ownerType === "AGENT") await recordStat(property.postedById, "view", property.id);
+    else await incrementViewCount(params.id);
 
     return NextResponse.json({ counted: true });
   } catch (error) {

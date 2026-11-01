@@ -58,7 +58,7 @@ export default function RootLayout({
           <main className="flex-1">
             {children}
           </main>
-          <HideOnAgentPages>
+          <HideOnAgentPages alsoApp>
             <Footer />
           </HideOnAgentPages>
           <MobileBottomNav />

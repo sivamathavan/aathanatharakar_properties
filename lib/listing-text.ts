@@ -1,6 +1,5 @@
 // Plain-English listing facts built from fixed fields (type, size, place, price),
 // for WhatsApp preview images and search data. Pure: safe for client and server.
-import type { PropertyDoc } from "@/types";
 
 const TYPE: Record<string, string> = {
   APARTMENT: "Apartment", VILLA: "Villa", HOUSE: "House", PLOT: "Plot", COMMERCIAL: "Commercial space",
@@ -8,7 +7,7 @@ const TYPE: Record<string, string> = {
 };
 const AREA: Record<string, string> = { SQFT: "sq.ft", CENT: "cents", ACRE: "acres", GROUND: "grounds" };
 
-type Facts = Pick<PropertyDoc, "type" | "listingType" | "area" | "price"> & Partial<Pick<PropertyDoc, "bedrooms" | "areaUnit" | "priceUnit">>;
+type Facts = { type: string; listingType: string; area: number; price: number; bedrooms?: number | null; areaUnit?: string | null; priceUnit?: string | null };
 
 export function listingKind(p: Facts): string {
   const forWhat = p.listingType === "RENT" ? "for rent" : p.listingType === "LEASE" ? "for lease" : "for sale";

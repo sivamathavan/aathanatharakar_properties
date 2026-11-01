@@ -7,6 +7,7 @@ import { SITE_URL } from "@/lib/site";
 import { AgentContactCard, AgentHeader, AgentPaused, PoweredBy } from "@/components/agent/AgentChrome";
 import { AgentListings } from "@/components/agent/AgentListings";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { PagePing } from "@/components/agent/PagePing";
 import { PropertyStatus } from "@/types";
 
 export const revalidate = 60;
@@ -67,6 +68,7 @@ export default async function AgentPage({ params }: { params: { slug: string } }
           sameAs: Object.values(agent.social || {}).filter(Boolean),
         }}
       />
+      <PagePing agentId={agent.id} />
       <AgentHeader agent={agent} verified={def.verifiedBadge} pro={def.branding} />
       <div className="container mx-auto px-4 max-w-6xl py-6 md:py-10 space-y-10">
         <AgentListings properties={JSON.parse(JSON.stringify(properties))} slug={agent.slug} phone={agent.whatsapp} name={agent.displayName} agentId={agent.id} />

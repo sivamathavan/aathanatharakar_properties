@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getRequestUser } from "@/lib/auth";
 import { adminStorage } from "@/lib/firebase-admin";
 import {
+  countOwnerProperties,
   deleteProperty,
   getAgentById,
   getPlansConfig,
@@ -77,7 +78,13 @@ export async function PUT(req: Request, { params }: Params) {
 
 const patchSchema = z.object({
   status: z.enum([PropertyStatus.ACTIVE, PropertyStatus.INACTIVE, PropertyStatus.SOLD, PropertyStatus.RENTED]),
+  // Only with SOLD / RENTED. The price and buyer stay private.
+  soldAt: z.string().datetime({ offset: true }).optional(),
+  soldPrice: z.coerce.number().min(0).max(1e11).optional().nullable(),
+  soldTo: z.string().trim().max(120).optional().nullable(),
 });
+
+const CLOSED = [PropertyStatus.SOLD, PropertyStatus.RENTED];
 
 // Quick status change from the listings table (publish, hide, mark sold).
 export async function PATCH(req: Request, { params }: Params) {
@@ -88,13 +95,26 @@ export async function PATCH(req: Request, { params }: Params) {
     const parsed = patchSchema.safeParse(await req.json());
     if (!parsed.success) return new NextResponse("Invalid status.", { status: 400 });
 
-    if (user.role === UserRole.AGENT && parsed.data.status === PropertyStatus.ACTIVE) {
+    const next = parsed.data.status;
+    if (user.role === UserRole.AGENT && !CLOSED.includes(next)) {
       const agent = await getAgentById(user.uid);
-      if (!agent || !isPlanLive(agent.plan)) {
+      if (next === PropertyStatus.ACTIVE && (!agent || !isPlanLive(agent.plan))) {
         return new NextResponse("Your plan has ended. Renew it to publish listings.", { status: 402 });
       }
+      // A sold listing coming back takes a plan slot again.
+      if (agent && CLOSED.includes(property.status)) {
+        const limits = (await getPlansConfig()).plans[agent.plan.id];
+        if ((await countOwnerProperties(user.uid)) >= limits.listingLimit) {
+          return new NextResponse(`Your ${limits.name} plan allows ${limits.listingLimit} listings. Hide or delete one first.`, { status: 402 });
+        }
+      }
     }
-    await updateProperty(params.id, { status: parsed.data.status } as Partial<PropertyDoc>);
+    const closing = CLOSED.includes(next);
+    await updateProperty(
+      params.id,
+      { status: next, soldAt: closing ? (parsed.data.soldAt ? new Date(parsed.data.soldAt) : new Date()) : null } as Partial<PropertyDoc>,
+      closing ? { soldPrice: parsed.data.soldPrice ?? null, soldTo: parsed.data.soldTo || null } : undefined
+    );
     refreshListingCaches(property.agentSlug, params.id);
     return NextResponse.json({ id: params.id, status: parsed.data.status });
   } catch (error) {
@@ -112,6 +132,8 @@ export async function DELETE(req: Request, { params }: Params) {
 
     await deleteProperty(params.id);
     const bucket = adminStorage.bucket();
+    // Title documents for this listing go too.
+    await bucket.deleteFiles({ prefix: `agent-docs/${property.postedById}/${params.id}/` }).catch(() => {});
     await Promise.all(
       (property.media || [])
         .filter((m) => m.path && mediaBelongsTo([m], property.postedById))

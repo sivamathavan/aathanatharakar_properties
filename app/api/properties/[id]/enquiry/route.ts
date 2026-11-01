@@ -4,6 +4,7 @@ import { createLead, getAgentById, getPropertyById } from "@/lib/firestore";
 import { checkRateLimit, clientIp } from "@/lib/rate-limit";
 import { escapeHtml, sendEmail } from "@/lib/mail";
 import { isPlanLive } from "@/lib/plans";
+import { recordStat } from "@/lib/stats";
 import { LeadSource, LeadStatus, PropertyStatus } from "@/types";
 
 const schema = z.object({
@@ -62,6 +63,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       status: LeadStatus.NEW,
       source: source === "AGENT_PAGE" ? LeadSource.AGENT_PAGE : LeadSource.WEB,
     });
+    if (agent) await recordStat(agent.id, "enquiry", property.id).catch(() => {});
 
     const to = agent ? agent.email : process.env.ADMIN_EMAIL;
     if (to) {

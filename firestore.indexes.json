@@ -32,6 +32,12 @@
     { "collectionGroup": "paymentRequests", "queryScope": "COLLECTION", "fields": [
       { "fieldPath": "status", "order": "ASCENDING" },
       { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "agentBuyers", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "ownerId", "order": "ASCENDING" },
+      { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "agentDaily", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "agentId", "order": "ASCENDING" },
+      { "fieldPath": "date", "order": "ASCENDING" } ] },
     { "collectionGroup": "blogPosts", "queryScope": "COLLECTION", "fields": [
       { "fieldPath": "isPublished", "order": "ASCENDING" },
       { "fieldPath": "publishedAt", "order": "DESCENDING" } ] }
