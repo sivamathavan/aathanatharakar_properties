@@ -33,6 +33,8 @@ beforeEach(async () => {
     await setDoc(doc(db, "config/plans"), { trialDays: 14 });
     await setDoc(doc(db, "crm_people/p1"), { name: "Owner" });
     await setDoc(doc(db, "paymentRequests/r1"), { agentId: "agentA", status: "PENDING" });
+    await setDoc(doc(db, "agentBuyers/b1"), { ownerId: "agentA", name: "Buyer", phone: "9000000001" });
+    await setDoc(doc(db, "agentDaily/agentA_2026-11-01"), { agentId: "agentA", date: "2026-11-01", pageViews: 3 });
   });
 });
 
@@ -83,6 +85,15 @@ describe("Firestore", () => {
     await assertFails(setDoc(doc(agentA(), "agentSlugs/admin"), { uid: "agentA" }));
   });
 
+  test("an agent's buyers and daily stats are server-only, even for that agent", async () => {
+    await assertFails(getDoc(doc(agentA(), "agentBuyers/b1")));
+    await assertFails(getDoc(doc(agentB(), "agentBuyers/b1")));
+    await assertFails(getDocs(query(collection(agentA(), "agentBuyers"), where("ownerId", "==", "agentA"))));
+    await assertFails(addDoc(collection(agentA(), "agentBuyers"), { ownerId: "agentA", name: "x" }));
+    await assertFails(getDoc(doc(agentA(), "agentDaily/agentA_2026-11-01")));
+    await assertFails(setDoc(doc(anon(), "agentDaily/agentA_2026-11-01"), { pageViews: 999 }));
+  });
+
   test("prices are public but nobody edits them from a browser", async () => {
     await assertSucceeds(getDoc(doc(anon(), "config/plans")));
     await assertFails(setDoc(doc(admin(), "config/plans"), { trialDays: 99 }));
@@ -127,5 +138,17 @@ describe("Storage", () => {
     await assertFails(getBytes(ref(st("agentA", "AGENT"), "crm-docs/p1/patta.pdf")));
     await assertFails(getBytes(ref(st(null), "crm-docs/p1/patta.pdf")));
     await assertFails(uploadBytes(ref(st("agentA", "AGENT"), "crm-docs/p1/x.pdf"), bytes(10), { contentType: "application/pdf" }));
+  });
+
+  test("agents' own title documents are private to that agent", async () => {
+    const pdf = { contentType: "application/pdf" };
+    await assertSucceeds(uploadBytes(ref(st("agentA", "AGENT"), "agent-docs/agentA/live/patta.pdf"), bytes(1000), pdf));
+    await assertSucceeds(uploadBytes(ref(st("agentA", "AGENT"), "agent-docs/agentA/live/ec.jpg"), bytes(1000), jpeg));
+    await assertSucceeds(getBytes(ref(st("agentA", "AGENT"), "agent-docs/agentA/live/patta.pdf")));
+    await assertFails(getBytes(ref(st("agentB", "AGENT"), "agent-docs/agentA/live/patta.pdf")));
+    await assertFails(getBytes(ref(st(null), "agent-docs/agentA/live/patta.pdf")));
+    await assertFails(uploadBytes(ref(st("agentB", "AGENT"), "agent-docs/agentA/live/x.pdf"), bytes(10), pdf));
+    await assertFails(uploadBytes(ref(st("agentA", "AGENT"), "agent-docs/agentA/live/x.zip"), bytes(10), { contentType: "application/zip" }));
+    await assertFails(uploadBytes(ref(st("agentA", "AGENT"), "agent-docs/agentA/live/big.pdf"), bytes(11 * 1024 * 1024), pdf));
   });
 });

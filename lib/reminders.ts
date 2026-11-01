@@ -3,26 +3,12 @@
 import { agentsCol, leadsCol, docToTyped } from "@/lib/firestore";
 import { effectiveStatus } from "@/lib/plans";
 import { istDayKey, istDayStart, istDaysFromToday, istTime } from "@/lib/dates";
+import { planReminderDue } from "@/lib/reminder-text";
 import { makeT, parseLang } from "@/lib/i18n";
 import { sendEmail, escapeHtml } from "@/lib/mail";
 import { SITE_URL } from "@/lib/site";
 import { BRAND } from "@/lib/brand";
-import type { AgentDoc, AgentPlan, LeadDoc } from "@/types";
-
-export const REMINDER_DAYS = [7, 3, 1, 0];
-
-/**
- * Which plan reminder (if any) is due today. Returns a key like "2026-11-15:3"
- * (expiry day : days left) that is stored after sending, so each goes once.
- * -1 means "ended yesterday" (one last nudge).
- */
-export function planReminderDue(plan: AgentPlan, lastKey: string | null | undefined, now = new Date()): { key: string; daysLeft: number } | null {
-  if (plan.status === "SUSPENDED") return null;
-  const daysLeft = istDaysFromToday(plan.expiresAt, now);
-  if (!REMINDER_DAYS.includes(daysLeft) && daysLeft !== -1) return null;
-  const key = `${istDayKey(plan.expiresAt)}:${daysLeft}`;
-  return key === lastKey ? null : { key, daysLeft };
-}
+import type { AgentDoc, LeadDoc } from "@/types";
 
 const OPEN = ["NEW", "CONTACTED", "SITE_VISIT", "NEGOTIATION"];
 

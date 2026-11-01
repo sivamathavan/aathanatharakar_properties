@@ -5,7 +5,7 @@ import { agentSlugsCol, agentsCol, getPlansConfig, trialPhonesCol, usersCol } fr
 import { checkRateLimit, clientIp } from "@/lib/rate-limit";
 import { RESERVED_SLUGS, slugify, trialPlan } from "@/lib/plans";
 import { sendEmail } from "@/lib/mail";
-import { trialPhoneKey } from "@/lib/account";
+import { trialPhoneKey } from "@/lib/trial";
 import { AccountStatus, UserRole } from "@/types";
 
 const schema = z.object({

@@ -1,19 +1,11 @@
 // Download-my-data and delete-my-account for agents (India DPDP Act). Server only.
-import { createHash } from "node:crypto";
 import { adminAuth, adminDb, adminStorage } from "@/lib/firebase-admin";
 import {
   agentSlugsCol, agentsCol, docToTyped, getAgentById, getUserById, leadNotesCol, leadsCol, paymentRequestsCol, propertiesCol, privateDetailsRef, trialPhonesCol, usersCol, writeAudit,
 } from "@/lib/firestore";
 import { agentBuyersCol } from "@/lib/buyers";
 import { agentDailyCol } from "@/lib/stats";
-
-/**
- * Key for the one-free-trial-per-mobile record. Only a hash is stored, so the
- * record that remains after an account is deleted holds no phone number.
- */
-export function trialPhoneKey(phone: string): string {
-  return `h_${createHash("sha256").update(`trial:${phone}`).digest("hex")}`;
-}
+import { trialPhoneKey } from "@/lib/trial";
 
 const plain = (snap: FirebaseFirestore.QuerySnapshot) => snap.docs.map((d) => docToTyped<Record<string, unknown>>(d)!);
 
