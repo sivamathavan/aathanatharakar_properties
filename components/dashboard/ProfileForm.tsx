@@ -26,7 +26,7 @@ interface AgentLite {
   logoUrl?: string | null;
 }
 
-export function ProfileForm({ agent, canBrand }: { agent: AgentLite; canBrand: boolean }) {
+export function ProfileForm({ agent }: { agent: AgentLite }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<"photo" | "logo" | null>(null);
@@ -72,8 +72,8 @@ export function ProfileForm({ agent, canBrand }: { agent: AgentLite; canBrand: b
 
   const imagePicker = (kind: "photo" | "logo", url: string, label: string) => (
     <div className="flex items-center gap-4">
-      <div className="relative w-20 h-20 rounded-full overflow-hidden bg-navy-900 text-gold-500 flex items-center justify-center font-display text-2xl shrink-0">
-        {url ? <Image src={url} alt={label} fill className="object-cover" sizes="80px" /> : v.displayName.charAt(0)}
+      <div className={`relative w-20 h-20 overflow-hidden flex items-center justify-center font-display text-2xl shrink-0 ${kind === "logo" ? "rounded-lg bg-white border border-[#E4DED2] text-navy-400" : "rounded-full bg-navy-900 text-gold-500"}`}>
+        {url ? <Image src={url} alt={label} fill className={kind === "logo" ? "object-contain p-1" : "object-cover"} sizes="80px" /> : kind === "logo" ? <span className="text-xs font-sans">No logo</span> : v.displayName.charAt(0)}
       </div>
       <div className="space-y-1">
         <label className="inline-flex h-9 px-3 items-center rounded-btn border text-sm font-semibold cursor-pointer">
@@ -91,8 +91,10 @@ export function ProfileForm({ agent, canBrand }: { agent: AgentLite; canBrand: b
 
   return (
     <form onSubmit={save} className="bg-white rounded-card border border-[#E4DED2] p-5 space-y-5">
-      {imagePicker("photo", v.photoUrl, "Photo")}
-      {canBrand ? imagePicker("logo", v.logoUrl, "Logo") : <p className="text-xs text-navy-600">Add your agency logo on the Pro plan.</p>}
+      <div className="grid sm:grid-cols-2 gap-4">
+        {imagePicker("photo", v.photoUrl, "Photo")}
+        {imagePicker("logo", v.logoUrl, "Logo")}
+      </div>
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="pr-name">Your name</Label>

@@ -29,6 +29,14 @@ export function BottomSheet({ isOpen, onClose, title, children, snapPoint = "85v
     };
   }, [isOpen]);
 
+  // Esc closes the sheet, like any dialog.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, onClose]);
+
   if (!mounted) return null;
 
   const heightClass = snapPoint === "85vh" ? "h-[85vh]" : "h-[50vh]";
@@ -42,7 +50,10 @@ export function BottomSheet({ isOpen, onClose, title, children, snapPoint = "85v
       />
       
       {/* Sheet Container */}
-      <div 
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
         className={`relative w-full max-w-lg bg-white rounded-t-2xl shadow-xl flex flex-col z-10 transition-transform duration-300 transform ${
           isOpen ? "translate-y-0" : "translate-y-full"
         } ${heightClass}`}
@@ -56,7 +67,7 @@ export function BottomSheet({ isOpen, onClose, title, children, snapPoint = "85v
         {title && (
           <div className="px-6 py-2 border-b flex justify-between items-center shrink-0">
             <h3 className="font-display font-semibold text-lg text-navy-900">{title}</h3>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={onClose}>
+            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full" onClick={onClose} aria-label="Close">
               <X className="w-4 h-4 text-gray-500 hover:text-navy-950" />
             </Button>
           </div>

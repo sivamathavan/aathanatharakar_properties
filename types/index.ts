@@ -84,8 +84,8 @@ export interface PlanDef {
   priceYearly: number; // rupees
   listingLimit: number;
   photoLimit: number;
-  branding: boolean; // logo + cover on share page
-  viewStats: boolean;
+  branding: boolean; // Pro extras: cover photo, brochure PDF, hide the footer (logo is on every plan)
+  viewStats: boolean; // WhatsApp/call taps and the 30-day chart (views + enquiries are on every plan)
   verifiedBadge: boolean;
   aiDraftsPerMonth: number; // "speak or paste your listing" uses
 }
@@ -139,6 +139,24 @@ export interface AgentDoc {
   logoUrl?: string | null;
   emailVerified: boolean;
   plan: AgentPlan;
+  // Branding (lib/agent-brand.ts). Logo is on every plan; cover + hideFooter are Pro.
+  brandColor?: string | null;
+  tagline?: string | null;
+  officeAddress?: string | null;
+  languages?: string[];
+  social?: Partial<Record<"website" | "facebook" | "instagram" | "youtube", string>>;
+  coverUrl?: string | null;
+  hideFooter?: boolean;
+  showSold?: boolean; // "Recently sold" strip on the public page
+  slugChangedAt?: Date | null; // the link name can be chosen once
+  previousSlugs?: string[]; // old links redirect to the current one
+  uiLang?: "en" | "ta";
+  // Milestones for the admin funnel and onboarding.
+  emailVerifiedAt?: Date | null;
+  firstListingAt?: Date | null;
+  firstSharedAt?: Date | null;
+  firstPaidAt?: Date | null;
+  lastReminderKey?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -181,6 +199,12 @@ export interface PropertyDoc {
   agentSlug?: string | null;
   onMarketplace: boolean; // shown on the main site (home page and search)
   boostUntil?: Date | null;
+  soldAt?: Date | null;
+  // Taps on the public page (all plans see enquiries + views; Pro sees taps).
+  waTaps?: number;
+  callTaps?: number;
+  shareTaps?: number;
+  enquiryCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -195,6 +219,8 @@ export interface PropertyPrivateDoc {
   sourceName?: string | null; // who brought the listing
   sourcePhone?: string | null;
   docChecklist?: Record<string, { status: DocStatus; fileUrl?: string | null; filePath?: string | null }>;
+  soldPrice?: number | null;
+  soldTo?: string | null; // buyer name, from the agent's buyers or typed
 }
 
 export interface LeadDoc {
@@ -210,6 +236,8 @@ export interface LeadDoc {
   status: LeadStatus;
   source: LeadSource;
   siteVisitDate?: Date | null;
+  nextFollowUpAt?: Date | null;
+  lastContactedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -241,6 +269,40 @@ export interface PaymentRequestDoc {
   decidedAt?: Date | null;
   note?: string | null;
   createdAt: Date;
+}
+
+export type BuyerStatus = "ACTIVE" | "CLOSED";
+
+/** A client looking for a property. Private to the agent who saved it. */
+export interface AgentBuyerDoc {
+  id: string;
+  ownerId: string;
+  name: string;
+  phone: string;
+  listingType: "BUY" | "RENT";
+  types: PropertyType[]; // empty = any
+  city?: string | null;
+  localities: string[];
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  bedrooms?: number | null;
+  notes?: string | null;
+  status: BuyerStatus;
+  leadId?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/** One agent's counters for one day (IST), id `${agentId}_${yyyy-mm-dd}`. */
+export interface AgentDailyDoc {
+  agentId: string;
+  date: string;
+  pageViews: number;
+  listingViews: number;
+  waTaps: number;
+  callTaps: number;
+  shareTaps: number;
+  enquiries: number;
 }
 
 export interface BlogPostDoc {

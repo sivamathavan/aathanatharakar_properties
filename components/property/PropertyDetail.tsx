@@ -9,6 +9,7 @@ import { StickyEnquiryBar } from "@/components/property/StickyEnquiryBar";
 import { ViewPing } from "@/components/property/ViewPing";
 import { SharePropertyButton } from "@/components/property/SharePropertyButton";
 import { EmiCalculator } from "@/components/property/EmiCalculator";
+import { TapLink } from "@/components/agent/TapLink";
 import type { PropertyDoc } from "@/types";
 
 export interface DetailContact {
@@ -17,6 +18,7 @@ export interface DetailContact {
   phone: string; // digits, wa.me format
   photoUrl?: string | null;
   verified?: boolean;
+  agentId?: string; // counts WhatsApp/call/share taps for the agent's stats
 }
 
 const AREA_LABEL: Record<string, string> = { SQFT: "Sq.Ft", CENT: "Cents", ACRE: "Acres", GROUND: "Grounds" };
@@ -90,12 +92,12 @@ export function PropertyDetail({
 
   const actionButtons = (
     <div className="grid grid-cols-2 gap-2">
-      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] hover:bg-[#1ebe5c] text-white h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2 shadow-sm">
+      <TapLink kind="wa" agentId={contact.agentId || ""} propertyId={property.id} href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] hover:bg-[#1ebe5c] text-[#0B3B1E] h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2 shadow-sm">
         <FaWhatsapp className="w-4 h-4" /> WhatsApp
-      </a>
-      <a href={`tel:+${contact.phone}`} className="bg-navy-900 hover:bg-navy-950 text-gold-500 h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2 shadow-sm">
+      </TapLink>
+      <TapLink kind="call" agentId={contact.agentId || ""} propertyId={property.id} href={`tel:+${contact.phone}`} className="bg-navy-900 hover:bg-navy-950 text-gold-500 h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2 shadow-sm">
         <Phone className="w-4 h-4" /> Call
-      </a>
+      </TapLink>
     </div>
   );
 
@@ -184,7 +186,7 @@ export function PropertyDetail({
               <a href={visitUrl} target="_blank" rel="noopener noreferrer" className="w-full border border-navy-700 text-navy-800 hover:bg-navy-50 h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2">
                 <Calendar className="w-4 h-4 text-gold-500" /> Book a site visit
               </a>
-              <SharePropertyButton title={property.title} url={shareUrl} />
+              <SharePropertyButton title={property.title} url={shareUrl} agentId={contact.agentId} propertyId={property.id} />
             </div>
             <EmiCalculator propertyPrice={Number(property.price)} />
           </div>
@@ -202,7 +204,7 @@ export function PropertyDetail({
                   <a href={visitUrl} target="_blank" rel="noopener noreferrer" className="w-full border border-navy-700 text-navy-800 hover:bg-navy-50 h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2">
                     <Calendar className="w-4 h-4 text-gold-500" /> Book a site visit
                   </a>
-                  <SharePropertyButton title={property.title} url={shareUrl} />
+                  <SharePropertyButton title={property.title} url={shareUrl} agentId={contact.agentId} propertyId={property.id} />
                   <div className="p-3 bg-navy-50 rounded-btn border border-navy-100 flex items-start gap-2.5">
                     <ShieldCheck className="w-5 h-5 text-gold-600 shrink-0 mt-0.5" />
                     <p className="text-[11px] text-navy-800 leading-normal font-medium">{privacyNote}</p>
@@ -215,7 +217,7 @@ export function PropertyDetail({
         </div>
       </div>
 
-      <StickyEnquiryBar propertyId={property.id} phone={contact.phone} whatsappUrl={whatsappUrl} source={source} privacyNote={privacyNote} />
+      <StickyEnquiryBar agentId={contact.agentId} propertyId={property.id} phone={contact.phone} whatsappUrl={whatsappUrl} source={source} privacyNote={privacyNote} />
       <ViewPing propertyId={property.id} />
     </div>
   );

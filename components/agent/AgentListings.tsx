@@ -29,7 +29,7 @@ const TYPE_LABEL: Record<string, string> = {
 
 // All of an agent's listings are sent in one go (max 100), so filtering
 // happens in the browser and the page itself stays cached.
-export function AgentListings({ properties, slug, phone, name }: { properties: Listing[]; slug: string; phone: string; name: string }) {
+export function AgentListings({ properties, slug, phone, name, agentId }: { properties: Listing[]; slug: string; phone: string; name: string; agentId: string }) {
   const [q, setQ] = useState("");
   const [type, setType] = useState("ALL");
   const [listing, setListing] = useState("ALL");
@@ -77,7 +77,7 @@ export function AgentListings({ properties, slug, phone, name }: { properties: L
             key={p.id}
             property={p}
             href={`/a/${slug}/${p.id}`}
-            contact={{ phone: waNumber(phone), label: "Agent", note: `Talk directly to ${name}` }}
+            contact={{ phone: waNumber(phone), label: "Agent", note: `Talk directly to ${name}`, agentId }}
             showViews={false}
           />
         ))}

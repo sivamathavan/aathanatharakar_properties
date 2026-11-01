@@ -3,9 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
 import { toast } from "sonner";
+import { trackTap } from "@/components/agent/TapLink";
 
-export function SharePropertyButton({ title, url }: { title: string, url: string }) {
+export function SharePropertyButton({ title, url, agentId, propertyId }: { title: string; url: string; agentId?: string; propertyId?: string }) {
   const handleShare = async () => {
+    if (agentId) trackTap("share", agentId, propertyId);
     if (navigator.share) {
       try {
         await navigator.share({
