@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Same as BRAND.themeColor and the saffron accent in the web app. -->
+    <color name="brand_dark">#0C2B29</color>
+    <color name="brand_accent">#E39614</color>
+</resources>

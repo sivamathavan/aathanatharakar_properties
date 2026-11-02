@@ -47,3 +47,13 @@ firestore-debug.log
 storage-debug.log
 ui-debug.log
 .firebase/
+
+# Android app: build output, local SDK path, and the Play upload key (never commit)
+/android/.gradle/
+/android/.kotlin/
+/android/build/
+/android/app/build/
+/android/local.properties
+/android/keystore.properties
+*.jks
+*.keystore

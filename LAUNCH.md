@@ -9,4 +9,5 @@
 7. **UPI ID, payee name, QR** (and GSTIN if registered) in Admin → Plans & settings.
 8. **Rotate every secret** in the old tracker repo's history (`/Volumes/Maddy/tracker/server/.env`) and make that repo private or purge the history.
 9. Name a **grievance officer** (privacy page); have Terms/Privacy reviewed; have a Tamil speaker read the Tamil screens (`lib/i18n/ta.ts`).
-10. Later: Razorpay for automatic payments.
+10. **Android app on Google Play** (`android/README.md`): create a Google Play developer account ($25 one-time; a personal account must run a closed test with 12 testers for 14 days before going public, an organisation account with a D-U-N-S number skips this), set your domain in `android/gradle.properties`, create the upload key, `./gradlew bundleRelease`, upload, then put the Play app-signing SHA-256 in `ANDROID_CERT_SHA256`. Store listing needs: short and full description (English + Tamil), 2+ phone screenshots, a 512px icon and 1024×500 feature graphic, privacy policy URL (`/privacy`), the Data safety form, content rating.
+11. Later: Razorpay for automatic payments.

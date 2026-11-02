@@ -10,6 +10,7 @@ import { Footer } from "@/components/layout/Footer";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { IOSInstallPrompt } from "@/components/layout/IOSInstallPrompt";
 import { HideOnAgentPages } from "@/components/layout/HideOnAgentPages";
+import { ServiceWorker } from "@/components/layout/ServiceWorker";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -66,6 +67,7 @@ export default function RootLayout({
           </HideOnAgentPages>
           <MobileBottomNav />
           <IOSInstallPrompt />
+          <ServiceWorker />
           <Toaster position="top-center" richColors />
         </AuthProvider>
       </body>

@@ -379,6 +379,16 @@ async function main() {
     check(`admin screen ${path} renders`, r.status === 200 && !broken(r.text), `${r.status}`);
   }
 
+  console.log("Installable app");
+  r = await call("/offline");
+  check("offline page renders without data", r.status === 200 && r.text.includes("offline"));
+  res = await fetch(`${BASE}/sw.js`);
+  check("service worker is served uncached", res.status === 200 && (res.headers.get("cache-control") || "").includes("no-cache"));
+  r = await call("/.well-known/assetlinks.json");
+  check("Android asset links answer with JSON", r.status === 200 && Array.isArray(r.json), r.text.slice(0, 100));
+  r = await call("/manifest.webmanifest");
+  check("web app manifest opens the dashboard", r.json?.start_url === "/dashboard" && r.json?.display === "standalone");
+
   console.log("Tamil, reminders, analytics");
   r = await call("/api/agent/prefs", { method: "PUT", cookie: agent, body: { uiLang: "ta", shared: true } });
   check("agent saves language and first share", r.status === 200, r.text);

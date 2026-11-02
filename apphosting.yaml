@@ -81,3 +81,10 @@ env:
   # costs far less per listing. Monthly limits per plan are in Admin → Plans & settings.
   - variable: LISTING_AI_MODEL
     value: claude-opus-5-5
+
+  # Android app (Play Store): served at /.well-known/assetlinks.json so the app
+  # opens full screen. Fingerprint from Play Console → App integrity.
+  - variable: ANDROID_PACKAGE_NAME
+    value: com.rturox.proppage
+  - variable: ANDROID_CERT_SHA256
+    value: ""

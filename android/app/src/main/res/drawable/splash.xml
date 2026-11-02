@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Splash icon: the launcher icon as a rounded saffron square (no white corners). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:width="144dp" android:height="144dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/brand_accent" />
+            <corners android:radius="36dp" />
+        </shape>
+    </item>
+    <item android:width="144dp" android:height="144dp" android:drawable="@drawable/ic_launcher_foreground" />
+</layer-list>

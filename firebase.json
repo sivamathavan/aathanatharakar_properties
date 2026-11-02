@@ -10,7 +10,7 @@
     {
       "backendId": "proppage-web",
       "rootDir": "/",
-      "ignore": ["node_modules", ".git", ".next", "venv", "firebase-debug.log", ".env*", "tests", "scripts"]
+      "ignore": ["node_modules", ".git", ".next", "venv", "firebase-debug.log", ".env*", "tests", "scripts", "android"]
     }
   ],
   "emulators": {
