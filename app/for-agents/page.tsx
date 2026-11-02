@@ -52,6 +52,7 @@ export default async function ForAgentsPage() {
             <h3 className="font-bold text-navy-900">Free trial</h3>
             <p className="text-2xl font-bold text-navy-900">₹0</p>
             <p className="text-sm text-navy-700">{plans.trialDays} days · {plans.plans.TRIAL.listingLimit} listings · {plans.plans.TRIAL.photoLimit} photos each</p>
+            <p className="text-sm text-navy-700">Everything in Starter to try: your logo and colours, poster, enquiries and buyer matching. No card needed.</p>
           </div>
           {paid.map((p) => (
             <div key={p.id} className={`bg-white rounded-card border p-5 space-y-2 ${p.id === "PRO" ? "border-gold-500 ring-1 ring-gold-500" : "border-[#E4DED2]"}`}>
@@ -59,10 +60,18 @@ export default async function ForAgentsPage() {
               <p className="text-2xl font-bold text-navy-900">{formatINR(p.priceMonthly)}<span className="text-sm font-normal text-navy-600"> / month</span></p>
               <p className="text-xs text-navy-600">or {formatINR(p.priceYearly)} / year</p>
               <ul className="text-sm text-navy-800 space-y-1 pt-1">
-                <li className="flex gap-2"><Check className="w-4 h-4 text-green-600 mt-0.5" />{p.listingLimit} listings, {p.photoLimit} photos each</li>
-                {p.viewStats && <li className="flex gap-2"><Check className="w-4 h-4 text-green-600 mt-0.5" />Views on every listing</li>}
-                {p.branding && <li className="flex gap-2"><Check className="w-4 h-4 text-green-600 mt-0.5" />Your logo on your page</li>}
-                {p.verifiedBadge && <li className="flex gap-2"><Check className="w-4 h-4 text-green-600 mt-0.5" />Verified agent badge</li>}
+                {[
+                  `${p.listingLimit} listings, ${p.photoLimit} photos each`,
+                  "Your page with your logo and colours",
+                  "QR poster, visiting card and WhatsApp previews",
+                  "Enquiries, follow-ups and buyer matching",
+                  "Views and enquiries on every listing",
+                  ...(p.viewStats ? ["WhatsApp and call taps, 30-day chart"] : []),
+                  ...(p.branding ? [`Cover photo, brochure PDF, no ${BRAND.name} footer`] : []),
+                  ...(p.verifiedBadge ? ["Verified agent badge"] : []),
+                ].map((f) => (
+                  <li key={f} className="flex gap-2"><Check className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />{f}</li>
+                ))}
               </ul>
             </div>
           ))}
