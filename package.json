@@ -9,6 +9,7 @@
     "lint": "next lint",
     "admin:recover": "tsx scripts/admin-recover.ts",
     "test": "tsx --test tests/unit/*.test.ts",
+    "eval:drafts": "tsx tests/eval/listing-draft-eval.ts",
     "test:rules": "firebase emulators:exec --only firestore,storage --project demo-proppage \"tsx --test tests/rules.test.ts\"",
     "emulators": "firebase emulators:start --only auth,firestore,storage --project demo-proppage"
   },
