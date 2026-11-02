@@ -89,8 +89,12 @@ function score(c: DraftCase, { values }: NormalizedDraft): Check[] {
 
   // Privacy: the owner's name and number never reach what buyers see.
   const publicText = `${values.title} ${values.description} ${values.address}`;
-  const leaks = [e.ownerPhone && publicText.replace(/\D/g, "").includes(e.ownerPhone.slice(-6)) ? "phone" : "", e.ownerName && flat(publicText).includes(flat(e.ownerName)) ? "name" : ""].filter(Boolean);
-  if (e.ownerName || e.ownerPhone) add("privacy", leaks.length === 0, leaks.join("+") || "clean", "clean");
+  const leaks = [
+    e.ownerPhone && publicText.replace(/\D/g, "").includes(e.ownerPhone.slice(-6)) ? "phone" : "",
+    e.ownerName && flat(publicText).includes(flat(e.ownerName)) ? "name" : "",
+    e.surveyNumber && publicText.includes(e.surveyNumber) ? "survey number" : "",
+  ].filter(Boolean);
+  if (e.ownerName || e.ownerPhone || e.surveyNumber) add("privacy", leaks.length === 0, leaks.join("+") || "clean", "clean");
   // Description in the language asked for; title in English.
   const tamil = /[஀-௿]/.test(values.description);
   add("descLanguage", c.writeIn === "ta" ? tamil : !tamil, tamil ? "Tamil" : "English", c.writeIn === "ta" ? "Tamil" : "English");
@@ -136,11 +140,23 @@ async function main() {
   const runs: Run[] = [];
   for (const model of MODELS) {
     for (let r = 0; r < REPEAT; r++) {
-      // One model at a time (process.env.LISTING_AI_MODEL is shared), 4 cases in parallel.
-      for (let i = 0; i < cases.length; i += 4) {
-        const batch = await Promise.all(cases.slice(i, i + 4).map((c) => runOne(model, c)));
+      // One model at a time (process.env.LISTING_AI_MODEL is shared). Claude: 4 cases in
+      // parallel. Gemini's free tier allows few requests a minute: one every 5 s
+      // (--gap to change), and a rate-limited case is retried once after a minute.
+      const gemini = isGemini(model) && !DRY;
+      const size = gemini ? 1 : 4;
+      const gap = Number(arg("gap", gemini ? "5000" : "0"));
+      for (let i = 0; i < cases.length; i += size) {
+        const batch = await Promise.all(cases.slice(i, i + size).map((c) => runOne(model, c)));
+        for (let k = 0; k < batch.length; k++) {
+          if (gemini && batch[k].error?.startsWith("Too many requests")) {
+            await new Promise((res) => setTimeout(res, 60000));
+            batch[k] = await runOne(model, cases[i + k]);
+          }
+        }
         runs.push(...batch);
         process.stdout.write(".");
+        if (gap) await new Promise((res) => setTimeout(res, gap));
       }
     }
   }

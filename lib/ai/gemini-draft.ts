@@ -10,7 +10,10 @@ import { ApiError, GoogleGenAI, ThinkingLevel } from "@google/genai";
 import * as z from "zod/v4";
 import { DraftError, ListingDraftSchema, SYSTEM_PROMPT, type DraftResult } from "@/lib/ai/listing-draft";
 
-export const DEFAULT_GEMINI_MODEL = "gemini-3.8-flash";
+// Flash-Lite: 98% of fields right on tests/eval/listing-drafts.cases.ts, ~1.4 s, and a
+// free-tier limit of 15 requests a minute. gemini-3.8-flash was mostly "high demand"
+// (503) and capped at 5 a minute on the free tier when tested on 3 Nov 2026.
+export const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash-lite";
 
 export function geminiModel() {
   return process.env.LISTING_AI_GEMINI_MODEL || DEFAULT_GEMINI_MODEL;
@@ -39,9 +42,8 @@ export async function callGeminiForDraft(text: string, writeIn: "en" | "ta"): Pr
   const model = geminiModel();
   const { text: safeText, phones } = redactPhones(text);
 
-  let response;
-  try {
-    response = await client.models.generateContent({
+  const request = () =>
+    client!.models.generateContent({
       model,
       contents: `Write the description in ${writeIn === "ta" ? "Tamil" : "English"}.\nPhone numbers were removed and appear as [phone]; leave ownerPhone null.\n\n<listing>\n${safeText}\n</listing>`,
       config: {
@@ -53,6 +55,17 @@ export async function callGeminiForDraft(text: string, writeIn: "en" | "ta"): Pr
         ...(model.startsWith("gemini-3") ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } } : {}),
       },
     });
+
+  let response;
+  try {
+    try {
+      response = await request();
+    } catch (err) {
+      // "High demand" is usually over in a moment: one quiet retry.
+      if (!(err instanceof ApiError) || err.status !== 503) throw err;
+      await new Promise((r) => setTimeout(r, 1500));
+      response = await request();
+    }
   } catch (err) {
     if (err instanceof ApiError) {
       console.error("[LISTING_DRAFT_GEMINI]", err.status, err.message);

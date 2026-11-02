@@ -16,7 +16,7 @@ const KEY_FIELDS = ["type", "listingType", "price", "area", "city", "locality"] 
 /** What the model must return. Everything not stated is null, never guessed. */
 export const ListingDraftSchema = z.object({
   title: z.string().describe("Short English title, under 70 characters, e.g. '5 cent residential plot in Vadavalli'"),
-  description: z.string().describe("2 to 4 factual sentences in the requested language. No phone numbers, no owner names."),
+  description: z.string().describe("2 to 4 factual sentences in the requested language. No phone numbers, owner names or survey numbers."),
   type: z.enum(PROPERTY_TYPES).nullable(),
   listingType: z.enum(LISTING_TYPES).nullable(),
   price: z.number().nullable().describe("In rupees, as a plain number"),
@@ -58,7 +58,7 @@ Listing type: for sale/விற்பனை → BUY. Rent/வாடகை → R
 
 City: use one of these exactly as written, matching common spellings (Trichy = Tiruchirappalli area, Kovai = Coimbatore): ${TN_CITIES.join(", ")}. If the place is not in this list, set city to null and put the place name in locality.
 
-Privacy: the owner's name and phone go only in ownerName and ownerPhone, and only if stated. Never put a phone number or an owner's name in the title, description or address.
+Privacy: the owner's name and phone go only in ownerName and ownerPhone, the survey number only in surveyNumber, and only if stated. Never put a phone number, an owner's name or a survey number in the title, description or address.
 
 Write the title in English. Write the description in the language requested. Keep it factual and plain: no exaggeration, nothing that wasn't said.`;
 

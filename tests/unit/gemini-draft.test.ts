@@ -32,9 +32,9 @@ test("one setting switches the provider", () => {
     process.env.LISTING_AI_PROVIDER = "gemini";
     delete process.env.LISTING_AI_GEMINI_MODEL;
     assert.equal(listingProvider(), "gemini");
-    assert.equal(activeListingModel(), "gemini-3.8-flash");
-    process.env.LISTING_AI_GEMINI_MODEL = "gemini-3.5-flash-lite";
     assert.equal(activeListingModel(), "gemini-3.5-flash-lite");
+    process.env.LISTING_AI_GEMINI_MODEL = "gemini-3.8-flash";
+    assert.equal(activeListingModel(), "gemini-3.8-flash");
   } finally {
     process.env = saved;
   }
