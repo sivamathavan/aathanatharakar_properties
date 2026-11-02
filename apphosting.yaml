@@ -73,12 +73,22 @@ env:
   - variable: CRON_SECRET
     secret: cron-secret
 
-  # Voice listing ("Speak or paste your listing"). Claude API key in Secret Manager:
-  #   firebase apphosting:secrets:set anthropic-api-key
-  - variable: ANTHROPIC_API_KEY
-    secret: anthropic-api-key
-  # Which Claude model reads listings. claude-opus-5-5 is the default; claude-haiku-5-5
-  # costs far less per listing. Monthly limits per plan are in Admin → Plans & settings.
+  # Voice listing ("Speak or paste your listing"). Which AI reads listings:
+  #   gemini — for the first agents (about 50). Key in Secret Manager:
+  #            firebase apphosting:secrets:set gemini-api-key
+  #   claude — later. Set the secret anthropic-api-key, uncomment the two Claude
+  #            lines below, then change LISTING_AI_PROVIDER to claude.
+  # Monthly limits per plan are in Admin → Plans & settings.
+  - variable: LISTING_AI_PROVIDER
+    value: gemini
+  - variable: GEMINI_API_KEY
+    secret: gemini-api-key
+  # gemini-3.5-flash-lite costs less per listing; run `npm run eval:drafts` to compare.
+  - variable: LISTING_AI_GEMINI_MODEL
+    value: gemini-3.8-flash
+  # - variable: ANTHROPIC_API_KEY
+  #   secret: anthropic-api-key
+  # claude-haiku-5-5 costs far less per listing than claude-opus-5-5.
   - variable: LISTING_AI_MODEL
     value: claude-opus-5-5
 

@@ -23,6 +23,7 @@ export default function PrivacyPage() {
       <section>
         <h2>Where it is stored</h2>
         <p>Data is stored with Google Firebase, with the database in Mumbai, India. Access is limited to you and to {BRAND.company} staff who need it to run the service.</p>
+        <p>When an agent uses &ldquo;Speak or paste your listing&rdquo;, that text is sent to our AI provider (Google Gemini or Anthropic Claude) only to fill in the listing form. Phone numbers are removed before text is sent to Google.</p>
       </section>
       <section>
         <h2>Cookies</h2>

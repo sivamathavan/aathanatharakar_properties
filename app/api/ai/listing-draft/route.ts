@@ -6,7 +6,8 @@ import { adminDb } from "@/lib/firebase-admin";
 import { getAgentById, getPlansConfig } from "@/lib/firestore";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { isPlanLive } from "@/lib/plans";
-import { callClaudeForDraft, DraftError, fakeDraft, listingModel, normalizeDraft } from "@/lib/ai/listing-draft";
+import { DraftError, fakeDraft, normalizeDraft } from "@/lib/ai/listing-draft";
+import { activeListingModel, draftListing } from "@/lib/ai/draft";
 import { UserRole } from "@/types";
 
 const schema = z.object({
@@ -65,9 +66,9 @@ export async function POST(req: Request) {
   try {
     const { draft, usage } = useFake()
       ? { draft: fakeDraft(parsed.data.text), usage: { inputTokens: 0, outputTokens: 0 } }
-      : await callClaudeForDraft(parsed.data.text, parsed.data.writeIn);
+      : await draftListing(parsed.data.text, parsed.data.writeIn);
     await ref.set(
-      { inputTokens: FieldValue.increment(usage.inputTokens), outputTokens: FieldValue.increment(usage.outputTokens), model: useFake() ? "fake" : listingModel() },
+      { inputTokens: FieldValue.increment(usage.inputTokens), outputTokens: FieldValue.increment(usage.outputTokens), model: useFake() ? "fake" : activeListingModel() },
       { merge: true }
     );
     const result = normalizeDraft(draft);

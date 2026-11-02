@@ -1,14 +1,16 @@
 // Compares Claude models on "speak or paste your listing" using the real
 // product call (lib/ai/listing-draft.ts) and the cases in listing-drafts.cases.ts.
-// Spends real API money (about $1 for both models on all 20 cases).
+// Spends real API money (about $1 for Opus + Haiku on all 20 cases; Gemini's free tier costs nothing).
 //
-//   ANTHROPIC_API_KEY in .env.eval.local (git-ignored) or the environment, then:
+//   ANTHROPIC_API_KEY and/or GEMINI_API_KEY in .env.eval.local (git-ignored), then:
 //   npm run eval:drafts                                   # Opus 5.5 vs Haiku 5.5
+//   npm run eval:drafts -- --models gemini-3.8-flash,gemini-3.5-flash-lite
 //   npm run eval:drafts -- --models claude-haiku-5-5 --repeat 3
 //
 // Writes a report to tests/eval/results/ (git-ignored) and prints a summary.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { callClaudeForDraft, fakeDraft, normalizeDraft, type NormalizedDraft } from "../../lib/ai/listing-draft";
+import { fakeDraft, normalizeDraft, type NormalizedDraft } from "../../lib/ai/listing-draft";
+import { draftListing } from "../../lib/ai/draft";
 import { CASES, type DraftCase, type ExpectedArea } from "./listing-drafts.cases";
 
 // $ per million tokens (input, output), from the Claude API price list.
@@ -16,6 +18,10 @@ const PRICES: Record<string, [number, number]> = {
   "claude-opus-5-5": [4, 20],
   "claude-sonnet-5-5": [2, 10],
   "claude-haiku-5-5": [0.1, 0.5],
+  // Gemini paid-tier prices (the free tier costs nothing). 3.8 Flash doubles from 1 Jan 2027.
+  "gemini-3.8-flash": [0.75, 3.75],
+  "gemini-3.6-flash": [0.75, 3.75],
+  "gemini-3.5-flash-lite": [0.3, 2.5],
 };
 const INR_PER_USD = Number(process.env.INR_PER_USD || 88);
 
@@ -29,15 +35,18 @@ const ONLY = arg("only", "");
 // --dry scores the emulator stand-in (fakeDraft) instead of calling the API: free, checks the harness.
 const DRY = process.argv.includes("--dry");
 
-if (!process.env.ANTHROPIC_API_KEY && existsSync(".env.eval.local")) {
+if (existsSync(".env.eval.local")) {
   for (const line of readFileSync(".env.eval.local", "utf8").split("\n")) {
-    const m = line.match(/^\s*ANTHROPIC_API_KEY\s*=\s*"?([^"\s]+)"?/);
-    if (m) process.env.ANTHROPIC_API_KEY = m[1];
+    const m = line.match(/^\s*(ANTHROPIC_API_KEY|GEMINI_API_KEY)\s*=\s*"?([^"\s]+)"?/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
   }
 }
-if (!DRY && !process.env.ANTHROPIC_API_KEY) {
-  console.error("No ANTHROPIC_API_KEY. Put ANTHROPIC_API_KEY=... in .env.eval.local (git-ignored) and run again.");
-  process.exit(2);
+const isGemini = (model: string) => model.startsWith("gemini-");
+for (const [needed, key] of [[MODELS.some((m) => !isGemini(m)), "ANTHROPIC_API_KEY"], [MODELS.some(isGemini), "GEMINI_API_KEY"]] as const) {
+  if (!DRY && needed && !process.env[key]) {
+    console.error(`No ${key}. Put ${key}=... in .env.eval.local (git-ignored) and run again.`);
+    process.exit(2);
+  }
 }
 // The eval always calls the real API, never the emulator stand-in.
 delete process.env.LISTING_AI_FAKE;
@@ -104,10 +113,13 @@ interface Run {
 }
 
 async function runOne(model: string, c: DraftCase): Promise<Run> {
-  process.env.LISTING_AI_MODEL = model;
+  // Same switch the app uses (lib/ai/draft.ts).
+  process.env.LISTING_AI_PROVIDER = isGemini(model) ? "gemini" : "claude";
+  if (isGemini(model)) process.env.LISTING_AI_GEMINI_MODEL = model;
+  else process.env.LISTING_AI_MODEL = model;
   const t0 = Date.now();
   try {
-    const { draft, usage } = DRY ? { draft: fakeDraft(c.text), usage: { inputTokens: 0, outputTokens: 0 } } : await callClaudeForDraft(c.text, c.writeIn);
+    const { draft, usage } = DRY ? { draft: fakeDraft(c.text), usage: { inputTokens: 0, outputTokens: 0 } } : await draftListing(c.text, c.writeIn);
     const [pin, pout] = PRICES[model] || [0, 0];
     const norm = normalizeDraft(draft);
     return {
