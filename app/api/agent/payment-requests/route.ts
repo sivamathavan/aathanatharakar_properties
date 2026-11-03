@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { getAgentById, getPlansConfig, getPropertyById, paymentRequestsCol } from "@/lib/firestore";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { escapeHtml, sendEmail } from "@/lib/mail";
+import { escapeHtml, sendEmailWithin } from "@/lib/mail";
 import { formatINR, PAID_PLAN_IDS, planPrice } from "@/lib/plans";
 import { PropertyStatus, UserRole } from "@/types";
 
@@ -68,11 +68,11 @@ export async function POST(req: Request) {
     const ref = await paymentRequestsCol().add(doc);
 
     if (process.env.ADMIN_EMAIL) {
-      sendEmail({
+      await sendEmailWithin({
         to: process.env.ADMIN_EMAIL,
         subject: `Payment to check: ${agent.displayName} ${formatINR(doc.amount as number)}`,
         html: `<p>${escapeHtml(agent.displayName)} says they paid <strong>${formatINR(doc.amount as number)}</strong> for ${input.kind === "PLAN" ? `the ${escapeHtml(input.planId)} plan (${input.period.toLowerCase()})` : `a ${input.weeks}-week boost`}.</p><p>UTR: <strong>${escapeHtml(doc.utr)}</strong></p><p>Approve it in Admin → Payments.</p>`,
-      }).catch(() => {});
+      });
     }
     return NextResponse.json({ id: ref.id }, { status: 201 });
   } catch (error) {

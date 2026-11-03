@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createLead, getAgentById, getPropertyById } from "@/lib/firestore";
 import { checkRateLimit, clientIp } from "@/lib/rate-limit";
-import { escapeHtml, sendEmail } from "@/lib/mail";
+import { escapeHtml, sendEmailWithin } from "@/lib/mail";
 import { isPlanLive } from "@/lib/plans";
 import { recordStat } from "@/lib/stats";
 import { LeadSource, LeadStatus, PropertyStatus } from "@/types";
@@ -67,7 +67,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     const to = agent ? agent.email : process.env.ADMIN_EMAIL;
     if (to) {
-      sendEmail({
+      await sendEmailWithin({
         to,
         subject: `New enquiry: ${property.title}`,
         html: `
@@ -81,7 +81,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
           ${message ? `<p><em>${escapeHtml(message)}</em></p>` : ""}
           <p>See all enquiries in your dashboard.</p>
         `,
-      }).catch((err) => console.error("[ENQUIRY_EMAIL_ERR]", err));
+      });
     }
 
     return NextResponse.json({ id: lead.id });

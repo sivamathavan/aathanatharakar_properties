@@ -4,7 +4,7 @@ import { adminAuth } from "@/lib/firebase-admin";
 import { getRequestUser, SESSION_COOKIE } from "@/lib/auth";
 import { deleteAgentAccount } from "@/lib/account";
 import { refreshListingCaches } from "@/lib/property-input";
-import { sendEmail, escapeHtml } from "@/lib/mail";
+import { sendEmailWithin, escapeHtml } from "@/lib/mail";
 import { revalidatePath } from "next/cache";
 import { UserRole } from "@/types";
 
@@ -29,7 +29,7 @@ export async function DELETE(req: Request) {
     refreshListingCaches(slug);
     slugs.forEach((s) => revalidatePath(`/a/${s}`));
     if (process.env.ADMIN_EMAIL) {
-      sendEmail({ to: process.env.ADMIN_EMAIL, subject: "An agent deleted their account", html: `<p>${escapeHtml(user.user.name)} (${escapeHtml(user.email)}) deleted their account and data.</p>` }).catch(() => {});
+      await sendEmailWithin({ to: process.env.ADMIN_EMAIL, subject: "An agent deleted their account", html: `<p>${escapeHtml(user.user.name)} (${escapeHtml(user.email)}) deleted their account and data.</p>` });
     }
     const res = NextResponse.json({ ok: true });
     res.cookies.set(SESSION_COOKIE, "", { httpOnly: true, secure: process.env.NODE_ENV === "production", maxAge: 0, path: "/", sameSite: "lax" });

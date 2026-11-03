@@ -20,7 +20,7 @@ const button = (href: string, label: string) =>
 
 export async function runDailyReminders({ now = new Date(), send = true } = {}) {
   const today = istDayKey(now);
-  const summary = { planReminders: 0, digests: 0, adminDigest: false, skipped: 0 };
+  const summary = { planReminders: 0, digests: 0, adminDigest: false, skipped: 0, failed: 0 };
   const agents = (await agentsCol().get()).docs.map((d) => docToTyped<AgentDoc>(d)!);
 
   // 1. Plan / trial ending
@@ -37,10 +37,12 @@ export async function runDailyReminders({ now = new Date(), send = true } = {}) 
         `<p>${escapeHtml(t("Renew by UPI in a minute: pay, enter the UTR number, and we switch it on."))}</p>` +
         button(`${SITE_URL}/dashboard/billing`, t("Renew my plan"))
     );
-    if (send) {
-      await sendEmail({ to: agent.email, subject, html });
-      await agentsCol().doc(agent.id).update({ lastReminderKey: due.key });
+    // Marked as sent only when the mail server took it, so a failed send is retried tomorrow.
+    if (send && !(await sendEmail({ to: agent.email, subject, html }))) {
+      summary.failed++;
+      continue;
     }
+    if (send) await agentsCol().doc(agent.id).update({ lastReminderKey: due.key });
     summary.planReminders++;
   }
 
@@ -77,10 +79,11 @@ export async function runDailyReminders({ now = new Date(), send = true } = {}) 
       `<p>${escapeHtml(t("Good morning! Today you have:"))}</p><ul>${rows.join("")}</ul>` +
         button(`${SITE_URL}${agent ? "/dashboard/enquiries?view=today" : "/admin/leads"}`, t("Open today's list"))
     );
-    if (send) {
-      await sendEmail({ to, subject: t("{n} follow-ups and visits today", { n: rows.length }), html });
-      if (agent) await agentsCol().doc(agent.id).update({ lastDigestDate: today });
+    if (send && !(await sendEmail({ to, subject: t("{n} follow-ups and visits today", { n: rows.length }), html }))) {
+      summary.failed++;
+      continue;
     }
+    if (send && agent) await agentsCol().doc(agent.id).update({ lastDigestDate: today });
     if (agent) summary.digests++;
     else summary.adminDigest = true;
   }

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { BillingError, decidePaymentRequest } from "@/lib/billing";
-import { escapeHtml, sendEmail } from "@/lib/mail";
+import { escapeHtml, sendEmailWithin } from "@/lib/mail";
 import { formatINR } from "@/lib/plans";
 import { refreshListingCaches } from "@/lib/property-input";
 import { UserRole } from "@/types";
@@ -23,13 +23,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     refreshListingCaches(agent.slug, payment.propertyId || undefined);
 
     const approved = parsed.data.decision === "APPROVE";
-    sendEmail({
+    await sendEmailWithin({
       to: agent.email,
       subject: approved ? "Payment received — thank you" : "We couldn't find your payment",
       html: approved
         ? `<p>Hi ${escapeHtml(agent.displayName)},</p><p>We received ${formatINR(payment.amount)} (UTR ${escapeHtml(payment.utr)}). ${payment.kind === "PLAN" ? "Your plan is active" : `Your listing is now on the ${BRAND.name} home page and search`}: ${escapeHtml(summary)}.</p>`
         : `<p>Hi ${escapeHtml(agent.displayName)},</p><p>We couldn't match UTR ${escapeHtml(payment.utr)} in our bank statement. ${parsed.data.note ? escapeHtml(parsed.data.note) : ""} Please reply to this email or call us.</p>`,
-    }).catch(() => {});
+    });
     return NextResponse.json({ ok: true, summary });
   } catch (error) {
     if (error instanceof BillingError) return new NextResponse(error.message, { status: 400 });

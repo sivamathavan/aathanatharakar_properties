@@ -58,16 +58,21 @@ env:
     value: ""
     availability: [BUILD, RUNTIME]
 
-  # Where new-signup and payment alerts go, and the Gmail account that sends email.
+  # Where new-signup and payment alerts go.
   - variable: ADMIN_EMAIL
     value: ""
+  # Transactional email service (LAUNCH.md section 3). Copy host, port and user
+  # from the service's SMTP page; the domain needs its SPF/DKIM/DMARC records.
   - variable: SMTP_HOST
-    value: smtp.gmail.com
+    value: ""
   - variable: SMTP_PORT
     value: "587"
   - variable: SMTP_USER
     value: ""
-  # Gmail app password, stored in Secret Manager:
+  # Sender shown to agents, on your own domain.
+  - variable: MAIL_FROM
+    value: "PropPage <hello@REPLACE-WITH-YOUR-DOMAIN>"
+  # SMTP password, stored in Secret Manager:
   #   firebase apphosting:secrets:set smtp-password
   - variable: SMTP_PASSWORD
     secret: smtp-password

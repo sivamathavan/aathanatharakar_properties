@@ -4,7 +4,7 @@ import { adminAuth, adminDb } from "@/lib/firebase-admin";
 import { agentSlugsCol, agentsCol, getPlansConfig, trialPhonesCol, usersCol } from "@/lib/firestore";
 import { checkRateLimit, clientIp } from "@/lib/rate-limit";
 import { RESERVED_SLUGS, slugify, trialPlan } from "@/lib/plans";
-import { sendEmail } from "@/lib/mail";
+import { escapeHtml, sendEmailWithin } from "@/lib/mail";
 import { trialPhoneKey } from "@/lib/trial";
 import { AccountStatus, UserRole } from "@/types";
 
@@ -98,11 +98,11 @@ export async function POST(req: Request) {
     await adminAuth.updateUser(decoded.uid, { displayName: name }).catch(() => {});
 
     if (process.env.ADMIN_EMAIL) {
-      sendEmail({
+      await sendEmailWithin({
         to: process.env.ADMIN_EMAIL,
         subject: `New agent signup: ${name}`,
-        html: `<p><strong>${name}</strong> (${agencyName || "no agency"}) from ${city} started a free trial.</p><p>Phone: ${phone}<br/>Email: ${email}<br/>Page: /a/${slug}</p>`,
-      }).catch(() => {});
+        html: `<p><strong>${escapeHtml(name)}</strong> (${escapeHtml(agencyName || "no agency")}) from ${escapeHtml(city)} started a free trial.</p><p>Phone: ${escapeHtml(phone)}<br/>Email: ${escapeHtml(email)}<br/>Page: /a/${escapeHtml(slug)}</p>`,
+      });
     }
 
     return NextResponse.json({ success: true, slug }, { status: 201 });
