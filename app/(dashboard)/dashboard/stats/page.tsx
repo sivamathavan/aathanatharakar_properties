@@ -6,6 +6,7 @@ import { getAgentDaily } from "@/lib/stats";
 import { serverT } from "@/lib/i18n/server";
 import { StatsChart } from "@/components/dashboard/StatsChart";
 import { PropertyStatus } from "@/types";
+import { ST } from "@/components/ui/stack-table";
 
 export const metadata = { title: "Stats" };
 export const dynamic = "force-dynamic";
@@ -60,32 +61,30 @@ export default async function StatsPage() {
         {rows.length === 0 ? (
           <p className="text-sm text-navy-700">{t("Add a listing to start seeing views.")}</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs uppercase text-navy-600">
-                  <th className="py-2 pr-4">{t("Listing")}</th>
-                  <th className="py-2 pr-4 text-right">{t("Views")}</th>
-                  <th className="py-2 pr-4 text-right">{t("Enquiries")}</th>
-                  {pro && <th className="py-2 pr-4 text-right">WhatsApp</th>}
-                  {pro && <th className="py-2 pr-4 text-right">{t("Calls")}</th>}
-                  {pro && <th className="py-2 text-right">{t("Shares")}</th>}
+          <table className={ST.table}>
+            <thead className={ST.thead}>
+              <tr className="text-left text-xs uppercase text-navy-600">
+                <th className="py-2 pr-4">{t("Listing")}</th>
+                <th className="py-2 pr-4 text-right">{t("Views")}</th>
+                <th className="py-2 pr-4 text-right">{t("Enquiries")}</th>
+                {pro && <th className="py-2 pr-4 text-right">WhatsApp</th>}
+                {pro && <th className="py-2 pr-4 text-right">{t("Calls")}</th>}
+                {pro && <th className="py-2 text-right">{t("Shares")}</th>}
+              </tr>
+            </thead>
+            <tbody className={ST.tbody}>
+              {rows.map((p) => (
+                <tr key={p.id} className={ST.tr}>
+                  <td className={`${ST.td} w-full md:w-auto md:py-2 md:pr-4 md:max-w-[14rem] truncate`}><Link href={`/a/${agent.slug}/${p.id}`} target="_blank" className="underline">{p.title}</Link></td>
+                  <td className={`${ST.td} md:py-2 md:pr-4 md:text-right`}><span className={ST.label}>{t("Views")}</span>{p.viewCount || 0}</td>
+                  <td className={`${ST.td} md:py-2 md:pr-4 md:text-right`}><span className={ST.label}>{t("Enquiries")}</span>{p.enquiryCount || 0}</td>
+                  {pro && <td className={`${ST.td} md:py-2 md:pr-4 md:text-right`}><span className={ST.label}>WhatsApp</span>{p.waTaps || 0}</td>}
+                  {pro && <td className={`${ST.td} md:py-2 md:pr-4 md:text-right`}><span className={ST.label}>{t("Calls")}</span>{p.callTaps || 0}</td>}
+                  {pro && <td className={`${ST.td} md:py-2 md:text-right`}><span className={ST.label}>{t("Shares")}</span>{p.shareTaps || 0}</td>}
                 </tr>
-              </thead>
-              <tbody>
-                {rows.map((p) => (
-                  <tr key={p.id} className="border-t border-[#E4DED2]">
-                    <td className="py-2 pr-4 max-w-[14rem] truncate"><Link href={`/a/${agent.slug}/${p.id}`} target="_blank" className="underline">{p.title}</Link></td>
-                    <td className="py-2 pr-4 text-right">{p.viewCount || 0}</td>
-                    <td className="py-2 pr-4 text-right">{p.enquiryCount || 0}</td>
-                    {pro && <td className="py-2 pr-4 text-right">{p.waTaps || 0}</td>}
-                    {pro && <td className="py-2 pr-4 text-right">{p.callTaps || 0}</td>}
-                    {pro && <td className="py-2 text-right">{p.shareTaps || 0}</td>}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

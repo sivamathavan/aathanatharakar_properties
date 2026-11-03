@@ -55,7 +55,7 @@ export function HomeSearch() {
         <div className="flex-1 space-y-1">
           <label className="hidden lg:block text-xs font-semibold text-navy-800 ml-1">Listing Type</label>
           <div className="grid grid-cols-2 xs:grid-cols-4 lg:flex lg:gap-1 p-1 bg-navy-50 rounded-btn border border-gray-100">
-            {["BUY", "RENT", "LEASE", "SELL"].map((mode) => {
+            {["BUY", "RENT", "LEASE"].map((mode) => {
               const active = listingType === mode;
               return (
                 <button
@@ -68,7 +68,7 @@ export function HomeSearch() {
                       : "text-navy-700 hover:text-[#0C2B29]"
                   }`}
                 >
-                  {mode === "BUY" ? "Buy" : mode === "RENT" ? "Rent" : mode === "LEASE" ? "Lease" : "Sell"}
+                  {mode === "BUY" ? "Buy" : mode === "RENT" ? "Rent" : "Lease"}
                 </button>
               );
             })}

@@ -57,7 +57,7 @@ export const DYNAMIC_KEYS = [
   "New", "Contacted", "Site visit", "Negotiation", "Closed", "Lost", "All", "Today", "Tomorrow", "In 3 days", "Next week",
   "Website", "Your page", "Phone / walk-in", "WhatsApp", "Referral", "Added by you",
   // property types and sale/rent (PropertyForm, BuyersBoard)
-  "Apartment", "Villa", "House", "Plot", "Commercial", "Warehouse", "Farm land", "PG / hostel", "Sale", "Sale (owner)", "Rent", "Lease",
+  "Apartment", "Villa", "House", "Plot", "Commercial", "Warehouse", "Farm land", "PG / hostel", "Sale", "Rent", "Lease",
   // listing statuses (ListingsTable), buyer match labels (lib/match.ts)
   "Live", "Hidden", "Sold", "Rented", "Great match", "Good match", "Partial match",
   // payment statuses (billing page), error page link

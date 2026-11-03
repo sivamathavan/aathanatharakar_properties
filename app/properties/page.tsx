@@ -3,7 +3,7 @@ import { PropertyStatus } from "@/types";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal, ArrowUpDown, Search } from "lucide-react";
-import { TN_CITIES, PROPERTY_TYPES, LISTING_TYPES } from "@/lib/constants";
+import { TN_CITIES, PROPERTY_TYPES, LISTING_TYPES, LISTING_TYPE_LABEL } from "@/lib/constants";
 import { PropertyCard } from "@/components/property/PropertyCard";
 import { MobileFilterDrawer } from "@/components/property/MobileFilterDrawer";
 
@@ -230,7 +230,7 @@ export default async function PropertiesPage({
                     <option value="">All Listings</option>
                     {LISTING_TYPES.map((t) => (
                       <option key={t} value={t}>
-                        {t}
+                        {LISTING_TYPE_LABEL[t]}
                       </option>
                     ))}
                   </select>

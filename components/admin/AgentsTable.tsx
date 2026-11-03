@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { FaWhatsapp } from "react-icons/fa";
 import { daysLeft, effectiveStatus, waNumber } from "@/lib/plans";
 import { renewalWhatsappText } from "@/lib/reminder-text";
+import { ST } from "@/components/ui/stack-table";
 
 interface Agent {
   id: string;
@@ -78,29 +79,29 @@ export function AgentsTable({ agents, counts, siteUrl, renewPrice }: { agents: A
       </div>
 
       <div className="bg-white rounded-card border border-[#E4DED2] overflow-x-auto">
-        <table className="w-full text-sm min-w-[860px]">
-          <thead className="bg-navy-50 text-left text-xs uppercase text-navy-700">
+        <table className={`${ST.table} md:min-w-[860px]`}>
+          <thead className={`${ST.thead} bg-navy-50 text-left text-xs uppercase text-navy-700`}>
             <tr>
               <th className="p-3">Agent</th><th className="p-3">Phone</th><th className="p-3">Plan</th><th className="p-3">Ends</th><th className="p-3">Listings</th><th className="p-3">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className={ST.tbody}>
             {rows.map((a) => {
               const st = effectiveStatus(a.plan as any);
               const left = daysLeft(a.plan as any);
               const reminder = renewalWhatsappText(a.displayName, a.plan.expiresAt, renewPrice[a.plan.id] || renewPrice.STARTER);
               return (
-                <tr key={a.id} className="border-t border-[#E4DED2] align-top">
-                  <td className="p-3">
+                <tr key={a.id} className={`${ST.tr} px-4 md:px-0 md:align-top`}>
+                  <td className={`${ST.td} w-full md:w-auto md:p-3`}>
                     <a href={`/a/${a.slug}`} target="_blank" className="font-semibold text-navy-900 underline-offset-2 hover:underline">{a.displayName}</a>
                     <p className="text-xs text-navy-600">{a.agencyName || "—"} · {a.city}</p>
                     {!a.emailVerified && <p className="text-xs text-amber-700">Email not confirmed</p>}
                   </td>
-                  <td className="p-3 whitespace-nowrap">{a.phone}<p className="text-xs text-navy-600">{a.email}</p></td>
-                  <td className="p-3"><span className={`text-[11px] font-bold px-2 py-0.5 rounded-pill ${STATUS_STYLE[st]}`}>{st === "ACTIVE" ? a.plan.id : st}</span></td>
-                  <td className="p-3 whitespace-nowrap">{new Date(a.plan.expiresAt).toLocaleDateString("en-IN")}<p className="text-xs text-navy-600">{st === "EXPIRED" ? "ended" : `${left} days left`}</p></td>
-                  <td className="p-3">{counts[a.id]?.live || 0} live / {counts[a.id]?.total || 0}</td>
-                  <td className="p-3">
+                  <td className={`${ST.td} w-full md:w-auto md:p-3 whitespace-nowrap`}>{a.phone}<p className="text-xs text-navy-600 break-all whitespace-normal md:break-normal md:whitespace-nowrap">{a.email}</p></td>
+                  <td className={`${ST.td} md:p-3`}><span className={`text-[11px] font-bold px-2 py-0.5 rounded-pill ${STATUS_STYLE[st]}`}>{st === "ACTIVE" ? a.plan.id : st}</span></td>
+                  <td className={`${ST.td} md:p-3 whitespace-nowrap`}><span className={ST.label}>Ends</span>{new Date(a.plan.expiresAt).toLocaleDateString("en-IN")}<p className="text-xs text-navy-600 inline md:block"> {st === "EXPIRED" ? "ended" : `${left} days left`}</p></td>
+                  <td className={`${ST.td} md:p-3 whitespace-nowrap`}><span className={ST.label}>Listings</span>{counts[a.id]?.live || 0} live / {counts[a.id]?.total || 0}</td>
+                  <td className={`${ST.td} w-full md:w-auto pt-1 md:p-3`}>
                     <div className="flex flex-wrap gap-2">
                       <a href={`https://wa.me/${waNumber(a.phone)}?text=${encodeURIComponent(reminder)}`} target="_blank" rel="noopener noreferrer" className="h-8 px-2 rounded-btn bg-[#25D366] text-[#0B3B1E] text-xs font-semibold inline-flex items-center gap-1"><FaWhatsapp /> Remind</a>
                       <button type="button" onClick={() => setRecording(a)} className="h-8 px-2 rounded-btn border text-xs font-semibold">Record payment</button>
@@ -115,7 +116,7 @@ export function AgentsTable({ agents, counts, siteUrl, renewPrice }: { agents: A
               );
             })}
             {rows.length === 0 && (
-              <tr><td colSpan={6} className="p-8 text-center text-navy-600">No agents match.</td></tr>
+              <tr className="block md:table-row"><td colSpan={6} className="block md:table-cell p-8 text-center text-navy-600">No agents match.</td></tr>
             )}
           </tbody>
         </table>

@@ -17,7 +17,7 @@ import { EMPTY_PROPERTY, type PropertyFormValues } from "@/lib/property-form-val
 export type { PropertyFormValues };
 import { useT } from "@/components/i18n/I18nProvider";
 
-const LISTING_LABEL: Record<string, string> = { BUY: "Sale", SELL: "Sale (owner)", RENT: "Rent", LEASE: "Lease" };
+const LISTING_LABEL: Record<string, string> = { BUY: "Sale", RENT: "Rent", LEASE: "Lease" };
 const TYPE_NAME: Record<string, string> = { APARTMENT: "Apartment", VILLA: "Villa", HOUSE: "House", PLOT: "Plot", COMMERCIAL: "Commercial", WAREHOUSE: "Warehouse", FARM_LAND: "Farm land", PG_HOSTEL: "PG / hostel" };
 const selectCls = "w-full h-10 px-3 border border-input rounded-md bg-white text-sm";
 

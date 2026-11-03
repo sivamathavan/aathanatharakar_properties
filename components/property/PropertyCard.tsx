@@ -91,14 +91,7 @@ export function PropertyCard({ property, href, contact, showViews = true }: Prop
     }
   };
 
-  const listingLabel =
-    property.listingType === "BUY"
-      ? "For Sale"
-      : property.listingType === "RENT"
-      ? "For Rent"
-      : property.listingType === "LEASE"
-      ? "For Lease"
-      : "Selling";
+  const listingLabel = property.listingType === "RENT" ? "For Rent" : property.listingType === "LEASE" ? "For Lease" : "For Sale";
 
   const waMessage = encodeURIComponent(
     `Hi, I'm interested in "${property.title}" in ${property.locality}, ${property.city} (ID: ${property.id}). Please share more details.`

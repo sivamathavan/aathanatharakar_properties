@@ -180,7 +180,7 @@ export function filterProperties(all: PropertyDoc[], options: PropertyFilters = 
   if (options.type) docs = docs.filter((p) => p.type === options.type);
   if (options.city) docs = docs.filter((p) => p.city === options.city);
   if (options.bedrooms) docs = docs.filter((p) => p.bedrooms === options.bedrooms);
-  if (options.listingType) docs = docs.filter((p) => p.listingType === options.listingType);
+  if (options.listingType) docs = docs.filter((p) => p.listingType === options.listingType || (options.listingType === "BUY" && p.listingType === "SELL"));
   if (options.minPrice !== undefined) docs = docs.filter((p) => p.price >= options.minPrice!);
   if (options.maxPrice !== undefined) docs = docs.filter((p) => p.price <= options.maxPrice!);
   if (options.search) {

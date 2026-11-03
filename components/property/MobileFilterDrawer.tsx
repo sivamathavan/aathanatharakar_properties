@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
+import { LISTING_TYPE_LABEL } from "@/lib/constants";
 
 interface MobileFilterDrawerProps {
   city?: string;
@@ -113,7 +114,7 @@ export function MobileFilterDrawer({
               <option value="">All Listings</option>
               {listingTypes.map((t) => (
                 <option key={t} value={t}>
-                  {t}
+                  {LISTING_TYPE_LABEL[t] || t}
                 </option>
               ))}
             </select>

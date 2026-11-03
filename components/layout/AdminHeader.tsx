@@ -20,6 +20,7 @@ export function AdminHeader() {
             size="icon" 
             className="h-9 w-9 text-white hover:bg-navy-800 rounded-btn"
             onClick={() => setIsOpen(true)}
+            aria-label="Open admin menu"
           >
             <Menu className="w-5 h-5" />
           </Button>
@@ -38,6 +39,7 @@ export function AdminHeader() {
             onClick={() => signOut()}
             className="h-8 w-8 text-red-400 hover:bg-navy-800 hover:text-red-300 rounded-full"
             title="Log Out"
+            aria-label="Log out"
           >
             <LogOut className="w-4 h-4" />
           </Button>

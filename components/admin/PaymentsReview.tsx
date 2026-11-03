@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { formatINR } from "@/lib/plans";
+import { ST } from "@/components/ui/stack-table";
 
 interface Payment {
   id: string;
@@ -84,22 +85,22 @@ export function PaymentsReview({ pending, decided }: { pending: Payment[]; decid
           <p className="text-sm text-navy-700">Approved this month: <span className="font-bold text-navy-900">{formatINR(total)}</span></p>
         </div>
         <div className="bg-white rounded-card border border-[#E4DED2] overflow-x-auto">
-          <table className="w-full text-sm min-w-[640px]">
-            <thead className="bg-navy-50 text-left text-xs uppercase text-navy-700">
+          <table className={`${ST.table} md:min-w-[640px]`}>
+            <thead className={`${ST.thead} bg-navy-50 text-left text-xs uppercase text-navy-700`}>
               <tr><th className="p-3">Date</th><th className="p-3">Agent</th><th className="p-3">For</th><th className="p-3">Amount</th><th className="p-3">UTR</th><th className="p-3">Result</th></tr>
             </thead>
-            <tbody>
+            <tbody className={ST.tbody}>
               {decided.map((p) => (
-                <tr key={p.id} className="border-t border-[#E4DED2]">
-                  <td className="p-3 whitespace-nowrap">{new Date(p.decidedAt || p.createdAt).toLocaleDateString("en-IN")}</td>
-                  <td className="p-3">{p.agentName}</td>
-                  <td className="p-3">{what(p)}</td>
-                  <td className="p-3 whitespace-nowrap">{formatINR(p.amount)}</td>
-                  <td className="p-3 font-mono text-xs">{p.utr}</td>
-                  <td className="p-3">{p.status === "APPROVED" ? "Approved" : `Rejected${p.note ? `: ${p.note}` : ""}`}</td>
+                <tr key={p.id} className={`${ST.tr} px-4 md:px-0`}>
+                  <td className={`${ST.td} md:p-3 whitespace-nowrap`}>{new Date(p.decidedAt || p.createdAt).toLocaleDateString("en-IN")}</td>
+                  <td className={`${ST.td} md:p-3 font-semibold md:font-normal`}>{p.agentName}</td>
+                  <td className={`${ST.td} w-full md:w-auto md:p-3`}>{what(p)}</td>
+                  <td className={`${ST.td} md:p-3 whitespace-nowrap`}>{formatINR(p.amount)}</td>
+                  <td className={`${ST.td} md:p-3 font-mono text-xs`}><span className={ST.label}>UTR</span>{p.utr}</td>
+                  <td className={`${ST.td} w-full md:w-auto md:p-3`}>{p.status === "APPROVED" ? "Approved" : `Rejected${p.note ? `: ${p.note}` : ""}`}</td>
                 </tr>
               ))}
-              {decided.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-navy-600">No payments yet.</td></tr>}
+              {decided.length === 0 && <tr className="block md:table-row"><td colSpan={6} className="block md:table-cell p-6 text-center text-navy-600">No payments yet.</td></tr>}
             </tbody>
           </table>
         </div>

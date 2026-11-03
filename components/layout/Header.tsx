@@ -41,7 +41,8 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full bg-navy-900 border-b border-navy-800 text-white">
+      {/* On admin pages below lg the admin bar (AdminHeader) takes over, so only one header shows. */}
+      <header className={`sticky top-0 z-50 w-full bg-navy-900 border-b border-navy-800 text-white ${isAdminRoute ? "hidden lg:block" : ""}`}>
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-14 md:h-16">
           <Link href="/" className="shrink-0 z-50 py-1" onClick={() => setMenu(false)} aria-label="Home">
             <BrandLogo size="md" />

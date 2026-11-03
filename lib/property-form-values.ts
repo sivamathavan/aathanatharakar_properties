@@ -60,7 +60,7 @@ export function toFormValues(p: any, priv: any = {}): PropertyFormValues {
     title: s(p.title),
     description: s(p.description),
     type: s(p.type),
-    listingType: s(p.listingType) || "BUY",
+    listingType: s(p.listingType) === "SELL" ? "BUY" : s(p.listingType) || "BUY",
     price: s(p.price),
     priceUnit: s(p.priceUnit) || "TOTAL",
     area: s(p.area),

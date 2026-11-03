@@ -269,7 +269,7 @@ function SoldDialog({ row, buyerNames, onClose, onSave }: { row: Row; buyerNames
           await onSave({
             status: rent ? "RENTED" : "SOLD",
             soldAt: new Date(`${f.get("date")}T12:00:00+05:30`).toISOString(),
-            soldPrice: f.get("price") ? Number(f.get("price")) : null,
+            soldPrice: f.get("price") ? Number(String(f.get("price")).replace(/[^0-9]/g, "")) || null : null,
             soldTo: (f.get("buyer") as string) || null,
           });
           setSaving(false);
@@ -285,7 +285,7 @@ function SoldDialog({ row, buyerNames, onClose, onSave }: { row: Row; buyerNames
         </label>
         <label className="block space-y-1 text-sm">
           <span className="font-medium">{rent ? t("Final rent (₹, private)") : t("Final price (₹, private)")}</span>
-          <input name="price" inputMode="numeric" pattern="[0-9]*" placeholder={String(row.price)} className="w-full h-11 px-3 border rounded-md" />
+          <input name="price" inputMode="numeric" pattern="[0-9,]*" placeholder={Number(row.price).toLocaleString("en-IN")} className="w-full h-11 px-3 border rounded-md" />
         </label>
         <label className="block space-y-1 text-sm">
           <span className="font-medium">{rent ? t("Tenant (optional, private)") : t("Buyer (optional, private)")}</span>

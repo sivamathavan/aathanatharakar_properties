@@ -33,9 +33,12 @@ export const PROPERTY_TYPES = [
   "PG_HOSTEL"
 ] as const;
 
+// What agents can choose and buyers can filter by. Old "SELL" listings (owner
+// sales from the single-broker site) are still accepted and shown as a sale.
 export const LISTING_TYPES = [
   "BUY",
-  "SELL",
   "RENT",
   "LEASE"
 ] as const;
+
+export const LISTING_TYPE_LABEL: Record<string, string> = { BUY: "For sale", SELL: "For sale", RENT: "For rent", LEASE: "For lease" };
