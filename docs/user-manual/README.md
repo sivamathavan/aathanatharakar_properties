@@ -70,9 +70,10 @@ Udhaaranam: Senthil-oda link `…/a/senthil-coimbatore`. Idha mattum anuppinaa p
 Signup aanadhum mudhal screen-la manjal box varum: **"Confirm your email to make your page public."**
 
 1. Unga email inbox open pannunga (spam folder-um paarunga).
-2. PropPage anuppuna link-a click pannunga.
-3. PropPage-la **"Sign out"** panni, thirumba **"Sign in"** pannunga.
-4. Ippo unga page ellaarukkum theriyum.
+2. PropPage anuppuna link-a click pannunga. Adhu ungala thirumba PropPage dashboard-ku kootittu varum.
+3. PropPage-ku thirumba vandhaa, page thaane kandupidikkum: manjal box maranjidum, **"Confirm your email"** step-la green tick varum. Sign out panna thevai illa.
+4. Box innum irundhaa **"I've confirmed my email"** tap pannunga.
+5. Ippo unga page ellaarukkum theriyum.
 
 Email varala-na, adhe box-la **"Resend email"** tap pannunga.
 
@@ -158,6 +159,8 @@ Ovvoru step-aiyum tap pannaa, adhu panna vendiya screen-ku pogum. 6-um mudinjaa 
 Keezha **"Latest enquiries"** — kadaisi 5 enquiries. **"See all"** tap pannaa ellaam varum.
 
 Trial-la irundhaa kadaisi-la "Your free trial has 14 days left. **See plans**" nu varum.
+
+**Phone-la enquiry alert:** Overview-la **"Turn on enquiry alerts"** tap panni, phone kekkum bodhu **Allow** pannunga. Ippo pudhu enquiry vandha udane phone-la notification varum (PropPage moodi irundhaalum). Notification-la buyer peyar, listing per mattum varum; phone number app-kulla dhaan. iPhone-la mudhalla PropPage-a Home Screen-la add panni, angirundhu open panni alert on pannunga. Off panna **"Turn off"**.
 
 <br clear="all">
 
@@ -576,6 +579,15 @@ Phone pannavanga, office-ku vandhavanga, yaaraavadhu refer pannavanga — ivanga
 
 <br clear="all">
 
+**WhatsApp-la vandha client-a seekiram add panna:**
+
+1. WhatsApp-la client-oda message-a (illa contact-a) long-press panni **Copy** pannunga.
+2. PropPage **"Add a client"** form-la **"Paste from WhatsApp (optional)"** box-la paste pannunga.
+3. Peyar, phone number, avanga enna kettaanga — ellaam thaane fill aagum. **"How they found you"** WhatsApp-nu maarum.
+4. Check panni **"Add client"** tap pannunga.
+
+Adhe number munnaadiye unga enquiries-la irundhaa, "… is already in your enquiries with this number." nu kaattum. **"Show them"** tap pannaa andha pazhaya client varum; pudhusa venumna **"Add anyway"**.
+
 ### 9.7 "Save as buyer"
 
 Client-ku enna venum nu theriyum-na, card-la **"Save as buyer"** tap pannunga. Peyar, phone ready-a Buyers form open aagum. Adutha section paarunga.
@@ -851,9 +863,17 @@ Udhaaranam: trial 17 Nov varaikkum irukku. 3 Nov-e Pro 1 month pay pannaa, Pro 1
 
 <img src="images/40-expired.jpg" alt="Plan ended banner" width="280" align="right">
 
-- Dashboard mela sigappu-la "Your plan has ended, so your page is paused. **Renew now**" varum.
+**Mudhal 7 naal (grace):**
+
+- Unga page innum **live**-a irukkum. Buyers paakalaam, enquiry anuppalaam. Neenga share panna link waste aagaadhu.
+- Dashboard mela sigappu-la "Your plan has ended. Your page stays live until (date), then it pauses. **Renew now**" varum.
+- Pudhu listing add panna mudiyaadhu, "Speak or paste" use panna mudiyaadhu. Irukkura listings edit pannalaam, sold mark pannalaam.
+- Indha 7 naal-kulla pay pannaa, pudhu plan pazhaya mudivu date-la irundhu kanakku aagum.
+
+**7 naal kazhichu:**
+
+- Dashboard-la "Your plan has ended, so your page is paused. **Renew now**" varum.
 - Unga page buyers-ku **paused**-a kaattum. Pudhu enquiries varaadhu.
-- Pudhu listing add panna mudiyaadhu.
 - **Edhuvum delete aagaadhu.** Listings, photos, enquiries, buyers ellaam safe-a irukkum.
 - Pay panni approve aanadhum page udane thirumba varum.
 
@@ -902,7 +922,7 @@ Page, listings, photos, documents, enquiries, buyers, stats, login ellaam azhinj
 |---|---|
 | Email confirm link | Signup pannumbodhu |
 | "New enquiry: …" | Buyer unga listing-la enquiry form fill pannumbodhu — peyar, phone, message-oda |
-| "Your free trial ends in 3 days" / "Your plan ends in 3 days" | Plan mudiyaradhukku 7, 3, 1 naal munnaadi, mudiyura naal, mudinja adutha naal. **"Renew my plan"** button irukkum. |
+| "Your free trial ends in 3 days" / "Your plan ends in 3 days" | Plan mudiyaradhukku 7, 3, 1 naal munnaadi, mudiyura naal, mudinja adutha naal, page pause aagaradhukku munnaadi naal. **"Renew my plan"** button irukkum. |
 | "Good morning! Today you have:" (subject: "… follow-ups and visits today") | Kaalaila — inniki follow-up / site visit irundhaa mattum. **"Open today's list"** tap pannaa Today list open aagum. |
 | "Payment received — thank you" / "We couldn't find your payment" | Admin unga payment-a check pannadhum |
 
@@ -918,8 +938,8 @@ Page, listings, photos, documents, enquiries, buyers, stats, login ellaam azhinj
 
 **Page paused nu varudhu, enna pannanum?**
 Rendu kaaranam irukkalaam:
-1. Email confirm pannala — Overview-la manjal box paarunga. Email link click panni, sign out, sign in pannunga.
-2. Plan mudinjiduchu — **"Plan & billing"**-la pay pannunga. Approve aanadhum page thirumba varum.
+1. Email confirm pannala — Overview-la manjal box paarunga. Email link click panni, PropPage-ku thirumba vaanga (illa **"I've confirmed my email"** tap pannunga).
+2. Plan mudinju 7 naal grace-um mudinjiduchu — **"Plan & billing"**-la pay pannunga. Approve aanadhum page thirumba varum.
 Account-ae paused-na ("Your account is paused") support-ku message pannunga.
 
 **Buyer-ku owner number theriyuma?**
@@ -932,6 +952,7 @@ Illa. **"Private notes"** (owner name, owner phone, survey number, notes), title
 - Chrome browser-la try pannunga.
 
 **Enquiry vandhaa eppadi theriyum?**
+- **"Turn on enquiry alerts"** on pannirundhaa, phone-la udane notification varum.
 - Ungalukku "New enquiry: …" nu email varum.
 - **"Enquiries"**-la **"New"** count yerum. Overview-layum kaattum.
 - Kaalaila follow-up email-um varum.
