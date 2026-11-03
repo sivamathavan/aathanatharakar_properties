@@ -29,6 +29,8 @@ beforeEach(async () => {
     await setDoc(doc(db, "properties/live"), { status: "ACTIVE", postedById: "agentA", title: "Live" });
     await setDoc(doc(db, "properties/hidden"), { status: "INACTIVE", postedById: "agentA", title: "Hidden" });
     await setDoc(doc(db, "properties/live/private/details"), { ownerPhone: "9876543210" });
+    await setDoc(doc(db, "properties/mine"), { status: "ACTIVE", postedById: "admin1", ownerType: "ADMIN", title: "Admin's own" });
+    await setDoc(doc(db, "properties/mine/private/details"), { ownerPhone: "9876500000" });
     await setDoc(doc(db, "leads/l1"), { ownerId: "agentA", phone: "9000000000" });
     await setDoc(doc(db, "config/plans"), { trialDays: 14 });
     await setDoc(doc(db, "crm_people/p1"), { name: "Owner" });
@@ -68,9 +70,10 @@ describe("Firestore", () => {
     await assertFails(addDoc(collection(agentA(), "properties"), { status: "ACTIVE", postedById: "agentA" }));
   });
 
-  test("owner contact is private to the listing's owner and admins", async () => {
+  test("owner contact is private to the listing's owner, the admin included", async () => {
     await assertSucceeds(getDoc(doc(agentA(), "properties/live/private/details")));
-    await assertSucceeds(getDoc(doc(admin(), "properties/live/private/details")));
+    await assertFails(getDoc(doc(admin(), "properties/live/private/details")));
+    await assertSucceeds(getDoc(doc(admin(), "properties/mine/private/details")));
     await assertFails(getDoc(doc(agentB(), "properties/live/private/details")));
     await assertFails(getDoc(doc(anon(), "properties/live/private/details")));
   });

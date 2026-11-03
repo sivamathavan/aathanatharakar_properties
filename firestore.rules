@@ -27,9 +27,10 @@ service cloud.firestore {
       allow read: if resource.data.status == 'ACTIVE' || isAdmin();
       allow write: if false;
 
+      // Owner name, phone and survey number: only the listing's owner (the admin's
+      // own listings included), never the admin for an agent's listing.
       match /private/{docId} {
-        allow read: if isAdmin()
-          || (signedIn() && get(/databases/$(database)/documents/properties/$(propertyId)).data.postedById == request.auth.uid);
+        allow read: if signedIn() && get(/databases/$(database)/documents/properties/$(propertyId)).data.postedById == request.auth.uid;
         allow write: if false;
       }
     }

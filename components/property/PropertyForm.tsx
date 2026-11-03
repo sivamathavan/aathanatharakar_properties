@@ -27,6 +27,7 @@ export function PropertyForm({
   storageFolder,
   photoLimit,
   allowVideo = false,
+  showPrivate = true,
   doneHref,
 }: {
   propertyId?: string;
@@ -34,6 +35,8 @@ export function PropertyForm({
   storageFolder: string;
   photoLimit: number;
   allowVideo?: boolean;
+  /** False when an admin edits an agent's listing: its private notes stay with the agent. */
+  showPrivate?: boolean;
   doneHref: string;
 }) {
   const t = useT();
@@ -213,30 +216,32 @@ export function PropertyForm({
             </div>
           </section>
 
-          <section className="space-y-4 rounded-lg border border-dashed border-navy-200 bg-navy-50/40 p-4">
-            <h2 className="text-lg font-bold flex items-center gap-2">
-              <Lock className="w-4 h-4 text-gold-600" /> {t("Private notes")}
-            </h2>
-            <p className="text-xs text-navy-700">{t("Only you can see these. They are never shown to buyers.")}</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="pf-oname">{t("Owner name")}</Label>
-                <Input id="pf-oname" value={v.ownerName} onChange={(e) => set({ ownerName: e.target.value })} />
+          {showPrivate && (
+            <section className="space-y-4 rounded-lg border border-dashed border-navy-200 bg-navy-50/40 p-4">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <Lock className="w-4 h-4 text-gold-600" /> {t("Private notes")}
+              </h2>
+              <p className="text-xs text-navy-700">{t("Only you can see these. They are never shown to buyers.")}</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="pf-oname">{t("Owner name")}</Label>
+                  <Input id="pf-oname" value={v.ownerName} onChange={(e) => set({ ownerName: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pf-ophone">{t("Owner phone")}</Label>
+                  <Input id="pf-ophone" type="tel" value={v.ownerPhone} onChange={(e) => set({ ownerPhone: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pf-survey">{t("Survey number")}</Label>
+                  <Input id="pf-survey" value={v.surveyNumber} onChange={(e) => set({ surveyNumber: e.target.value })} />
+                </div>
+                <div className="md:col-span-3 space-y-2">
+                  <Label htmlFor="pf-notes">{t("Notes")}</Label>
+                  <Textarea id="pf-notes" rows={2} value={v.privateNotes} onChange={(e) => set({ privateNotes: e.target.value })} />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="pf-ophone">{t("Owner phone")}</Label>
-                <Input id="pf-ophone" type="tel" value={v.ownerPhone} onChange={(e) => set({ ownerPhone: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pf-survey">{t("Survey number")}</Label>
-                <Input id="pf-survey" value={v.surveyNumber} onChange={(e) => set({ surveyNumber: e.target.value })} />
-              </div>
-              <div className="md:col-span-3 space-y-2">
-                <Label htmlFor="pf-notes">{t("Notes")}</Label>
-                <Textarea id="pf-notes" rows={2} value={v.privateNotes} onChange={(e) => set({ privateNotes: e.target.value })} />
-              </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           <Button type="submit" className="w-full h-11 bg-navy-900 text-gold-500 hover:bg-navy-950 hover:text-gold-400 font-bold rounded-btn disabled:opacity-60" disabled={saving}>
             {saving ? t("Saving…") : propertyId ? t("Save changes") : t("Publish listing")}

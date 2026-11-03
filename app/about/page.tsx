@@ -10,7 +10,7 @@ export const metadata = {
 const POINTS = [
   { icon: Share2, title: "One link per agent", text: "Every agent gets a page with all their listings, ready to send on WhatsApp or print as a QR code." },
   { icon: Smartphone, title: "Built for the phone", text: "Agents add listings, photos and follow up enquiries from their phone. Buyers browse on theirs." },
-  { icon: ShieldCheck, title: "Owner details stay private", text: "Owner names, phone numbers and survey numbers are visible only to the agent who listed the property." },
+  { icon: ShieldCheck, title: "Owner details stay private", text: `Owner names, phone numbers and survey numbers are visible only to the agent who listed the property: not to other agents, and not to the ${BRAND.name} team.` },
   { icon: IndianRupee, title: "Simple pricing", text: "A free trial, then a small monthly or yearly plan paid by UPI. No commission on your deals." },
 ];
 
@@ -49,7 +49,10 @@ export default function AboutPage() {
             {BRAND.supportEmail ? <> Write to us at <a href={`mailto:${BRAND.supportEmail}`} className="underline">{BRAND.supportEmail}</a>.</> : null}
           </p>
           <p>
-            Each listing belongs to the agent who posted it, and enquiries go straight to that agent. {BRAND.name} doesn&apos;t take part in the deal or charge a commission.
+            Each listing belongs to the agent who posted it, and enquiries go straight to that agent. {BRAND.name} takes no part in agents&apos; deals and charges no commission.
+          </p>
+          <p>
+            {BRAND.name} also lists a few properties of its own on this site, always marked &ldquo;Listed by {BRAND.name}&rdquo;. Agents&apos; enquiries, clients and private details are never used for them.
           </p>
           <Link href="/register" className="inline-flex h-10 px-4 items-center rounded-btn bg-navy-900 text-gold-500 font-semibold">Start your free trial</Link>
         </div>

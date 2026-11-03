@@ -116,6 +116,11 @@ async function main() {
   check("owner sees private owner details", r.json?.private?.ownerPhone === "9865432100");
   r = await call(`/api/properties/${agentPropId}`);
   check("public listing API hides private details", r.status === 200 && !r.text.includes("9865432100"));
+  r = await call(`/api/properties/${agentPropId}`, { cookie: admin });
+  check("admin doesn't get an agent's private details", r.status === 200 && !r.text.includes("9865432100"));
+  r = await call(`/api/properties/${agentPropId}`, { method: "PUT", cookie: admin, body: listing(`Ravi plot one ${RUN}`, [media1], { ownerName: "", ownerPhone: "", surveyNumber: "" }) });
+  r = await call(`/api/properties/${agentPropId}`, { cookie: agent });
+  check("an admin fix keeps the agent's private details", r.json?.private?.ownerPhone === "9865432100", JSON.stringify(r.json?.private));
 
   console.log("Share page");
   r = await call(`/a/${slug}`);

@@ -37,6 +37,12 @@ env:
     value: https://REPLACE-WITH-YOUR-DOMAIN
     availability: [BUILD, RUNTIME]
 
+  # An agent's link name to show as "See a sample page" on the home page (with
+  # their permission). Empty shows "How it works" instead.
+  - variable: NEXT_PUBLIC_SAMPLE_AGENT_SLUG
+    value: ""
+    availability: [BUILD, RUNTIME]
+
   # Product name and support contact (lib/brand.ts). Rename here, no code change.
   - variable: NEXT_PUBLIC_BRAND_NAME
     value: PropPage

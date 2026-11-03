@@ -13,7 +13,9 @@ export default async function AdminEditPropertyPage({ params }: { params: { id: 
   if (!session || session.role !== UserRole.ADMIN) redirect("/admin/login");
   const property = await getPropertyById(params.id);
   if (!property) notFound();
-  const priv = await getPropertyPrivate(params.id);
+  // Agents' private details (owner name, phone, survey number) stay with the agent.
+  const own = property.postedById === session.uid;
+  const priv = own ? await getPropertyPrivate(params.id) : {};
   return (
     <div className="max-w-4xl space-y-6 pb-12">
       <div>
@@ -26,6 +28,7 @@ export default async function AdminEditPropertyPage({ params }: { params: { id: 
         storageFolder={`properties/${session.uid}`}
         photoLimit={30}
         allowVideo
+        showPrivate={own}
         doneHref="/admin/properties"
       />
     </div>

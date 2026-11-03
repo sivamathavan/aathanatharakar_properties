@@ -29,7 +29,9 @@ async function loadForEdit(req: Request, id: string) {
   return { user, property };
 }
 
-// Public read of an ACTIVE listing; the owner and admin also get private details.
+// Public read of an ACTIVE listing. Only the listing's owner gets its private
+// details (owner name, phone, survey number); the admin sees an agent's listing
+// like the public does, so agents can trust that those details stay theirs.
 export async function GET(req: Request, { params }: Params) {
   const user = await getRequestUser(req);
   const property = await getPropertyById(params.id);
@@ -39,6 +41,7 @@ export async function GET(req: Request, { params }: Params) {
     if (property.status !== PropertyStatus.ACTIVE) return new NextResponse("Listing not found.", { status: 404 });
     return NextResponse.json(property);
   }
+  if (property.postedById !== user.uid) return NextResponse.json(property);
   return NextResponse.json({ ...property, private: await getPropertyPrivate(params.id) });
 }
 
@@ -66,7 +69,9 @@ export async function PUT(req: Request, { params }: Params) {
       }
     }
 
-    await updateProperty(params.id, publicFields(input), privateFields(input));
+    // An admin fixing an agent's listing never sees or overwrites its private details.
+    const ownListing = property.postedById === user.uid;
+    await updateProperty(params.id, publicFields(input), ownListing ? privateFields(input) : undefined);
     if (user.role === UserRole.ADMIN) await writeAudit(user.uid, "property.update", params.id);
     refreshListingCaches(property.agentSlug, params.id);
     return NextResponse.json({ id: params.id });

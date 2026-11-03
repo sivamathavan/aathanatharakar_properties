@@ -11,8 +11,8 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 import { UserRole } from "@/types";
 
 const NAV = [
-  { href: "/properties", label: "Properties", icon: Home },
   { href: "/for-agents", label: "For agents", icon: Briefcase },
+  { href: "/properties", label: "Properties", icon: Home },
   { href: "/blog", label: "Blog", icon: FileText },
   { href: "/about", label: "About", icon: Info },
 ];
