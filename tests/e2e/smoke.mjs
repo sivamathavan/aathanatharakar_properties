@@ -132,6 +132,8 @@ async function main() {
   await fetch(`http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/projects/${PROJECT}/accounts:update`, {
     method: "POST", headers: { Authorization: "Bearer owner", "Content-Type": "application/json" }, body: JSON.stringify({ localId: a.localId, emailVerified: true }) });
   a = await signIn(email, pw);
+  r = await call("/api/agent/email-verified", { method: "POST", cookie: agent, body: { idToken: a.idToken } });
+  check("confirming the email reaches the page without signing in again", r.status === 200 && r.json?.verified === true, r.text);
   agent = await session(a.idToken);
   r = await call(`/a/${slug}`);
   check("share page shows the agent's listing", r.status === 200 && r.text.includes(`Ravi plot one ${RUN}`) && !r.text.includes("paused"), `${r.status}`);

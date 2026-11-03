@@ -7,7 +7,7 @@ import { followUpState, friendlyDay, istDaysFromToday, istTime } from "@/lib/dat
 import { SITE_URL } from "@/lib/site";
 import { serverT } from "@/lib/i18n/server";
 import { CopyButton } from "@/components/dashboard/CopyButton";
-import { ResendVerification } from "@/components/dashboard/ResendVerification";
+import { EmailConfirmedCheck, ResendVerification } from "@/components/dashboard/ResendVerification";
 import { PropertyStatus } from "@/types";
 import { PushAlertsCard } from "@/components/dashboard/PushAlertsCard";
 
@@ -66,8 +66,11 @@ export default async function DashboardOverview({ searchParams }: { searchParams
           <MailWarning className="w-5 h-5 text-gold-700 shrink-0 mt-0.5" />
           <div className="space-y-1 text-sm text-navy-900">
             <p className="font-semibold">{t("Confirm your email to make your page public.")}</p>
-            <p>{t("We sent a link to {email}. After you click it, sign out and sign in again.", { email: agent.email })}</p>
-            <ResendVerification />
+            <p>{t("We sent a link to {email}. Open it, then come back here: this page notices by itself.", { email: agent.email })}</p>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              <EmailConfirmedCheck />
+              <ResendVerification />
+            </div>
           </div>
         </div>
       )}

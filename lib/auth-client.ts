@@ -55,7 +55,7 @@ export async function signUpAgent(input: AgentSignupInput) {
     await cred.user.delete().catch(() => {});
     throw err;
   }
-  await sendEmailVerification(cred.user).catch(() => {});
+  await sendEmailVerification(cred.user, confirmLinkSettings()).catch(() => {});
   const role = await startSession(cred.user);
   return { user: cred.user, role };
 }
@@ -76,4 +76,25 @@ export function friendlyAuthError(err: any): string {
   if (code.includes("too-many-requests")) return "Too many attempts. Wait a few minutes and try again.";
   if (code.includes("network")) return "No internet connection. Check your network and try again.";
   return err?.message || "Something went wrong. Please try again.";
+}
+
+/** The "confirm your email" link brings the agent back to their dashboard afterwards. */
+export function confirmLinkSettings() {
+  return { url: `${window.location.origin}/dashboard?verified=1` };
+}
+
+/**
+ * After the agent clicked the confirm link (maybe in another tab or the mail
+ * app), tell the server so the page goes public without signing out and in.
+ * Returns true once the email is confirmed.
+ */
+export async function syncEmailVerified(): Promise<boolean> {
+  await auth.authStateReady();
+  const user = auth.currentUser;
+  if (!user) return false;
+  await user.reload();
+  if (!user.emailVerified) return false;
+  const idToken = await user.getIdToken(true);
+  const res = await fetch("/api/agent/email-verified", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken }) });
+  return res.ok && (await res.json()).verified === true;
 }
