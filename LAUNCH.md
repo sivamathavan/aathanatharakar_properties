@@ -1,14 +1,60 @@
 # Launch day: things only the owner can do
 
-1. **New Firebase project with a neutral ID** (e.g. `proppage-prod`). The current `dkpromoters-96ec1` shows in password-reset and verify emails; it is empty, so nothing moves. Put it on **Blaze** with a budget alert, then update the `NEXT_PUBLIC_FIREBASE_*` values in `apphosting.yaml`.
-2. **Firestore in `asia-south1`** (the Firestore API is not enabled yet), Storage, Email/Password sign-in, authorised domain, email templates (sender name).
-3. **App Hosting** backend `proppage-web` from GitHub; connect the domain; set `NEXT_PUBLIC_SITE_URL`.
-4. **Secrets**: `firebase apphosting:secrets:set smtp-password`, `gemini-api-key`, `cron-secret` (32+ random characters). Use a **new** Gemini key (the one shown in chat on 3 Nov is exposed: delete it in AI Studio), and turn on billing for its Google Cloud project so Google's paid data terms apply (on the free tier Google may use and review what agents paste). Fill `ADMIN_EMAIL`, `SMTP_USER`, `NEXT_PUBLIC_SUPPORT_EMAIL`, `NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_PUBLIC_GRIEVANCE_OFFICER` in `apphosting.yaml`.
-5. `firebase deploy --only firestore,storage` and wait for indexes to build; then deploy App Hosting; create the admin with `npm run admin:recover`.
-6. **Cloud Scheduler**: daily 08:00 Asia/Kolkata, `POST https://<domain>/api/cron/daily` with header `Authorization: Bearer <cron-secret>` (plan reminders and the follow-up digest).
-7. **UPI ID, payee name, QR** (and GSTIN if registered) in Admin → Plans & settings.
-8. **Rotate every secret** in the old tracker repo's history (`/Volumes/Maddy/tracker/server/.env`) and make that repo private or purge the history.
-9. Name a **grievance officer** (privacy page); have Terms/Privacy reviewed; have a Tamil speaker read the Tamil screens (`lib/i18n/ta.ts`).
-10. **Android app on Google Play** (`android/README.md`): create a Google Play developer account ($25 one-time; a personal account must run a closed test with 12 testers for 14 days before going public, an organisation account with a D-U-N-S number skips this), set your domain in `android/gradle.properties`, create the upload key, `./gradlew bundleRelease`, upload, then put the Play app-signing SHA-256 in `ANDROID_CERT_SHA256`. Store listing needs: short and full description (English + Tamil), 2+ phone screenshots, a 512px icon and 1024×500 feature graphic, privacy policy URL (`/privacy`), the Data safety form, content rating.
-11. **Switch listing AI to Claude** after about 50 agents: `firebase apphosting:secrets:set anthropic-api-key`, uncomment `ANTHROPIC_API_KEY` in `apphosting.yaml`, set `LISTING_AI_PROVIDER` to `claude` (and pick `LISTING_AI_MODEL` after `npm run eval:drafts`), redeploy. Nothing else changes for agents.
-12. Later: Razorpay for automatic payments.
+Placeholders to replace are marked `REPLACE-WITH-…` in `apphosting.yaml`, `.firebaserc` and `android/gradle.properties`.
+
+## 1. Firebase production project
+
+1. **Create a new Firebase project with a neutral ID** (e.g. `proppage-prod`); the old `dkpromoters-96ec1` must not be used (its ID shows in emails). Put it on **Blaze** with a budget alert.
+2. Add a **Web app** in Project settings and copy its values into the `NEXT_PUBLIC_FIREBASE_*` lines of `apphosting.yaml`. Put the project ID in `.firebaserc`.
+3. **Firestore** in `asia-south1` (Mumbai). **Storage**. **Authentication → Email/Password** on.
+4. **Daily backups** (keeps 7 days):
+   `gcloud firestore backups schedules create --database='(default)' --recurrence=daily --retention=7d --project=<project-id>`
+5. `firebase deploy --only firestore,storage` and wait until every index in the console shows "Enabled".
+
+## 2. Domain and hosting
+
+1. Buy / confirm the domain. Put it in `NEXT_PUBLIC_SITE_URL` (`apphosting.yaml`) and `proppageHost` (`android/gradle.properties`).
+2. **App Hosting** backend `proppage-web` from GitHub; connect the domain.
+3. **Authentication → Settings → Authorised domains**: add the domain (the "confirm your email" link returns agents to it).
+4. `minInstances: 1` in `apphosting.yaml` keeps one server warm (small fixed monthly cost). Set 0 to pay only for visits.
+
+## 3. Email (transactional service, not Gmail)
+
+1. Create an account with a transactional email service that offers SMTP (ZeptoMail recommended; Amazon SES also works). Verify the domain there.
+2. Add the **SPF, DKIM and DMARC** DNS records the service gives you; wait until it shows the domain as verified.
+3. In `apphosting.yaml` fill `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` (copy them from the service's SMTP page) and `MAIL_FROM` (e.g. `PropPage <hello@your-domain>`). Store the SMTP password: `firebase apphosting:secrets:set smtp-password`.
+4. **Authentication → Templates → SMTP settings**: use the same service and sender, so "confirm your email" and "reset password" mails come from your domain. Set the sender name to PropPage and edit the two templates (English + Tamil line).
+5. Send yourself a test enquiry; check it arrives in the Gmail inbox (not spam) and the headers show SPF and DKIM "pass".
+
+## 4. Secrets and contacts
+
+1. `firebase apphosting:secrets:set gemini-api-key` with a **new** Gemini key (the one shown in chat on 3 Nov is exposed: delete it in AI Studio). Turn on billing for its Google Cloud project so Google's paid data terms apply.
+2. `firebase apphosting:secrets:set cron-secret` (32+ random characters).
+3. Fill `ADMIN_EMAIL`, `NEXT_PUBLIC_SUPPORT_EMAIL`, `NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_PUBLIC_GRIEVANCE_OFFICER` in `apphosting.yaml`.
+4. **Rotate every secret** in the old tracker repo's history (`/Volumes/Maddy/tracker/server/.env`) and make that repo private or purge the history.
+
+## 5. Phone notifications for enquiries
+
+1. Firebase console → Project settings → **Cloud Messaging** → Web Push certificates → **Generate key pair**. Put the public key in `NEXT_PUBLIC_FIREBASE_VAPID_KEY` (`apphosting.yaml`).
+2. Make sure the **Firebase Cloud Messaging API (V1)** is enabled for the project in Google Cloud.
+
+## 6. Deploy and first admin
+
+1. Deploy App Hosting. Create the admin with `npm run admin:recover` (a long, unique password: the admin login has no second factor).
+2. **Cloud Scheduler**: daily 08:00 Asia/Kolkata, `POST https://<domain>/api/cron/daily` with header `Authorization: Bearer <cron-secret>`. Run it once with `?dry=1` first; it should answer `{"ok":true,"dry":true,…}`.
+3. **Admin → Plans & settings**: UPI ID, payee name (QR is made from them), GSTIN if registered.
+
+## 7. Go-live test (with a test agent, then delete it)
+
+1. Sign up with a second email; confirm the email from the phone; the dashboard should notice without signing out.
+2. Add a listing with photos; open the page link from another phone; send an enquiry.
+3. The agent gets the email and the phone notification; the enquiry shows in "Enquiries".
+4. Submit a payment with a made-up UTR, then choose "Not received" in Admin → Payments; check the agent gets the "We couldn't find your payment" email.
+5. Delete the test agent (Account & data → Delete my account).
+
+## 8. Later, not needed for the pilot
+
+1. **Android app on Google Play** (`android/README.md`): developer account ($25; a personal account needs a 14-day closed test with 12 testers), set the domain in `android/gradle.properties`, upload key, `./gradlew bundleRelease`, then the Play app-signing SHA-256 in `ANDROID_CERT_SHA256`.
+2. Name a **grievance officer** (privacy page); have Terms/Privacy reviewed; have a Tamil speaker read the Tamil screens (`lib/i18n/ta.ts`).
+3. **Switch listing AI to Claude** after about 50 agents: `firebase apphosting:secrets:set anthropic-api-key`, uncomment `ANTHROPIC_API_KEY` in `apphosting.yaml`, set `LISTING_AI_PROVIDER` to `claude` (pick `LISTING_AI_MODEL` after `npm run eval:drafts`), redeploy.
+4. Razorpay for automatic payments.

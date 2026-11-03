@@ -1,31 +1,34 @@
-# Firebase App Hosting (Cloud Run). minInstances 0 = no bill while nobody is
-# visiting; the first visit after a quiet spell takes a few seconds longer.
+# Firebase App Hosting (Cloud Run). minInstances 1 keeps one server warm so a
+# client opening an agent's link from WhatsApp doesn't wait for a cold start
+# (a small fixed monthly cost). Set it back to 0 to pay only for visits.
 runConfig:
-  minInstances: 0
+  minInstances: 1
   maxInstances: 3
   concurrency: 80
   cpu: 1
   memoryMiB: 512
 
 env:
-  # The web API key is public by design (it ships in every browser bundle).
+  # The new production project (LAUNCH.md step 1). Copy these from Firebase
+  # console → Project settings → Your apps → Web app. The web API key is public
+  # by design (it ships in every browser bundle).
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: AIzaSyD35TJ19aUXM97WXzTUWakh_b7ZSaKs6DA
+    value: REPLACE-WITH-NEW-PROJECT-API-KEY
     availability: [BUILD, RUNTIME]
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-    value: dkpromoters-96ec1.firebaseapp.com
+    value: REPLACE-WITH-NEW-PROJECT-ID.firebaseapp.com
     availability: [BUILD, RUNTIME]
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-    value: dkpromoters-96ec1
+    value: REPLACE-WITH-NEW-PROJECT-ID
     availability: [BUILD, RUNTIME]
   - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-    value: dkpromoters-96ec1.firebasestorage.app
+    value: REPLACE-WITH-NEW-PROJECT-ID.firebasestorage.app
     availability: [BUILD, RUNTIME]
   - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-    value: "855594211276"
+    value: "REPLACE-WITH-SENDER-ID"
     availability: [BUILD, RUNTIME]
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-    value: 1:855594211276:web:bb87d225b0c391527a6f69
+    value: REPLACE-WITH-NEW-WEB-APP-ID
     availability: [BUILD, RUNTIME]
   # Set to the real address before the first deploy: the App Hosting URL
   # (shown when the backend is created) or your own domain once it's connected.
