@@ -6,6 +6,7 @@ import {
 import { agentBuyersCol } from "@/lib/buyers";
 import { agentDailyCol } from "@/lib/stats";
 import { trialPhoneKey } from "@/lib/trial";
+import { pushTokensCol } from "@/lib/push";
 
 const plain = (snap: FirebaseFirestore.QuerySnapshot) => snap.docs.map((d) => docToTyped<Record<string, unknown>>(d)!);
 
@@ -77,6 +78,7 @@ export async function deleteAgentAccount(uid: string): Promise<{ slug: string | 
   await deleteAll(leadsCol().where("ownerId", "==", uid));
   await deleteAll(agentBuyersCol().where("ownerId", "==", uid));
   await deleteAll(agentDailyCol().where("agentId", "==", uid));
+  await deleteAll(pushTokensCol().where("uid", "==", uid));
 
   const slugs = await agentSlugsCol().where("uid", "==", uid).get();
   const batch = adminDb.batch();

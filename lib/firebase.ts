@@ -17,6 +17,7 @@ const firebaseConfig = {
 
 // Initialize Firebase — singleton guard for Next.js HMR / SSR
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+export { app };
 
 export const auth = getAuth(app);
 export const storage = getStorage(app);

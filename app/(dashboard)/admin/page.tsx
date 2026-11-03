@@ -3,6 +3,7 @@ import { Building, Users2, IndianRupee, Zap, AlarmClock, BadgeCheck } from "luci
 import { getAdminLeads, getPaymentRequests, listAgents, propertiesCol } from "@/lib/firestore";
 import { daysLeft, effectiveStatus, formatINR } from "@/lib/plans";
 import { PropertyStatus } from "@/types";
+import { PushAlertsCard } from "@/components/dashboard/PushAlertsCard";
 
 export const metadata = { title: "Admin overview" };
 export const dynamic = "force-dynamic";
@@ -47,6 +48,9 @@ export default async function AdminOverviewPage() {
         <h1 className="font-display font-bold text-xl md:text-2xl text-navy-900">Overview</h1>
         <p className="text-xs text-navy-700 mt-0.5">Your listings, your agents and what they paid.</p>
       </div>
+
+      {/* Alerts for enquiries on your own listings */}
+      <PushAlertsCard />
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
         <Tile href="/admin/payments" label="Collected" value={formatINR(thisMonth)} sub="approved this month" icon={IndianRupee} />

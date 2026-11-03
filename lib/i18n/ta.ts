@@ -65,6 +65,16 @@ export const TA: Record<string, string> = {
   "Could not delete.": "நீக்க முடியவில்லை.",
   "Choose a photo (JPG or PNG).": "ஒரு புகைப்படத்தைத் தேர்வு செய்யவும் (JPG அல்லது PNG).",
   "See plans": "திட்டங்களைப் பார்",
+  "New enquiry": "புதிய விசாரணை",
+  "Get a phone alert for every new enquiry": "ஒவ்வொரு புதிய விசாரணைக்கும் போனில் அறிவிப்பு பெறுங்கள்",
+  "Your phone shows a notification the moment a client sends an enquiry, even when PropPage is closed.": "வாடிக்கையாளர் விசாரணை அனுப்பியவுடன், PropPage மூடியிருந்தாலும் உங்கள் போனில் அறிவிப்பு வரும்.",
+  "Turn on enquiry alerts": "விசாரணை அறிவிப்புகளை இயக்கு",
+  "Turning on…": "இயக்குகிறது…",
+  "Enquiry alerts are on for this phone.": "இந்த போனில் விசாரணை அறிவிப்புகள் இயங்குகின்றன.",
+  "Turn off": "நிறுத்து",
+  "Could not turn on alerts. Please try again.": "அறிவிப்புகளை இயக்க முடியவில்லை. மீண்டும் முயலவும்.",
+  "Alerts are blocked for this site. Allow notifications for PropPage in your browser's site settings, then open this page again.": "இந்த தளத்துக்கு அறிவிப்புகள் தடுக்கப்பட்டுள்ளன. உலாவியின் தள அமைப்புகளில் PropPage அறிவிப்புகளை அனுமதித்து, இந்தப் பக்கத்தை மீண்டும் திறக்கவும்.",
+  "On iPhone, first add PropPage to your Home Screen (Share, then Add to Home Screen). Open it from there and turn on alerts here.": "iPhone-ல் முதலில் PropPage-ஐ Home Screen-ல் சேர்க்கவும் (Share, பிறகு Add to Home Screen). அங்கிருந்து திறந்து இங்கே அறிவிப்புகளை இயக்கவும்.",
   "Need help? Reply to any email from us.": "உதவி வேண்டுமா? எங்கள் எந்த மின்னஞ்சலுக்கும் பதில் அனுப்புங்கள்.",
 
   // ─── Banners and plan lines ───

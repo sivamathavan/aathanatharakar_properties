@@ -3,6 +3,8 @@ import { z } from "zod";
 import { createLead, getAgentById, getPropertyById } from "@/lib/firestore";
 import { checkRateLimit, clientIp } from "@/lib/rate-limit";
 import { escapeHtml, sendEmailWithin } from "@/lib/mail";
+import { sendPushWithin } from "@/lib/push";
+import { makeT, parseLang } from "@/lib/i18n";
 import { isPlanLive } from "@/lib/plans";
 import { recordStat } from "@/lib/stats";
 import { LeadSource, LeadStatus, PropertyStatus } from "@/types";
@@ -66,11 +68,13 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     if (agent) await recordStat(agent.id, "enquiry", property.id).catch(() => {});
 
     const to = agent ? agent.email : process.env.ADMIN_EMAIL;
-    if (to) {
-      await sendEmailWithin({
-        to,
-        subject: `New enquiry: ${property.title}`,
-        html: `
+    const t = makeT(parseLang(agent?.uiLang));
+    await Promise.all([
+      to
+        ? sendEmailWithin({
+            to,
+            subject: `New enquiry: ${property.title}`,
+            html: `
           <h2>New enquiry</h2>
           <p><strong>${escapeHtml(property.title)}</strong> — ${escapeHtml(property.locality)}, ${escapeHtml(property.city)}</p>
           <ul>
@@ -81,8 +85,15 @@ export async function POST(req: Request, { params }: { params: { id: string } })
           ${message ? `<p><em>${escapeHtml(message)}</em></p>` : ""}
           <p>See all enquiries in your dashboard.</p>
         `,
-      });
-    }
+          })
+        : null,
+      // Lock-screen alert: name and listing only; the phone number stays inside the app.
+      sendPushWithin(property.postedById, {
+        title: t("New enquiry"),
+        body: `${name} · ${property.title}`,
+        link: agent ? "/dashboard/enquiries" : "/admin/leads",
+      }),
+    ]);
 
     return NextResponse.json({ id: lead.id });
   } catch (error) {

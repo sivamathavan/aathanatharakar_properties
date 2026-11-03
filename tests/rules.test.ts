@@ -37,6 +37,7 @@ beforeEach(async () => {
     await setDoc(doc(db, "paymentRequests/r1"), { agentId: "agentA", status: "PENDING" });
     await setDoc(doc(db, "agentBuyers/b1"), { ownerId: "agentA", name: "Buyer", phone: "9000000001" });
     await setDoc(doc(db, "agentDaily/agentA_2026-11-01"), { agentId: "agentA", date: "2026-11-01", pageViews: 3 });
+    await setDoc(doc(db, "pushTokens/t_a"), { uid: "agentA", token: "fcm-token-a" });
   });
 });
 
@@ -86,6 +87,12 @@ describe("Firestore", () => {
     await assertFails(getDoc(doc(agentA(), "paymentRequests/r1")));
     await assertFails(addDoc(collection(agentA(), "paymentRequests"), { status: "APPROVED" }));
     await assertFails(setDoc(doc(agentA(), "agentSlugs/admin"), { uid: "agentA" }));
+  });
+
+  test("phone alert tokens are server-only", async () => {
+    await assertFails(getDoc(doc(agentA(), "pushTokens/t_a")));
+    await assertFails(getDoc(doc(admin(), "pushTokens/t_a")));
+    await assertFails(setDoc(doc(agentB(), "pushTokens/t_b"), { uid: "agentA", token: "x" }));
   });
 
   test("an agent's buyers and daily stats are server-only, even for that agent", async () => {

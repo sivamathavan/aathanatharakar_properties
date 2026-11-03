@@ -9,6 +9,7 @@ import { serverT } from "@/lib/i18n/server";
 import { CopyButton } from "@/components/dashboard/CopyButton";
 import { ResendVerification } from "@/components/dashboard/ResendVerification";
 import { PropertyStatus } from "@/types";
+import { PushAlertsCard } from "@/components/dashboard/PushAlertsCard";
 
 export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -70,6 +71,8 @@ export default async function DashboardOverview({ searchParams }: { searchParams
           </div>
         </div>
       )}
+
+      <PushAlertsCard />
 
       {doneCount < steps.length && (
         <section aria-labelledby="getting-started" className="bg-white rounded-card border border-[#E4DED2] p-5 space-y-3">

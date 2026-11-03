@@ -6,6 +6,7 @@ import {
   signOut as fbSignOut,
   type User,
 } from "firebase/auth";
+import { forgetPushOnThisPhone } from "@/lib/push-client";
 
 async function startSession(user: User): Promise<string> {
   // Force refresh so a role set moments ago (signup) is in the token.
@@ -60,6 +61,7 @@ export async function signUpAgent(input: AgentSignupInput) {
 }
 
 export async function signOut() {
+  await forgetPushOnThisPhone(); // a shared phone stops getting this person's alerts
   await fbSignOut(auth);
   await fetch("/api/auth/token", { method: "DELETE" });
   window.location.href = "/";

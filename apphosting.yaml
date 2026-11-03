@@ -30,6 +30,11 @@ env:
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
     value: REPLACE-WITH-NEW-WEB-APP-ID
     availability: [BUILD, RUNTIME]
+  # Phone alerts for new enquiries: Cloud Messaging → Web Push certificates →
+  # the public key (LAUNCH.md section 5). Empty hides "Turn on enquiry alerts".
+  - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
+    value: ""
+    availability: [BUILD, RUNTIME]
   # Set to the real address before the first deploy: the App Hosting URL
   # (shown when the backend is created) or your own domain once it's connected.
   # Share links and WhatsApp previews are built from it.

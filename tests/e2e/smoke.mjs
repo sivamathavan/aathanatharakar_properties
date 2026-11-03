@@ -114,6 +114,10 @@ async function main() {
   check("agent can't attach videos", r.status === 400, `${r.status}`);
   r = await call(`/api/properties/${agentPropId}`, { cookie: agent });
   check("owner sees private owner details", r.json?.private?.ownerPhone === "9865432100");
+  r = await call("/api/push", { method: "POST", body: { token: "x".repeat(40) } });
+  check("signed-out visitors can't register phone alerts", r.status === 401, `${r.status}`);
+  r = await call("/api/push", { method: "POST", cookie: agent, body: { token: `fcm-${RUN}-`.padEnd(60, "x") } });
+  check("agent turns on phone alerts", r.status === 200, r.text);
   r = await call(`/api/properties/${agentPropId}`);
   check("public listing API hides private details", r.status === 200 && !r.text.includes("9865432100"));
   r = await call(`/api/properties/${agentPropId}`, { cookie: admin });
