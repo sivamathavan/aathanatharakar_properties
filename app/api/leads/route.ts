@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getRequestUser } from "@/lib/auth";
-import { createLead, getPropertyById } from "@/lib/firestore";
+import { createLead, findLeadByPhone, getPropertyById } from "@/lib/firestore";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { LeadSource, LeadStatus, UserRole } from "@/types";
 
@@ -12,6 +12,8 @@ const schema = z.object({
   source: z.enum([LeadSource.DIRECT, LeadSource.WHATSAPP, LeadSource.REFERRAL]),
   propertyId: z.string().max(128).optional().nullable(),
   nextFollowUpAt: z.union([z.string().datetime({ offset: true }), z.null()]).optional(),
+  // Set after the agent saw "already in your enquiries" and chose to add anyway.
+  allowDuplicate: z.boolean().optional(),
 });
 
 // A client the agent met by phone, WhatsApp, walk-in or referral, added by hand.
@@ -25,6 +27,11 @@ export async function POST(req: Request) {
     const parsed = schema.safeParse(await req.json());
     if (!parsed.success) return new NextResponse(parsed.error.issues[0].message, { status: 400 });
     const input = parsed.data;
+
+    if (!input.allowDuplicate) {
+      const existing = await findLeadByPhone(user.uid, input.phone);
+      if (existing) return NextResponse.json({ duplicate: { id: existing.id, name: existing.name } }, { status: 409 });
+    }
 
     let property = null;
     if (input.propertyId) {

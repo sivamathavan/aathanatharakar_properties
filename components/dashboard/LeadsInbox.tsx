@@ -8,6 +8,7 @@ import { Phone, ChevronDown, ChevronUp, CalendarClock, CalendarPlus, MapPin, Use
 import { waNumber } from "@/lib/plans";
 import { followUpState, friendlyDay, istDayStart, istDaysFromToday, istTime } from "@/lib/dates";
 import { useT } from "@/components/i18n/I18nProvider";
+import { parseWhatsAppPaste } from "@/lib/wa-paste";
 
 interface Lead {
   id: string;
@@ -84,6 +85,7 @@ export function LeadsInbox({
   listings = [],
   initialView = "ALL",
   buyersEnabled = false,
+  selfName,
 }: {
   leads: Lead[];
   propertyBase: string;
@@ -92,6 +94,8 @@ export function LeadsInbox({
   listings?: { id: string; title: string }[];
   initialView?: string;
   buyersEnabled?: boolean;
+  /** The agent's own name, so their messages in a pasted WhatsApp chat aren't taken for the client's. */
+  selfName?: string;
 }) {
   const t = useT();
   const [leads, setLeads] = useState(initial);
@@ -142,7 +146,9 @@ export function LeadsInbox({
     let list = leads;
     if (filter === "TODAY") list = list.filter(isToday);
     else if (filter !== "ALL") list = list.filter((l) => l.status === filter);
-    if (needle) list = list.filter((l) => `${l.name} ${l.phone} ${l.propertyTitle || ""}`.toLowerCase().includes(needle));
+    // Phone numbers match on digits only, so "98401 23456" finds "+91 9840123456".
+    const digits = needle.replace(/\D/g, "");
+    if (needle) list = list.filter((l) => `${l.name} ${l.phone} ${l.propertyTitle || ""}`.toLowerCase().includes(needle) || (digits.length >= 5 && l.phone.replace(/\D/g, "").includes(digits.slice(-10))));
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leads, filter, q]);
@@ -165,7 +171,13 @@ export function LeadsInbox({
       {adding && (
         <AddClientForm
           listings={listings}
+          selfName={selfName}
           onCancel={() => setAdding(false)}
+          onShowExisting={(phone) => {
+            setAdding(false);
+            setFilter("ALL");
+            setQ(phone);
+          }}
           onAdded={(lead) => {
             setLeads((ls) => [lead, ...ls]);
             setAdding(false);
@@ -324,26 +336,43 @@ export function LeadsInbox({
   );
 }
 
-function AddClientForm({ listings, onAdded, onCancel }: { listings: { id: string; title: string }[]; onAdded: (lead: Lead) => void; onCancel: () => void }) {
+function AddClientForm({ listings, selfName, onAdded, onCancel, onShowExisting }: { listings: { id: string; title: string }[]; selfName?: string; onAdded: (lead: Lead) => void; onCancel: () => void; onShowExisting: (phone: string) => void }) {
   const t = useT();
   const [saving, setSaving] = useState(false);
-  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const f = new FormData(e.currentTarget);
+  const [v, setV] = useState({ name: "", phone: "", message: "", source: "DIRECT" });
+  const [pasted, setPasted] = useState("");
+  const [pasteNote, setPasteNote] = useState("");
+  const [duplicate, setDuplicate] = useState<{ name: string } | null>(null);
+
+  // Fill the fields from a copied WhatsApp message or contact; the agent checks them before saving.
+  const fillFrom = (text: string) => {
+    if (!text.trim()) return;
+    const r = parseWhatsAppPaste(text, selfName ? [selfName] : []);
+    setV((cur) => ({ name: r.name || cur.name, phone: r.phone || cur.phone, message: r.message || cur.message, source: "WHATSAPP" }));
+    setPasteNote(r.name || r.phone ? t("Filled from WhatsApp. Check the name and number.") : t("No name or number found. Type them below."));
+  };
+
+  const save = async (form: HTMLFormElement, allowDuplicate = false) => {
+    const f = new FormData(form);
     setSaving(true);
     try {
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: f.get("name"),
-          phone: f.get("phone"),
-          message: f.get("message") || "",
-          source: f.get("source"),
+          name: v.name,
+          phone: v.phone,
+          message: v.message,
+          source: v.source,
           propertyId: f.get("propertyId") || null,
           nextFollowUpAt: f.get("followUp") ? daysAhead(Number(f.get("followUp"))) : null,
+          allowDuplicate,
         }),
       });
+      if (res.status === 409) {
+        const data = await res.json().catch(() => null);
+        if (data?.duplicate) return void setDuplicate(data.duplicate);
+      }
       if (!res.ok) return void toast.error((await res.text()) || t("Could not add the client."));
       const lead = await res.json();
       toast.success(t("Client added."));
@@ -352,21 +381,41 @@ function AddClientForm({ listings, onAdded, onCancel }: { listings: { id: string
       setSaving(false);
     }
   };
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setDuplicate(null);
+    void save(e.currentTarget);
+  };
   const field = "w-full h-11 px-3 border border-input rounded-md bg-white text-sm";
   return (
     <form onSubmit={submit} className="bg-white rounded-card border border-gold-300 p-4 grid sm:grid-cols-2 gap-3">
       <p className="sm:col-span-2 font-semibold text-navy-900">{t("Add a client who phoned or walked in")}</p>
+      <label className="space-y-1 text-sm sm:col-span-2">
+        <span className="font-medium flex items-center gap-1.5"><FaWhatsapp className="w-4 h-4 text-[#128C7E]" aria-hidden /> {t("Paste from WhatsApp (optional)")}</span>
+        <textarea
+          data-no-voice
+          rows={2}
+          maxLength={4000}
+          value={pasted}
+          onChange={(e) => setPasted(e.target.value)}
+          onPaste={(e) => fillFrom(e.clipboardData.getData("text"))}
+          onBlur={() => !v.name && !v.phone && fillFrom(pasted)}
+          placeholder={t("Long-press the client's message or contact in WhatsApp, copy it, and paste it here.")}
+          className="w-full px-3 py-2 border border-input rounded-md bg-white text-sm"
+        />
+        {pasteNote && <span className="block text-xs text-navy-700" role="status">{pasteNote}</span>}
+      </label>
       <label className="space-y-1 text-sm">
         <span className="font-medium">{t("Name")}</span>
-        <input name="name" required minLength={2} maxLength={120} className={field} />
+        <input name="name" required minLength={2} maxLength={120} value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} className={field} />
       </label>
       <label className="space-y-1 text-sm">
         <span className="font-medium">{t("Phone")}</span>
-        <input name="phone" type="tel" inputMode="tel" required className={field} />
+        <input name="phone" type="tel" inputMode="tel" required value={v.phone} onChange={(e) => { setV({ ...v, phone: e.target.value }); setDuplicate(null); }} className={field} />
       </label>
       <label className="space-y-1 text-sm">
         <span className="font-medium">{t("How they found you")}</span>
-        <select name="source" className={field} defaultValue="DIRECT">
+        <select name="source" className={field} value={v.source} onChange={(e) => setV({ ...v, source: e.target.value })}>
           <option value="DIRECT">{t("Phone / walk-in")}</option>
           <option value="WHATSAPP">WhatsApp</option>
           <option value="REFERRAL">{t("Referral")}</option>
@@ -383,7 +432,7 @@ function AddClientForm({ listings, onAdded, onCancel }: { listings: { id: string
       </label>
       <label className="space-y-1 text-sm sm:col-span-2">
         <span className="font-medium">{t("What they want")}</span>
-        <input name="message" maxLength={2000} placeholder={t("e.g. 2 BHK near school, budget 50 L")} className={field} />
+        <input name="message" maxLength={2000} value={v.message} onChange={(e) => setV({ ...v, message: e.target.value })} placeholder={t("e.g. 2 BHK near school, budget 50 L")} className={field} />
       </label>
       <label className="space-y-1 text-sm">
         <span className="font-medium">{t("Follow up")}</span>
@@ -395,6 +444,15 @@ function AddClientForm({ listings, onAdded, onCancel }: { listings: { id: string
           <option value="7">{t("Next week")}</option>
         </select>
       </label>
+      {duplicate && (
+        <div role="alert" className="sm:col-span-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-navy-900 space-y-2">
+          <p>{t("{name} is already in your enquiries with this number.", { name: duplicate.name })}</p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => onShowExisting(v.phone)} className="h-10 px-3 rounded-btn bg-navy-900 text-gold-500 font-semibold">{t("Show them")}</button>
+            <button type="button" disabled={saving} onClick={(e) => { const form = e.currentTarget.form; setDuplicate(null); if (form) void save(form, true); }} className="h-10 px-3 rounded-btn border">{t("Add anyway")}</button>
+          </div>
+        </div>
+      )}
       <div className="flex items-end gap-2">
         <button type="submit" disabled={saving} className="h-11 px-4 rounded-btn bg-navy-900 text-gold-500 text-sm font-bold disabled:opacity-60">{saving ? t("Saving…") : t("Add client")}</button>
         <button type="button" onClick={onCancel} className="h-11 px-4 rounded-btn border text-sm">{t("Cancel")}</button>

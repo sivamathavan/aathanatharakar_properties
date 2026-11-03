@@ -20,6 +20,7 @@ import {
   UserDoc,
 } from "@/types";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { phoneKey } from "@/lib/wa-paste";
 
 // ─── Collection References ──────────────────────────────────────────────────
 
@@ -286,8 +287,17 @@ export async function incrementViewCount(id: string): Promise<void> {
 
 export async function createLead(data: Omit<LeadDoc, "id" | "createdAt" | "updatedAt">): Promise<LeadDoc> {
   const now = new Date();
-  const ref = await leadsCol().add({ ...data, createdAt: now, updatedAt: now });
-  return { id: ref.id, ...data, createdAt: now, updatedAt: now };
+  const doc = { ...data, phoneKey: phoneKey(data.phone), createdAt: now, updatedAt: now };
+  const ref = await leadsCol().add(doc);
+  return { id: ref.id, ...doc };
+}
+
+/** An enquiry or client this owner already has with the same mobile number. */
+export async function findLeadByPhone(ownerId: string, phone: string): Promise<LeadDoc | null> {
+  const key = phoneKey(phone);
+  if (!key) return null;
+  const snap = await leadsCol().where("ownerId", "==", ownerId).where("phoneKey", "==", key).limit(1).get();
+  return snap.empty ? null : docToTyped<LeadDoc>(snap.docs[0]);
 }
 
 export async function getLeadById(id: string): Promise<LeadDoc | null> {

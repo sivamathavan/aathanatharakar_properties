@@ -232,6 +232,8 @@ export interface LeadDoc {
   ownerType: OwnerType;
   name: string;
   phone: string;
+  /** Last 10 digits of the phone (lib/wa-paste.ts phoneKey), to spot the same client twice. */
+  phoneKey?: string;
   email?: string | null;
   message: string;
   status: LeadStatus;

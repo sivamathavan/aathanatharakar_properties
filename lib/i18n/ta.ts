@@ -75,6 +75,13 @@ export const TA: Record<string, string> = {
   "Could not turn on alerts. Please try again.": "அறிவிப்புகளை இயக்க முடியவில்லை. மீண்டும் முயலவும்.",
   "Alerts are blocked for this site. Allow notifications for PropPage in your browser's site settings, then open this page again.": "இந்த தளத்துக்கு அறிவிப்புகள் தடுக்கப்பட்டுள்ளன. உலாவியின் தள அமைப்புகளில் PropPage அறிவிப்புகளை அனுமதித்து, இந்தப் பக்கத்தை மீண்டும் திறக்கவும்.",
   "On iPhone, first add PropPage to your Home Screen (Share, then Add to Home Screen). Open it from there and turn on alerts here.": "iPhone-ல் முதலில் PropPage-ஐ Home Screen-ல் சேர்க்கவும் (Share, பிறகு Add to Home Screen). அங்கிருந்து திறந்து இங்கே அறிவிப்புகளை இயக்கவும்.",
+  "Paste from WhatsApp (optional)": "WhatsApp-ல் இருந்து ஒட்டவும் (விருப்பம்)",
+  "Long-press the client's message or contact in WhatsApp, copy it, and paste it here.": "WhatsApp-ல் வாடிக்கையாளரின் மெசேஜ் அல்லது காண்டாக்டை நீண்ட நேரம் அழுத்தி, காப்பி செய்து, இங்கே ஒட்டவும்.",
+  "Filled from WhatsApp. Check the name and number.": "WhatsApp-ல் இருந்து நிரப்பப்பட்டது. பெயரையும் எண்ணையும் சரிபார்க்கவும்.",
+  "No name or number found. Type them below.": "பெயரோ எண்ணோ கிடைக்கவில்லை. கீழே டைப் செய்யவும்.",
+  "{name} is already in your enquiries with this number.": "{name} இந்த எண்ணுடன் ஏற்கனவே உங்கள் விசாரணைகளில் உள்ளார்.",
+  "Show them": "அவரைக் காட்டு",
+  "Add anyway": "இருந்தாலும் சேர்",
   "Need help? Reply to any email from us.": "உதவி வேண்டுமா? எங்கள் எந்த மின்னஞ்சலுக்கும் பதில் அனுப்புங்கள்.",
 
   // ─── Banners and plan lines ───

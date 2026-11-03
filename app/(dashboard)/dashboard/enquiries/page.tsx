@@ -24,6 +24,7 @@ export default async function EnquiriesPage({ searchParams }: { searchParams: { 
         listings={listings}
         initialView={searchParams.view === "today" ? "TODAY" : "ALL"}
         buyersEnabled
+        selfName={agent.displayName}
       />
     </div>
   );

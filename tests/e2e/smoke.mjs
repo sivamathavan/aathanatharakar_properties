@@ -301,6 +301,10 @@ async function main() {
   r = await call("/api/leads", { method: "POST", cookie: agent, body: { name: `Walk-in ${RUN}`, phone: "9443012345", source: "DIRECT", propertyId: agentPropId, message: "Wants a corner plot" } });
   check("agent adds a client who phoned", r.status === 201, r.text);
   const manualId = r.json?.id;
+  r = await call("/api/leads", { method: "POST", cookie: agent, body: { name: "Same person", phone: "+91 94430 12345", source: "WHATSAPP" } });
+  check("the same number twice is flagged, not saved", r.status === 409 && r.json?.duplicate?.id === manualId, `${r.status} ${r.text}`);
+  r = await call("/api/leads", { method: "POST", cookie: agent, body: { name: "Same person", phone: "+91 94430 12345", source: "WHATSAPP", allowDuplicate: true } });
+  check("'Add anyway' saves the second one", r.status === 201, `${r.status}`);
   r = await call("/api/leads", { method: "POST", cookie: agent, body: { name: "X", phone: "1", source: "DIRECT" } });
   check("bad client details are refused", r.status === 400, `${r.status}`);
   r = await call("/api/leads", { method: "POST", cookie: agentB, body: { name: "Steal", phone: "9443012345", source: "DIRECT", propertyId: agentPropId } });
