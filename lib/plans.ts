@@ -62,11 +62,36 @@ export function mergePlans(stored?: Partial<PlansConfig> | null): PlansConfig {
   };
 }
 
-/** True when the agent's page and listings should be live. */
+/**
+ * After a plan (or trial) ends, the agent's page stays live this many days so
+ * clients who already have the link don't hit a paused page straight away.
+ * Adding listings and the listing AI stop at the end date itself.
+ */
+export const GRACE_DAYS = 7;
+
+export function graceEndsAt(plan: AgentPlan): Date {
+  return new Date(new Date(plan.expiresAt).getTime() + GRACE_DAYS * DAY_MS);
+}
+
+/** True when the agent's page, listings and enquiry form should be live: paid time plus the grace days. */
 export function isPlanLive(plan: AgentPlan | null | undefined, now = new Date()): boolean {
   if (!plan) return false;
   if (plan.status === "SUSPENDED") return false;
+  return graceEndsAt(plan).getTime() > now.getTime();
+}
+
+/** True while paid or trial time remains (not in grace): adding listings, the listing AI. */
+export function hasPlanTime(plan: AgentPlan | null | undefined, now = new Date()): boolean {
+  if (!plan) return false;
+  if (plan.status === "SUSPENDED") return false;
   return new Date(plan.expiresAt).getTime() > now.getTime();
+}
+
+/** Whole days until the page pauses, during grace. */
+export function graceDaysLeft(plan: AgentPlan | null | undefined, now = new Date()): number {
+  if (!plan) return 0;
+  const ms = graceEndsAt(plan).getTime() - now.getTime();
+  return ms <= 0 ? 0 : Math.ceil(ms / DAY_MS);
 }
 
 export function daysLeft(plan: AgentPlan | null | undefined, now = new Date()): number {
@@ -75,11 +100,12 @@ export function daysLeft(plan: AgentPlan | null | undefined, now = new Date()): 
   return ms <= 0 ? 0 : Math.ceil(ms / DAY_MS);
 }
 
-/** Status shown to people, derived from the stored status and the expiry date. */
+/** Status shown to people, derived from the stored status and the expiry date. GRACE: ended, page still live. */
 export function effectiveStatus(plan: AgentPlan | null | undefined, now = new Date()) {
   if (!plan) return "EXPIRED" as const;
   if (plan.status === "SUSPENDED") return "SUSPENDED" as const;
-  return isPlanLive(plan, now) ? plan.status : ("EXPIRED" as const);
+  if (hasPlanTime(plan, now)) return plan.status;
+  return isPlanLive(plan, now) ? ("GRACE" as const) : ("EXPIRED" as const);
 }
 
 export function planPrice(def: PlanDef, period: BillingPeriod): number {
@@ -87,11 +113,13 @@ export function planPrice(def: PlanDef, period: BillingPeriod): number {
 }
 
 /**
- * New expiry after paying for a period. Paying early stacks on the current
- * expiry; paying after expiry starts from today.
+ * New expiry after paying for a period. Paying early, or during the grace days,
+ * stacks on the old end date (grace isn't free extra time); paying after the
+ * page was paused starts from today.
  */
 export function extendExpiry(currentExpiry: Date | null | undefined, period: BillingPeriod, now = new Date()): Date {
-  const base = currentExpiry && new Date(currentExpiry).getTime() > now.getTime() ? new Date(currentExpiry) : new Date(now);
+  const stillLive = currentExpiry && new Date(currentExpiry).getTime() + GRACE_DAYS * DAY_MS > now.getTime();
+  const base = stillLive ? new Date(currentExpiry!) : new Date(now);
   return addMonthsUTC(base, period === "YEARLY" ? 12 : 1);
 }
 

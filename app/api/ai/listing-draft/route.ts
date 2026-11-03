@@ -5,7 +5,7 @@ import { getRequestUser } from "@/lib/auth";
 import { adminDb } from "@/lib/firebase-admin";
 import { getAgentById, getPlansConfig } from "@/lib/firestore";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { isPlanLive } from "@/lib/plans";
+import { hasPlanTime } from "@/lib/plans";
 import { DraftError, fakeDraft, normalizeDraft } from "@/lib/ai/listing-draft";
 import { activeListingModel, draftListing } from "@/lib/ai/draft";
 import { UserRole } from "@/types";
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
   let limit = Infinity;
   if (user.role === UserRole.AGENT) {
     const [agent, plans] = await Promise.all([getAgentById(user.uid), getPlansConfig()]);
-    if (!agent || !isPlanLive(agent.plan)) {
+    if (!agent || !hasPlanTime(agent.plan)) {
       return new NextResponse("Your plan has ended. Renew it in Plan & billing to use voice listing.", { status: 402 });
     }
     limit = plans.plans[agent.plan.id].aiDraftsPerMonth;

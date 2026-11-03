@@ -7,7 +7,7 @@ const expires = new Date("2026-11-15T10:00:00Z");
 const plan = { id: "STARTER" as const, status: "ACTIVE" as const, expiresAt: expires };
 const at = (iso: string) => new Date(iso);
 
-test("plan reminders go 7, 3, 1 and 0 days before, and the day after", () => {
+test("plan reminders go 7, 3, 1 and 0 days before, the day after, and the day before the page pauses", () => {
   assert.deepEqual(planReminderDue(plan, null, at("2026-11-08T03:00:00Z")), { key: "2026-11-15:7", daysLeft: 7 });
   assert.equal(planReminderDue(plan, null, at("2026-11-09T03:00:00Z")), null);
   assert.equal(planReminderDue(plan, null, at("2026-11-12T03:00:00Z"))?.daysLeft, 3);
@@ -15,6 +15,8 @@ test("plan reminders go 7, 3, 1 and 0 days before, and the day after", () => {
   assert.equal(planReminderDue(plan, null, at("2026-11-15T03:00:00Z"))?.daysLeft, 0);
   assert.equal(planReminderDue(plan, null, at("2026-11-16T03:00:00Z"))?.daysLeft, -1);
   assert.equal(planReminderDue(plan, null, at("2026-11-18T03:00:00Z")), null);
+  assert.equal(planReminderDue(plan, null, at("2026-11-21T03:00:00Z"))?.daysLeft, -6);
+  assert.equal(planReminderDue(plan, null, at("2026-11-23T03:00:00Z")), null);
 });
 
 test("each reminder is sent once", () => {

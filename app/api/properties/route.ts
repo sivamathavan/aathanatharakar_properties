@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getRequestUser } from "@/lib/auth";
 import { agentsCol, countOwnerProperties, createProperty, getAgentById, getPlansConfig, writeAudit } from "@/lib/firestore";
-import { isPlanLive } from "@/lib/plans";
+import { hasPlanTime } from "@/lib/plans";
 import { mediaBelongsTo, privateFields, propertyInputSchema, publicFields, refreshListingCaches } from "@/lib/property-input";
 import { PropertyStatus, UserRole } from "@/types";
 
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     if (user.role === UserRole.AGENT) {
       const agent = await getAgentById(user.uid);
       if (!agent) return new NextResponse("Agent profile not found.", { status: 404 });
-      if (!isPlanLive(agent.plan)) {
+      if (!hasPlanTime(agent.plan)) {
         return new NextResponse("Your plan has ended. Renew it in Plan & Billing to add listings.", { status: 402 });
       }
       const plans = await getPlansConfig();

@@ -2,7 +2,7 @@ import { BRAND } from "@/lib/brand";
 import { Check } from "lucide-react";
 import { requireAgentPage } from "@/lib/agent-session";
 import { getPaymentRequests, getSiteConfig } from "@/lib/firestore";
-import { daysLeft, effectiveStatus, formatINR, PAID_PLAN_IDS } from "@/lib/plans";
+import { daysLeft, effectiveStatus, formatINR, graceEndsAt, PAID_PLAN_IDS } from "@/lib/plans";
 import { PaymentRequestForm } from "@/components/dashboard/PaymentRequestForm";
 import type { PlanDef } from "@/types";
 import type { TFunc } from "@/lib/i18n";
@@ -46,6 +46,8 @@ export default async function BillingPage() {
         <p className="text-sm text-navy-700">
           {status === "EXPIRED"
             ? t("Your plan has ended. Your listings are saved; pay below to bring your page back.")
+            : status === "GRACE"
+            ? t("Your plan has ended. Your page stays live until {date}; pay below to keep it running.", { date: graceEndsAt(agent.plan).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" }) })
             : status === "SUSPENDED"
             ? t("Your account is paused. Please contact {brand} support.", { brand: BRAND.name })
             : t("You're on {plan}. {n} days left (until {date}).", { plan: limits.name, n: daysLeft(agent.plan), date: new Date(agent.plan.expiresAt).toLocaleDateString("en-IN") })}
@@ -61,7 +63,7 @@ export default async function BillingPage() {
             </div>
             <p className="text-2xl font-bold text-navy-900">{formatINR(0)}</p>
             <p className="text-xs text-navy-600">
-              {status === "EXPIRED" ? t("Your plan has ended.") : t("{n} days left (until {date}).", { n: daysLeft(agent.plan), date: new Date(agent.plan.expiresAt).toLocaleDateString("en-IN") })}
+              {status === "EXPIRED" || status === "GRACE" ? t("Your plan has ended.") : t("{n} days left (until {date}).", { n: daysLeft(agent.plan), date: new Date(agent.plan.expiresAt).toLocaleDateString("en-IN") })}
             </p>
             <ul className="space-y-1.5 text-sm text-navy-800">
               {features(trial, t).map((f) => (

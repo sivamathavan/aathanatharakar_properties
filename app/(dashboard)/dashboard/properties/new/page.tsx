@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireAgentPage } from "@/lib/agent-session";
 import { countOwnerProperties } from "@/lib/firestore";
-import { isPlanLive } from "@/lib/plans";
+import { hasPlanTime } from "@/lib/plans";
 import { PropertyForm } from "@/components/property/PropertyForm";
 import { serverT } from "@/lib/i18n/server";
 
@@ -13,12 +13,12 @@ export default async function NewPropertyPage() {
   const used = await countOwnerProperties(agent.id);
   const t = serverT();
 
-  if (!isPlanLive(agent.plan) || used >= limits.listingLimit) {
+  if (!hasPlanTime(agent.plan) || used >= limits.listingLimit) {
     return (
       <div className="max-w-xl bg-white rounded-card border border-[#E4DED2] p-6 space-y-3">
         <h1 className="text-xl font-bold text-navy-900">{t("You can't add more listings right now")}</h1>
         <p className="text-sm text-navy-700">
-          {isPlanLive(agent.plan)
+          {hasPlanTime(agent.plan)
             ? t("Your {plan} plan allows {limit} listings and you have {used}. Mark sold ones as sold, delete an old one, or upgrade.", { plan: limits.name, limit: limits.listingLimit, used })
             : t("Your plan has ended. Renew it to add listings.")}
         </p>

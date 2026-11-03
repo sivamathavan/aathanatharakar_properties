@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { FaWhatsapp } from "react-icons/fa";
-import { daysLeft, effectiveStatus, waNumber } from "@/lib/plans";
+import { daysLeft, effectiveStatus, graceDaysLeft, waNumber } from "@/lib/plans";
 import { renewalWhatsappText } from "@/lib/reminder-text";
 import { ST } from "@/components/ui/stack-table";
 
@@ -24,6 +24,7 @@ interface Agent {
 const STATUS_STYLE: Record<string, string> = {
   TRIAL: "bg-blue-100 text-blue-800",
   ACTIVE: "bg-green-100 text-green-800",
+  GRACE: "bg-amber-100 text-amber-900",
   EXPIRED: "bg-red-100 text-red-800",
   SUSPENDED: "bg-gray-200 text-gray-700",
 };
@@ -49,7 +50,7 @@ export function AgentsTable({ agents, counts, siteUrl, renewPrice }: { agents: A
     const needle = q.toLowerCase();
     return agents.filter((a) => {
       const st = effectiveStatus(a.plan as any);
-      if (filter === "EXPIRING" && !(st !== "EXPIRED" && st !== "SUSPENDED" && daysLeft(a.plan as any) <= 7)) return false;
+      if (filter === "EXPIRING" && !(st === "GRACE" || (st !== "EXPIRED" && st !== "SUSPENDED" && daysLeft(a.plan as any) <= 7))) return false;
       if (!["ALL", "EXPIRING"].includes(filter) && st !== filter) return false;
       return !needle || `${a.displayName} ${a.agencyName || ""} ${a.phone} ${a.email} ${a.city}`.toLowerCase().includes(needle);
     });
@@ -99,7 +100,7 @@ export function AgentsTable({ agents, counts, siteUrl, renewPrice }: { agents: A
                   </td>
                   <td className={`${ST.td} w-full md:w-auto md:p-3 whitespace-nowrap`}>{a.phone}<p className="text-xs text-navy-600 break-all whitespace-normal md:break-normal md:whitespace-nowrap">{a.email}</p></td>
                   <td className={`${ST.td} md:p-3`}><span className={`text-[11px] font-bold px-2 py-0.5 rounded-pill ${STATUS_STYLE[st]}`}>{st === "ACTIVE" ? a.plan.id : st}</span></td>
-                  <td className={`${ST.td} md:p-3 whitespace-nowrap`}><span className={ST.label}>Ends</span>{new Date(a.plan.expiresAt).toLocaleDateString("en-IN")}<p className="text-xs text-navy-600 inline md:block"> {st === "EXPIRED" ? "ended" : `${left} days left`}</p></td>
+                  <td className={`${ST.td} md:p-3 whitespace-nowrap`}><span className={ST.label}>Ends</span>{new Date(a.plan.expiresAt).toLocaleDateString("en-IN")}<p className="text-xs text-navy-600 inline md:block"> {st === "EXPIRED" ? "ended" : st === "GRACE" ? `ended, page pauses in ${graceDaysLeft(a.plan as any)} days` : `${left} days left`}</p></td>
                   <td className={`${ST.td} md:p-3 whitespace-nowrap`}><span className={ST.label}>Listings</span>{counts[a.id]?.live || 0} live / {counts[a.id]?.total || 0}</td>
                   <td className={`${ST.td} w-full md:w-auto pt-1 md:p-3`}>
                     <div className="flex flex-wrap gap-2">

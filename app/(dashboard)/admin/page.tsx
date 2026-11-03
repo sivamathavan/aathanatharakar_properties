@@ -35,7 +35,7 @@ export default async function AdminOverviewPage() {
   const trials = statuses.filter((s) => s === "TRIAL").length;
   const expiring = agents.filter((a) => {
     const s = effectiveStatus(a.plan, now);
-    return (s === "ACTIVE" || s === "TRIAL") && daysLeft(a.plan, now) <= 7;
+    return s === "GRACE" || ((s === "ACTIVE" || s === "TRIAL") && daysLeft(a.plan, now) <= 7);
   }).length;
   const thisMonth = payments
     .filter((p) => p.decidedAt && new Date(p.decidedAt).getMonth() === now.getMonth() && new Date(p.decidedAt).getFullYear() === now.getFullYear())

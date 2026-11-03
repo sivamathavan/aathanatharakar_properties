@@ -82,6 +82,9 @@ export const TA: Record<string, string> = {
   "{name} is already in your enquiries with this number.": "{name} இந்த எண்ணுடன் ஏற்கனவே உங்கள் விசாரணைகளில் உள்ளார்.",
   "Show them": "அவரைக் காட்டு",
   "Add anyway": "இருந்தாலும் சேர்",
+  "Your plan has ended. Your page stays live until {date}, then it pauses.": "உங்கள் திட்டம் முடிந்துவிட்டது. {date} வரை உங்கள் பக்கம் நேரலையில் இருக்கும், பிறகு நிறுத்தப்படும்.",
+  "Plan ended · page live {n} more days": "திட்டம் முடிந்தது · பக்கம் இன்னும் {n} நாட்கள் நேரலையில்",
+  "Your plan has ended. Your page stays live until {date}; pay below to keep it running.": "உங்கள் திட்டம் முடிந்துவிட்டது. {date} வரை உங்கள் பக்கம் நேரலையில் இருக்கும்; தொடர்ந்து இயங்க கீழே பணம் செலுத்துங்கள்.",
   "Need help? Reply to any email from us.": "உதவி வேண்டுமா? எங்கள் எந்த மின்னஞ்சலுக்கும் பதில் அனுப்புங்கள்.",
 
   // ─── Banners and plan lines ───
@@ -541,7 +544,7 @@ export const TA: Record<string, string> = {
   "Error code": "பிழைக் குறியீடு",
 
   // ─── Emails (lib/reminders.ts) ───
-  "ended yesterday": "நேற்று முடிந்தது",
+  "has ended": "முடிந்துவிட்டது",
   "ends today": "இன்று முடிகிறது",
   "ends in {n} days": "இன்னும் {n} நாட்களில் முடிகிறது",
   "Your free trial": "உங்கள் இலவச சோதனை",
@@ -549,7 +552,8 @@ export const TA: Record<string, string> = {
   "Hi {name},": "வணக்கம் {name},",
   "Your free trial {when}.": "உங்கள் இலவச சோதனை {when}.",
   "Your plan {when}.": "உங்கள் திட்டம் {when}.",
-  "When it ends your page is paused, but your listings and enquiries are kept.": "முடிந்ததும் உங்கள் பக்கம் நிறுத்தப்படும்; ஆனால் உங்கள் சொத்துகளும் விசாரணைகளும் பாதுகாப்பாக இருக்கும்.",
+  "Your page stays live until {date}, then it is paused. Your listings and enquiries are kept.": "{date} வரை உங்கள் பக்கம் நேரலையில் இருக்கும், பிறகு நிறுத்தப்படும். உங்கள் சொத்துகளும் விசாரணைகளும் பாதுகாப்பாக இருக்கும்.",
+  "After it ends your page stays live for {n} more days, then it is paused. Your listings and enquiries are kept.": "முடிந்த பிறகும் உங்கள் பக்கம் இன்னும் {n} நாட்கள் நேரலையில் இருக்கும், பிறகு நிறுத்தப்படும். உங்கள் சொத்துகளும் விசாரணைகளும் பாதுகாப்பாக இருக்கும்.",
   "Renew by UPI in a minute: pay, enter the UTR number, and we switch it on.": "ஒரு நிமிடத்தில் UPI மூலம் புதுப்பியுங்கள்: செலுத்தி, UTR எண்ணை உள்ளிட்டால் நாங்கள் இயக்குவோம்.",
   "Renew my plan": "என் திட்டத்தைப் புதுப்பி",
   "Good morning! Today you have:": "காலை வணக்கம்! இன்று உங்களுக்கு:",

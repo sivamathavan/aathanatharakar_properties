@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { daysLeft, effectiveStatus, extendExpiry, isPlanLive, mergePlans, slugify, trialPlan, waNumber } from "../../lib/plans";
+import { daysLeft, effectiveStatus, extendExpiry, graceDaysLeft, hasPlanTime, isPlanLive, mergePlans, slugify, trialPlan, waNumber } from "../../lib/plans";
 
 const NOW = new Date("2026-10-31T10:00:00Z");
 
@@ -8,7 +8,24 @@ test("trial lasts the configured days", () => {
   const plan = trialPlan(14, NOW);
   assert.equal(daysLeft(plan, NOW), 14);
   assert.equal(isPlanLive(plan, NOW), true);
-  assert.equal(isPlanLive(plan, new Date("2026-11-15T00:00:00Z")), false);
+  assert.equal(hasPlanTime(plan, new Date("2026-11-15T00:00:00Z")), false);
+});
+
+test("after the end date the page stays live for 7 grace days, then pauses", () => {
+  const plan = { id: "STARTER" as const, status: "ACTIVE" as const, expiresAt: new Date("2026-11-15T10:00:00Z") };
+  const day = (iso: string) => new Date(iso);
+  assert.equal(effectiveStatus(plan, day("2026-11-15T09:00:00Z")), "ACTIVE");
+  assert.equal(effectiveStatus(plan, day("2026-11-16T09:00:00Z")), "GRACE");
+  assert.equal(isPlanLive(plan, day("2026-11-16T09:00:00Z")), true);
+  assert.equal(hasPlanTime(plan, day("2026-11-16T09:00:00Z")), false);
+  assert.equal(graceDaysLeft(plan, day("2026-11-16T10:00:00Z")), 6);
+  assert.equal(effectiveStatus(plan, day("2026-11-22T11:00:00Z")), "EXPIRED");
+  assert.equal(isPlanLive(plan, day("2026-11-22T11:00:00Z")), false);
+});
+
+test("paying during the grace days counts from the old end date", () => {
+  const ended = new Date("2026-10-28T10:00:00Z"); // 3 days before NOW
+  assert.equal(extendExpiry(ended, "MONTHLY", NOW).toISOString(), "2026-11-28T10:00:00.000Z");
 });
 
 test("paying early stacks on the remaining time", () => {

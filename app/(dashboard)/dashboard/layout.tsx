@@ -2,7 +2,7 @@ import { DictationDock } from "@/components/voice/DictationDock";
 import { BRAND } from "@/lib/brand";
 import Link from "next/link";
 import { requireAgentPage } from "@/lib/agent-session";
-import { daysLeft, effectiveStatus } from "@/lib/plans";
+import { daysLeft, effectiveStatus, graceEndsAt, graceDaysLeft } from "@/lib/plans";
 import { getLang } from "@/lib/i18n/server";
 import { makeT } from "@/lib/i18n";
 import { I18nProvider } from "@/components/i18n/I18nProvider";
@@ -26,6 +26,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <p>{t("Your account is paused. Please contact {brand} support.", { brand: BRAND.name })}</p>
         <SupportLinks message={`Hi ${BRAND.name} team, my account (${agent.email}) is paused.`} />
       </div>
+    ) : status === "GRACE" ? (
+      <div role="status" className="bg-red-700 text-white text-sm px-4 py-3">
+        {t("Your plan has ended. Your page stays live until {date}, then it pauses.", { date: graceEndsAt(agent.plan).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" }) })}{" "}
+        <Link href="/dashboard/billing" className="underline font-semibold">{t("Renew now")}</Link>
+      </div>
     ) : left <= 5 ? (
       <div role="status" className="bg-gold-500 text-navy-900 text-sm px-4 py-3">
         {status === "TRIAL" ? t("Free trial ends in {n} days.", { n: left }) : t("{plan} plan ends in {n} days.", { plan: limits.name, n: left })}{" "}
@@ -40,6 +45,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       ? t("{plan} plan · {n} days left", { plan: limits.name, n: left })
       : status === "SUSPENDED"
       ? t("Paused")
+      : status === "GRACE"
+      ? t("Plan ended · page live {n} more days", { n: graceDaysLeft(agent.plan) })
       : t("Plan ended");
 
   const help = hasSupport() ? (

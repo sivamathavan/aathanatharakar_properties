@@ -1,7 +1,7 @@
 // Daily emails: plan/trial ending reminders and the follow-up digest.
 // Run once a day by Cloud Scheduler calling /api/cron/daily. Server only.
 import { agentsCol, leadsCol, docToTyped } from "@/lib/firestore";
-import { effectiveStatus } from "@/lib/plans";
+import { effectiveStatus, graceEndsAt, GRACE_DAYS } from "@/lib/plans";
 import { istDayKey, istDayStart, istDaysFromToday, istTime } from "@/lib/dates";
 import { planReminderDue } from "@/lib/reminder-text";
 import { makeT, parseLang } from "@/lib/i18n";
@@ -29,11 +29,16 @@ export async function runDailyReminders({ now = new Date(), send = true } = {}) 
     if (!due) continue;
     const t = makeT(parseLang(agent.uiLang));
     const trial = agent.plan.status === "TRIAL" || agent.plan.id === "TRIAL";
-    const when = due.daysLeft === -1 ? t("ended yesterday") : due.daysLeft === 0 ? t("ends today") : t("ends in {n} days", { n: due.daysLeft });
+    const when = due.daysLeft < 0 ? t("has ended") : due.daysLeft === 0 ? t("ends today") : t("ends in {n} days", { n: due.daysLeft });
+    const pausesOn = graceEndsAt(agent.plan).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
     const subject = `${trial ? t("Your free trial") : t("Your plan")} ${when} — ${BRAND.name}`;
     const html = layout(
       `<p>${escapeHtml(t("Hi {name},", { name: agent.displayName }))}</p>` +
-        `<p>${escapeHtml(trial ? t("Your free trial {when}.", { when }) : t("Your plan {when}.", { when }))} ${escapeHtml(t("When it ends your page is paused, but your listings and enquiries are kept."))}</p>` +
+        `<p>${escapeHtml(trial ? t("Your free trial {when}.", { when }) : t("Your plan {when}.", { when }))} ${escapeHtml(
+          due.daysLeft < 0
+            ? t("Your page stays live until {date}, then it is paused. Your listings and enquiries are kept.", { date: pausesOn })
+            : t("After it ends your page stays live for {n} more days, then it is paused. Your listings and enquiries are kept.", { n: GRACE_DAYS })
+        )}</p>` +
         `<p>${escapeHtml(t("Renew by UPI in a minute: pay, enter the UTR number, and we switch it on."))}</p>` +
         button(`${SITE_URL}/dashboard/billing`, t("Renew my plan"))
     );
@@ -64,7 +69,7 @@ export async function runDailyReminders({ now = new Date(), send = true } = {}) 
   const agentById = new Map(agents.map((a) => [a.id, a]));
   for (const [ownerId, { follow, visits }] of Array.from(byOwner.entries())) {
     const agent = agentById.get(ownerId);
-    const live = agent && ["TRIAL", "ACTIVE"].includes(effectiveStatus(agent.plan, now));
+    const live = agent && ["TRIAL", "ACTIVE", "GRACE"].includes(effectiveStatus(agent.plan, now));
     const to = agent ? (live && agent.lastDigestDate !== today ? agent.email : null) : follow[0]?.ownerType === "ADMIN" || visits[0]?.ownerType === "ADMIN" ? process.env.ADMIN_EMAIL || null : null;
     if (!to) {
       summary.skipped++;
