@@ -11,8 +11,9 @@ fun prop(name: String): String = (findProperty(name) as String?)?.trim().orEmpty
 val host = prop("proppageHost")
 val scheme = prop("proppageScheme").ifEmpty { "https" }
 val siteOrigin = "$scheme://$host"
+val code = prop("proppageVersionCode").toInt()
 
-// Upload key for Google Play, kept outside git (see android/README.md).
+// The app's signing key, kept outside git (see android/README.md).
 val keystoreFile = rootProject.file("keystore.properties")
 val keystore = Properties().apply { if (keystoreFile.exists()) keystoreFile.inputStream().use { load(it) } }
 
@@ -24,13 +25,15 @@ android {
         applicationId = prop("proppageAppId")
         minSdk = 24
         targetSdk = 36
-        versionCode = prop("proppageVersionCode").toInt()
+        versionCode = code
         versionName = prop("proppageVersionName")
 
         // Links on the site open in the app. Local http test builds claim no links: an
         // unverified http site would bounce every redirect back into the app.
         manifestPlaceholders["hostName"] = if (scheme == "https") host.substringBefore(":") else "local-test.invalid"
-        manifestPlaceholders["launchUrl"] = "$siteOrigin/dashboard"
+        // app=android tells the site it is inside the app (lib/app-install.ts); v says which
+        // version. Changing this later means every agent has to install a new APK.
+        manifestPlaceholders["launchUrl"] = "$siteOrigin/dashboard?app=android&v=$code"
         manifestPlaceholders["linkScheme"] = scheme
         resValue("string", "app_name", prop("proppageAppName"))
         // Must match the site's /.well-known/assetlinks.json for full-screen mode.
@@ -47,7 +50,7 @@ android {
 
     signingConfigs {
         if (keystore.isNotEmpty()) {
-            create("upload") {
+            create("release") {
                 storeFile = file(keystore.getProperty("storeFile"))
                 storePassword = keystore.getProperty("storePassword")
                 keyAlias = keystore.getProperty("keyAlias")
@@ -59,7 +62,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            if (keystore.isNotEmpty()) signingConfig = signingConfigs.getByName("upload")
+            if (keystore.isNotEmpty()) signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -73,11 +76,12 @@ dependencies {
     implementation("com.google.androidbrowserhelper:androidbrowserhelper:2.7.4")
 }
 
-// Refuse to build a Play Store bundle that still points at the placeholder domain.
-tasks.matching { it.name == "bundleRelease" || it.name == "assembleRelease" }.configureEach {
+// Refuse a release build that still points at the placeholder domain. This runs before
+// anything compiles: a check on assembleRelease or bundleRelease fires after the file is written.
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
     doFirst {
         check(host.isNotEmpty() && !host.startsWith("REPLACE")) { "Set proppageHost in android/gradle.properties to your real domain first." }
-        check(scheme == "https") { "Play Store builds must use https." }
+        check(scheme == "https") { "Release builds must use https." }
         check(keystore.isNotEmpty()) { "Create android/keystore.properties first (see android/README.md)." }
     }
 }

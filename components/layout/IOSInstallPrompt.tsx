@@ -1,11 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { X, Share } from "lucide-react";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { BRAND } from "@/lib/brand";
 
+// Only for agents: buyers on an agent's page or a listing have nothing to install.
+const AGENT_PAGES = /^\/(dashboard|admin|for-agents|login|register)(\/|$)/;
+
 export function IOSInstallPrompt() {
+  const pathname = usePathname() || "";
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
@@ -33,7 +38,7 @@ export function IOSInstallPrompt() {
     setShowPrompt(false);
   };
 
-  if (!showPrompt) return null;
+  if (!showPrompt || !AGENT_PAGES.test(pathname)) return null;
 
   return (
     <div className="fixed bottom-20 xs:bottom-24 left-4 right-4 z-50 max-w-sm sm:mx-auto bg-white/95 backdrop-blur-md text-navy-900 p-4 rounded-2xl shadow-[0_10px_30px_rgba(12,43,41,0.15)] border-t-4 border-t-gold-500 border border-gold-200/50 flex flex-col gap-3 transition-all duration-500 animate-in fade-in slide-in-from-bottom-5">

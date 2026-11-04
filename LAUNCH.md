@@ -44,7 +44,19 @@ Placeholders to replace are marked `REPLACE-WITH-…` in `apphosting.yaml`, `.fi
 2. **Cloud Scheduler**: daily 08:00 Asia/Kolkata, `POST https://<domain>/api/cron/daily` with header `Authorization: Bearer <cron-secret>`. Run it once with `?dry=1` first; it should answer `{"ok":true,"dry":true,…}`.
 3. **Admin → Plans & settings**: UPI ID, payee name (QR is made from them), GSTIN if registered.
 
-## 7. Go-live test (with a test agent, then delete it)
+## 7. Android app download (direct APK)
+
+The download links stay hidden until this is done. Full commands: `android/README.md`, "Build the APK for agents".
+
+1. Set your domain as `proppageHost` in `android/gradle.properties`.
+2. Create the signing key, outside the repo. **Back it up (USB stick + passwords in a password manager) before the first agent installs.** Without it no new APK installs over the old one.
+3. `./gradlew assembleRelease`, then copy the APK to `public/downloads/PropPage-1.0.0.apk`.
+4. In `apphosting.yaml`: the key's SHA-256 in `ANDROID_CERT_SHA256`, and `/downloads/PropPage-1.0.0.apk` in `NEXT_PUBLIC_ANDROID_APK_URL`. Deploy.
+5. Check `https://<domain>/.well-known/assetlinks.json` shows the fingerprint.
+6. On a Samsung and a Redmi or Vivo: install from `https://<domain>/app` and follow the steps on that page exactly. Check the app opens with no address bar and a new enquiry alert arrives. Fix any wrong button names in `components/app/GetAppPanel.tsx`, and the "5 MB" if the file is bigger.
+7. Share the link `<domain>/app` with the pilot agents, not the APK file: agents should never install an APK sent on WhatsApp.
+
+## 8. Go-live test (with a test agent, then delete it)
 
 1. Sign up with a second email; confirm the email from the phone; the dashboard should notice without signing out.
 2. Add a listing with photos; open the page link from another phone; send an enquiry.
@@ -52,9 +64,10 @@ Placeholders to replace are marked `REPLACE-WITH-…` in `apphosting.yaml`, `.fi
 4. Submit a payment with a made-up UTR, then choose "Not received" in Admin → Payments; check the agent gets the "We couldn't find your payment" email.
 5. Delete the test agent (Account & data → Delete my account).
 
-## 8. Later, not needed for the pilot
+## 9. Later, not needed for the pilot
 
-1. **Android app on Google Play** (`android/README.md`): developer account ($25; a personal account needs a 14-day closed test with 12 testers), set the domain in `android/gradle.properties`, upload key, `./gradlew bundleRelease`, then the Play app-signing SHA-256 in `ANDROID_CERT_SHA256`.
-2. Name a **grievance officer** (privacy page); have Terms/Privacy reviewed; have a Tamil speaker read the Tamil screens (`lib/i18n/ta.ts`).
-3. **Switch listing AI to Claude** after about 50 agents: `firebase apphosting:secrets:set anthropic-api-key`, uncomment `ANTHROPIC_API_KEY` in `apphosting.yaml`, set `LISTING_AI_PROVIDER` to `claude` (pick `LISTING_AI_MODEL` after `npm run eval:drafts`), redeploy.
-4. Razorpay for automatic payments.
+1. **Android app on Google Play** (`android/README.md`): developer account ($25; a personal account needs a 14-day closed test with 12 testers, and the pilot agents can be those testers). Give Play your own signing key so it can take over from the APK.
+2. **Android developer verification, before Google's 2027 rollout reaches India** (no fixed date yet): verify your identity and register `com.rturox.proppage` with its signing key. After the rollout, phones make it hard to install APKs from unverified developers.
+3. Name a **grievance officer** (privacy page); have Terms/Privacy reviewed; have a Tamil speaker read the Tamil screens (`lib/i18n/ta.ts`).
+4. **Switch listing AI to Claude** after about 50 agents: `firebase apphosting:secrets:set anthropic-api-key`, uncomment `ANTHROPIC_API_KEY` in `apphosting.yaml`, set `LISTING_AI_PROVIDER` to `claude` (pick `LISTING_AI_MODEL` after `npm run eval:drafts`), redeploy.
+5. Razorpay for automatic payments.

@@ -8,6 +8,7 @@ import { makeT } from "@/lib/i18n";
 import { I18nProvider } from "@/components/i18n/I18nProvider";
 import { AgentBottomNav, AgentSidebar } from "@/components/dashboard/AgentNav";
 import { SupportLinks, hasSupport } from "@/components/support/SupportLinks";
+import { GetAppLink } from "@/components/app/GetAppLink";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { agent, limits } = await requireAgentPage();
@@ -49,10 +50,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
       ? t("Plan ended · page live {n} more days", { n: graceDaysLeft(agent.plan) })
       : t("Plan ended");
 
-  const help = hasSupport() ? (
-    <SupportLinks message={`Hi ${BRAND.name} team, I'm ${agent.displayName} (${agent.email}). I need help with:`} />
-  ) : (
-    <p className="text-xs text-navy-600">{t("Need help? Reply to any email from us.")}</p>
+  const help = (
+    <>
+      <GetAppLink />
+      {hasSupport() ? (
+        <SupportLinks message={`Hi ${BRAND.name} team, I'm ${agent.displayName} (${agent.email}). I need help with:`} />
+      ) : (
+        <p className="text-xs text-navy-600">{t("Need help? Reply to any email from us.")}</p>
+      )}
+    </>
   );
 
   return (

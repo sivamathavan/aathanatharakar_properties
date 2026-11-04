@@ -10,6 +10,7 @@ import { CopyButton } from "@/components/dashboard/CopyButton";
 import { EmailConfirmedCheck, ResendVerification } from "@/components/dashboard/ResendVerification";
 import { PropertyStatus } from "@/types";
 import { PushAlertsCard } from "@/components/dashboard/PushAlertsCard";
+import { GetAppCard } from "@/components/app/GetAppCard";
 
 export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -76,6 +77,7 @@ export default async function DashboardOverview({ searchParams }: { searchParams
       )}
 
       <PushAlertsCard />
+      <GetAppCard />
 
       {doneCount < steps.length && (
         <section aria-labelledby="getting-started" className="bg-white rounded-card border border-[#E4DED2] p-5 space-y-3">

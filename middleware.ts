@@ -13,6 +13,9 @@ export function middleware(req: NextRequest) {
   if (pathname.startsWith("/dashboard") && !hasSession) {
     const url = new URL("/login", req.url);
     url.searchParams.set("next", pathname);
+    // Keeps the Android app's mark, so the site still knows it is inside the app.
+    const app = req.nextUrl.searchParams.get("app");
+    if (app) url.searchParams.set("app", app);
     return NextResponse.redirect(url);
   }
   // Old feature pages that no longer exist.

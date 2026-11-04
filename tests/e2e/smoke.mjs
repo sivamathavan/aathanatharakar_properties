@@ -8,6 +8,7 @@ const env = Object.fromEntries(
   readFileSync(new URL("../../.env.development.local", import.meta.url), "utf8")
     .split("\n").filter((l) => /^[A-Z0-9_]+=/.test(l)).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)])
 );
+const setting = (name) => process.env[name] || env[name] || "";
 const BASE = process.env.BASE || "http://localhost:3007";
 const AUTH = "http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1";
 const PROJECT = "demo-proppage";
@@ -401,6 +402,19 @@ async function main() {
   check("service worker is served uncached", res.status === 200 && (res.headers.get("cache-control") || "").includes("no-cache"));
   r = await call("/.well-known/assetlinks.json");
   check("Android asset links answer with JSON", r.status === 200 && Array.isArray(r.json), r.text.slice(0, 100));
+  if (setting("ANDROID_CERT_SHA256")) check("asset links carry the signing key", r.json[0]?.target?.sha256_cert_fingerprints?.length > 0, r.text.slice(0, 100));
+  r = await call("/app");
+  check("app install page renders", r.status === 200 && r.text.includes("app-ah phone-la"));
+  r = await call("/for-agents");
+  const apk = setting("NEXT_PUBLIC_ANDROID_APK_URL");
+  if (apk) {
+    check("footer links to the app page once an APK is set", r.text.includes('href="/app"'));
+    res = await fetch(`${BASE}${apk}`);
+    check("APK downloads as an Android package", res.status === 200 && res.headers.get("content-type") === "application/vnd.android.package-archive" && (res.headers.get("content-disposition") || "").includes("attachment"), `${res.status} ${res.headers.get("content-type")}`);
+    check("APK can be cached for good", (res.headers.get("cache-control") || "").includes("immutable"), res.headers.get("cache-control"));
+  } else {
+    check("no app link shows until an APK is set", !r.text.includes('href="/app"'));
+  }
   r = await call("/manifest.webmanifest");
   check("web app manifest opens the dashboard", r.json?.start_url === "/dashboard" && r.json?.display === "standalone");
 

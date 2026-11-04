@@ -101,7 +101,18 @@ Email varala-na, adhe box-la **"Resend email"** tap pannunga.
 
 Home screen-la PropPage icon irundhaa, daily open panna easy.
 
-**Android (Chrome):**
+**Android app:**
+
+1. Android phone-la Overview-la **"See how to install"** tap pannunga. (Illa **More → Help → "Get the Android app"**, illa website keezha **"Phone app"**.) **/app** page open aagum.
+2. **"Download app"** tap pannunga.
+3. Chrome warning kaattinaa **"Download anyway"** tap pannunga.
+4. "Permission required" illa "Install unknown apps" nu vandhaa **Settings → "Allow from this source"** ON pannunga, apram **Install** tap pannunga.
+5. Play Protect "App scan recommended" nu vandhaa **"More details"** tap pannunga, apram **"Install"** tap pannunga.
+6. **Open** tap pannunga. Adhu idhe website dhaan, adhe login.
+
+Full steps /app page-la irukku. App-ah **PropPage website-la irundhu mattum** download pannunga. WhatsApp-la yaaravadhu APK file anuppinaa install pannaadheenga.
+
+**Android, warning illaama (Chrome):**
 
 1. Chrome-la PropPage open pannunga, sign in pannunga.
 2. Mela right side **⋮** (moonu pulli) tap pannunga.

@@ -563,4 +563,11 @@ export const TA: Record<string, string> = {
   "Good morning! Today you have:": "காலை வணக்கம்! இன்று உங்களுக்கு:",
   "Open today's list": "இன்றைய பட்டியலைத் திற",
   "{n} follow-ups and visits today": "இன்று {n} தொடர்புகள் மற்றும் பார்வைகள்",
+
+  // ─── Android app ───
+  "Get the Android app": "Android app பெறுங்கள்",
+  "Get the {brand} Android app": "{brand} Android app பெறுங்கள்",
+  "Open your dashboard from an icon on your phone. Same account, same login.": "உங்கள் phone-ல் ஒரு icon மூலம் dashboard-ஐத் திறக்கலாம். அதே கணக்கு, அதே login.",
+  "See how to install": "எப்படி install செய்வது என்று பாருங்கள்",
+  "Close": "மூடு",
 };

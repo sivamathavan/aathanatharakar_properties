@@ -7,6 +7,7 @@ import { join } from "node:path";
 export const AGENT_SOURCES = [
   "app/(dashboard)/dashboard",
   "components/dashboard",
+  "components/app",
   "components/i18n",
   "components/support/ErrorPanel.tsx",
   "components/property/PropertyForm.tsx",

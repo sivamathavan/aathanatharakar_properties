@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Check, Share2, MessageSquare, Smartphone } from "lucide-react";
 import { getPlansConfig } from "@/lib/firestore";
 import { formatINR, PAID_PLAN_IDS } from "@/lib/plans";
+import { GetAppLink } from "@/components/app/GetAppLink";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -28,6 +29,7 @@ export default async function ForAgentsPage() {
             <Link href="/register" className="h-12 px-6 rounded-btn bg-gold-500 text-navy-900 font-bold inline-flex items-center">Start {plans.trialDays}-day free trial</Link>
             <Link href="/login" className="h-12 px-6 rounded-btn border border-gold-500 text-gold-400 font-semibold inline-flex items-center">Agent login</Link>
           </div>
+          <GetAppLink className="text-gold-400" />
         </div>
       </section>
 

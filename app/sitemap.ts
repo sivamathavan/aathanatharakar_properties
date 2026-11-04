@@ -4,6 +4,7 @@ import { isPlanLive } from "@/lib/plans";
 import { PropertyStatus } from "@/types";
 import { SITE_URL } from "@/lib/site";
 import { STATIC_POSTS } from "@/lib/static-blog";
+import { APK_URL } from "@/lib/app-install";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/properties",
     "/blog",
     "/for-agents",
+    ...(APK_URL ? ["/app"] : []),
     "/privacy",
     "/terms",
   ].map((route) => ({

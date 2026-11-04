@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { BRAND } from "@/lib/brand";
 import { TN_CITIES } from "@/lib/constants";
+import { APK_URL } from "@/lib/app-install";
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -23,6 +24,7 @@ export function Footer() {
               <li><Link href="/for-agents" className="hover:text-gold-400">For agents</Link></li>
               <li><Link href="/for-agents#pricing" className="hover:text-gold-400">Pricing</Link></li>
               <li><Link href="/login" className="hover:text-gold-400">Agent login</Link></li>
+              {APK_URL && <li><Link href="/app" className="hover:text-gold-400">Phone app</Link></li>}
               <li><Link href="/properties" className="hover:text-gold-400">Browse properties</Link></li>
               <li><Link href="/blog" className="hover:text-gold-400">Blog</Link></li>
             </ul>
