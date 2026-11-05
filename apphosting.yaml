@@ -13,22 +13,25 @@ env:
   # console → Project settings → Your apps → Web app. The web API key is public
   # by design (it ships in every browser bundle).
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: REPLACE-WITH-NEW-PROJECT-API-KEY
+    value: AIzaSyCAKNE_aWFhhoksN1jc6LAQIuAt7ucMWHg
     availability: [BUILD, RUNTIME]
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-    value: REPLACE-WITH-NEW-PROJECT-ID.firebaseapp.com
+    value: proppage.firebaseapp.com
     availability: [BUILD, RUNTIME]
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-    value: REPLACE-WITH-NEW-PROJECT-ID
+    value: proppage
     availability: [BUILD, RUNTIME]
   - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-    value: REPLACE-WITH-NEW-PROJECT-ID.firebasestorage.app
+    value: proppage.firebasestorage.app
     availability: [BUILD, RUNTIME]
   - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-    value: "REPLACE-WITH-SENDER-ID"
+    value: "201162566035"
     availability: [BUILD, RUNTIME]
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-    value: REPLACE-WITH-NEW-WEB-APP-ID
+    value: "1:201162566035:web:d4907a19b58e3a499da066"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: G-MKZ994R5LY
     availability: [BUILD, RUNTIME]
   # Phone alerts for new enquiries: Cloud Messaging → Web Push certificates →
   # the public key (LAUNCH.md section 5). Empty hides "Turn on enquiry alerts".
