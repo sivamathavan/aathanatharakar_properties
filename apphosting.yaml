@@ -8,6 +8,8 @@ runConfig:
   cpu: 1
   memoryMiB: 512
 
+# App Hosting refuses to build with an empty value, so a setting that isn't in use
+# stays commented out. To use one, uncomment its lines and fill in the value.
 env:
   # The new production project (LAUNCH.md step 1). Copy these from Firebase
   # console → Project settings → Your apps → Web app. The web API key is public
@@ -30,16 +32,16 @@ env:
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
     value: "1:201162566035:web:d4907a19b58e3a499da066"
     availability: [ BUILD, RUNTIME ]
-  # Google Analytics. Empty keeps it off. To turn it on, set G-MKZ994R5LY and first
-  # add its cookies to the privacy page, which says we use one sign-in cookie.
-  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-    value: ""
-    availability: [ BUILD, RUNTIME ]
+  # Google Analytics. Off while this is commented out. To turn it on, first add its
+  # cookies to the privacy page, which says we use one sign-in cookie.
+  # - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+  #   value: G-MKZ994R5LY
+  #   availability: [ BUILD, RUNTIME ]
   # Phone alerts for new enquiries: Cloud Messaging → Web Push certificates →
-  # the public key (LAUNCH.md section 5). Empty hides "Turn on enquiry alerts".
-  - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
-    value: ""
-    availability: [ BUILD, RUNTIME ]
+  # the public key (LAUNCH.md section 5). Unset hides "Turn on enquiry alerts".
+  # - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
+  #   value: REPLACE-WITH-PUBLIC-KEY
+  #   availability: [ BUILD, RUNTIME ]
   # Set to the real address before the first deploy: the App Hosting URL
   # (shown when the backend is created) or your own domain once it's connected.
   # Share links and WhatsApp previews are built from it.
@@ -48,10 +50,10 @@ env:
     availability: [ BUILD, RUNTIME ]
 
   # An agent's link name to show as "See a sample page" on the home page (with
-  # their permission). Empty shows "How it works" instead.
-  - variable: NEXT_PUBLIC_SAMPLE_AGENT_SLUG
-    value: ""
-    availability: [ BUILD, RUNTIME ]
+  # their permission). Unset shows "How it works" instead.
+  # - variable: NEXT_PUBLIC_SAMPLE_AGENT_SLUG
+  #   value: REPLACE-WITH-LINK-NAME
+  #   availability: [ BUILD, RUNTIME ]
 
   # Product name and support contact (lib/brand.ts). Rename here, no code change.
   - variable: NEXT_PUBLIC_BRAND_NAME
@@ -63,28 +65,28 @@ env:
   - variable: NEXT_PUBLIC_COMPANY_URL
     value: https://rturox.com
     availability: [ BUILD, RUNTIME ]
-  - variable: NEXT_PUBLIC_SUPPORT_EMAIL
-    value: ""
-    availability: [ BUILD, RUNTIME ]
-  - variable: NEXT_PUBLIC_SUPPORT_WHATSAPP
-    value: ""
-    availability: [ BUILD, RUNTIME ]
+  # - variable: NEXT_PUBLIC_SUPPORT_EMAIL
+  #   value: REPLACE-WITH-SUPPORT-EMAIL
+  #   availability: [ BUILD, RUNTIME ]
+  # - variable: NEXT_PUBLIC_SUPPORT_WHATSAPP
+  #   value: "REPLACE-WITH-WHATSAPP-NUMBER"
+  #   availability: [ BUILD, RUNTIME ]
   # Name of the grievance officer shown in the privacy policy (DPDP Act).
-  - variable: NEXT_PUBLIC_GRIEVANCE_OFFICER
-    value: ""
-    availability: [ BUILD, RUNTIME ]
+  # - variable: NEXT_PUBLIC_GRIEVANCE_OFFICER
+  #   value: REPLACE-WITH-NAME
+  #   availability: [ BUILD, RUNTIME ]
 
   # Where new-signup and payment alerts go.
-  - variable: ADMIN_EMAIL
-    value: ""
+  # - variable: ADMIN_EMAIL
+  #   value: REPLACE-WITH-ADMIN-EMAIL
   # Transactional email service (LAUNCH.md section 3). Copy host, port and user
   # from the service's SMTP page; the domain needs its SPF/DKIM/DMARC records.
-  - variable: SMTP_HOST
-    value: ""
+  # - variable: SMTP_HOST
+  #   value: REPLACE-WITH-SMTP-HOST
   - variable: SMTP_PORT
     value: "587"
-  - variable: SMTP_USER
-    value: ""
+  # - variable: SMTP_USER
+  #   value: REPLACE-WITH-SMTP-USER
   # Sender shown to agents, on your own domain.
   - variable: MAIL_FROM
     value: "PropPage <hello@REPLACE-WITH-YOUR-DOMAIN>"
@@ -122,10 +124,10 @@ env:
   # differs, comma separated (android/README.md).
   - variable: ANDROID_PACKAGE_NAME
     value: com.rturox.proppage
-  - variable: ANDROID_CERT_SHA256
-    value: ""
+  # - variable: ANDROID_CERT_SHA256
+  #   value: REPLACE-WITH-KEY-FINGERPRINT
   # The signed APK in public/, e.g. /downloads/PropPage-1.0.0.apk (LAUNCH.md
-  # section 7). Empty hides every download link.
-  - variable: NEXT_PUBLIC_ANDROID_APK_URL
-    value: ""
-    availability: [ BUILD, RUNTIME ]
+  # section 7). Unset hides every download link.
+  # - variable: NEXT_PUBLIC_ANDROID_APK_URL
+  #   value: /downloads/PropPage-1.0.0.apk
+  #   availability: [ BUILD, RUNTIME ]

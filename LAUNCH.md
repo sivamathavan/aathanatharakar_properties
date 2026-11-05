@@ -1,6 +1,6 @@
 # Launch day: things only the owner can do
 
-Placeholders to replace are marked `REPLACE-WITH-…` in `apphosting.yaml`, `.firebaserc` and `android/gradle.properties`.
+Placeholders to replace are marked `REPLACE-WITH-…` in `apphosting.yaml` and `android/gradle.properties`. App Hosting refuses to build with an empty value, so any `apphosting.yaml` setting not in use is commented out: uncomment it when you fill it in.
 
 ## 1. Firebase production project
 
