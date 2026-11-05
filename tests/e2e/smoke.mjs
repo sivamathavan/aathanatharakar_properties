@@ -395,6 +395,14 @@ async function main() {
     check(`admin screen ${path} renders`, r.status === 200 && !broken(r.text), `${r.status}`);
   }
 
+  console.log("Security headers");
+  res = await fetch(`${BASE}/for-agents`);
+  check("microphone stays on for voice listing", (res.headers.get("permissions-policy") || "").includes("microphone=(self)"), res.headers.get("permissions-policy"));
+  check("camera and location stay off", (res.headers.get("permissions-policy") || "").includes("camera=()") && (res.headers.get("permissions-policy") || "").includes("geolocation=()"));
+  check("browsers are told to stay on https", (res.headers.get("strict-transport-security") || "").includes("max-age="));
+  res = await fetch(`${BASE}/_next/image?url=${encodeURIComponent("https://firebasestorage.googleapis.com/v0/b/someone-else/o/x.jpg?alt=media")}&w=640&q=75`);
+  check("image optimizer refuses other projects' files", res.status === 400, `${res.status}`);
+
   console.log("Installable app");
   r = await call("/offline");
   check("offline page renders without data", r.status === 200 && r.text.includes("offline"));

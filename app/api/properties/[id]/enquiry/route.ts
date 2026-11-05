@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createLead, getAgentById, getPropertyById } from "@/lib/firestore";
-import { checkRateLimit, clientIp } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/client-ip";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { escapeHtml, sendEmailWithin } from "@/lib/mail";
 import { sendPushWithin } from "@/lib/push";
 import { makeT, parseLang } from "@/lib/i18n";

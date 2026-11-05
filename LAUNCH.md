@@ -11,12 +11,15 @@ Placeholders to replace are marked `REPLACE-WITH-…` in `apphosting.yaml`, `.fi
    `gcloud firestore backups schedules create --database='(default)' --recurrence=daily --retention=7d --project=<project-id>`
 5. `firebase deploy --only firestore,storage` and wait until every index in the console shows "Enabled".
 
+**Done on 6 Nov 2026 for project `proppage`:** all five steps except the budget alert, plus delete protection on the database and email enumeration protection in Authentication. Set the **budget alert** in Google Cloud → Billing → Budgets.
+
 ## 2. Domain and hosting
 
 1. Buy / confirm the domain. Put it in `NEXT_PUBLIC_SITE_URL` (`apphosting.yaml`) and `proppageHost` (`android/gradle.properties`).
 2. **App Hosting** backend `proppage-web` from GitHub; connect the domain.
 3. **Authentication → Settings → Authorised domains**: add the domain (the "confirm your email" link returns agents to it).
 4. `minInstances: 1` in `apphosting.yaml` keeps one server warm (small fixed monthly cost). Set 0 to pay only for visits.
+5. **Restrict the web API key** once the address is final: Google Cloud → APIs & Services → Credentials → Browser key → Website restrictions: your domain and `proppage.firebaseapp.com`. Sign in on the live site afterwards to check.
 
 ## 3. Email (transactional service, not Gmail)
 
@@ -28,8 +31,10 @@ Placeholders to replace are marked `REPLACE-WITH-…` in `apphosting.yaml`, `.fi
 
 ## 4. Secrets and contacts
 
-1. `firebase apphosting:secrets:set gemini-api-key` with a **new** Gemini key (the one shown in chat on 3 Nov is exposed: delete it in AI Studio). Turn on billing for its Google Cloud project so Google's paid data terms apply.
-2. `firebase apphosting:secrets:set cron-secret` (32+ random characters).
+**Never type or paste a secret at the "input is masked" prompt in the app's terminal pane: the pane prints it.** Copy it, then pipe it in with `pbpaste` as below.
+
+1. Create a **new** Gemini key and copy it, then `pbpaste | npx firebase apphosting:secrets:set gemini-api-key --project proppage --data-file - --force`. Delete every older key in AI Studio: the ones from 3 Nov and 6 Nov were exposed. Turn on billing for its Google Cloud project so Google's paid data terms apply.
+2. `openssl rand -hex 32 | npx firebase apphosting:secrets:set cron-secret --project proppage --data-file - --force`
 3. Fill `ADMIN_EMAIL`, `NEXT_PUBLIC_SUPPORT_EMAIL`, `NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_PUBLIC_GRIEVANCE_OFFICER` in `apphosting.yaml`.
 4. **Rotate every secret** in the old tracker repo's history (`/Volumes/Maddy/tracker/server/.env`) and make that repo private or purge the history.
 
@@ -58,11 +63,13 @@ The download links stay hidden until this is done. Full commands: `android/READM
 
 ## 8. Go-live test (with a test agent, then delete it)
 
-1. Sign up with a second email; confirm the email from the phone; the dashboard should notice without signing out.
-2. Add a listing with photos; open the page link from another phone; send an enquiry.
-3. The agent gets the email and the phone notification; the enquiry shows in "Enquiries".
-4. Submit a payment with a made-up UTR, then choose "Not received" in Admin → Payments; check the agent gets the "We couldn't find your payment" email.
-5. Delete the test agent (Account & data → Delete my account).
+1. Check real visitor addresses reach the app: `lib/client-ip.ts` reads `x-fah-client-ip`, which App Hosting adds but Google doesn't document. If it's missing, visitors may share one rate limit and signups would stop after 5 an hour.
+2. Tap the mic on Add property on a real phone: the site's own header blocked the microphone until 6 Nov 2026, so "Speak your listing" needs a real test.
+3. Sign up with a second email; confirm the email from the phone; the dashboard should notice without signing out.
+4. Add a listing with photos; open the page link from another phone; send an enquiry.
+5. The agent gets the email and the phone notification; the enquiry shows in "Enquiries".
+6. Submit a payment with a made-up UTR, then choose "Not received" in Admin → Payments; check the agent gets the "We couldn't find your payment" email.
+7. Delete the test agent (Account & data → Delete my account).
 
 ## 9. Later, not needed for the pilot
 

@@ -30,9 +30,10 @@ if (useEmulators && typeof window !== "undefined" && !(globalThis as any).__fbEm
   (globalThis as any).__fbEmulatorsConnected = true;
 }
 
-// Analytics — only in browser, only if supported
+// Google Analytics: only when NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID is set. Without this
+// check the SDK finds the ID by itself and adds cookies the privacy page doesn't mention.
 let analytics: ReturnType<typeof getAnalytics> | null = null;
-if (typeof window !== "undefined" && !useEmulators) {
+if (typeof window !== "undefined" && !useEmulators && firebaseConfig.measurementId) {
   isSupported().then((supported) => {
     if (supported) {
       analytics = getAnalytics(app);

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { clientIp } from "@/lib/client-ip";
 import { getPropertyById, incrementViewCount } from "@/lib/firestore";
 import { recordStat } from "@/lib/stats";
 
@@ -12,11 +13,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const ip =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      req.headers.get("x-real-ip") ||
-      "unknown";
-    const key = `${ip}:${params.id}`;
+    const key = `${clientIp(req)}:${params.id}`;
     const now = Date.now();
     const last = buckets.get(key) || 0;
     if (now - last < WINDOW_MS) {

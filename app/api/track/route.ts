@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { clientIp } from "@/lib/client-ip";
 import { getAgentById, getPropertyById } from "@/lib/firestore";
 import { recordStat } from "@/lib/stats";
 
@@ -20,8 +21,7 @@ export async function POST(req: Request) {
     const parsed = schema.safeParse(JSON.parse(await req.text()));
     if (!parsed.success) return NextResponse.json({ counted: false });
     const { kind, agentId, propertyId } = parsed.data;
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-    const key = `${ip}:${kind}:${agentId}:${propertyId || ""}`;
+    const key = `${clientIp(req)}:${kind}:${agentId}:${propertyId || ""}`;
     const now = Date.now();
     if (now - (seen.get(key) || 0) < WINDOW_MS) return NextResponse.json({ counted: false });
     seen.set(key, now);

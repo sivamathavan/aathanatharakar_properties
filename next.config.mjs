@@ -1,3 +1,5 @@
+const bucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   eslint: {
@@ -13,8 +15,8 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "firebasestorage.googleapis.com" },
-      { protocol: "https", hostname: "*.firebasestorage.app" },
+      // Our own bucket only: the host alone would let anyone's Firebase files through the optimizer.
+      { protocol: "https", hostname: "firebasestorage.googleapis.com", pathname: `/v0/b/${bucket}/o/**` },
       // Storage emulator during local development
       { protocol: "http", hostname: "127.0.0.1", port: "9199" },
     ],
@@ -48,9 +50,11 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Strict-Transport-Security", value: "max-age=31536000" },
+          // The microphone stays on for this site: "Speak your listing" and voice typing need it.
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
+            value: "camera=(), microphone=(self), geolocation=()",
           },
         ],
       },

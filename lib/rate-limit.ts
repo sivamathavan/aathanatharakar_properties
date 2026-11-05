@@ -31,11 +31,3 @@ export async function checkRateLimit(key: string, limit: number, windowMs: numbe
     return false;
   }
 }
-
-export function clientIp(req: Request): string {
-  return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip") ||
-    "unknown"
-  );
-}
