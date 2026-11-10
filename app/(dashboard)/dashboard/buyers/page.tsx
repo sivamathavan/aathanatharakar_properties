@@ -9,9 +9,10 @@ import { PropertyStatus } from "@/types";
 export const metadata = { title: "Buyers" };
 export const dynamic = "force-dynamic";
 
-export default async function BuyersPage({ searchParams }: { searchParams: { fromLead?: string } }) {
+export default async function BuyersPage(props: { searchParams: Promise<{ fromLead?: string }> }) {
+  const searchParams = await props.searchParams;
   const { agent } = await requireAgentPage();
-  const t = serverT();
+  const t = await serverT();
   const [buyers, properties, lead] = await Promise.all([
     getBuyersForOwner(agent.id),
     getOwnerProperties(agent.id, { activeOnly: true }),

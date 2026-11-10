@@ -9,9 +9,10 @@ import { DocsChecklist } from "@/components/dashboard/DocsChecklist";
 export const metadata = { title: "Edit property" };
 export const dynamic = "force-dynamic";
 
-export default async function EditPropertyPage({ params }: { params: { id: string } }) {
+export default async function EditPropertyPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { agent, limits } = await requireAgentPage();
-  const t = serverT();
+  const t = await serverT();
   const property = await getPropertyById(params.id);
   if (!property || property.postedById !== agent.id) notFound();
   const priv = await getPropertyPrivate(params.id);

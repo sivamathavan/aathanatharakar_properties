@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function SharePage() {
   const { agent } = await requireAgentPage();
-  const t = serverT();
+  const t = await serverT();
   const url = `${SITE_URL}/a/${agent.slug}`;
   const message = `${t("Hi! See all my properties here:")} ${url}\n— ${agent.displayName}${agent.agencyName ? `, ${agent.agencyName}` : ""}`;
   return (

@@ -32,7 +32,8 @@ const schema = z.object({
 
 // A visitor's enquiry goes to whoever owns the listing: the agent for agent
 // listings, the site team for the admin's own listings.
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const ip = clientIp(req);
     if (await checkRateLimit(`enquiry:${ip}`, 5, 10 * 60 * 1000)) {

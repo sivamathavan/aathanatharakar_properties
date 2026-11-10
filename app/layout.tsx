@@ -45,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${playfair.variable} ${dmSans.variable} ${notoTamil.variable}`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${playfair.variable} ${dmSans.variable} ${notoTamil.variable}`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content={BRAND.themeColor} />

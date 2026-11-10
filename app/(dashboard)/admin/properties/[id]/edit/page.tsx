@@ -8,7 +8,8 @@ import { UserRole } from "@/types";
 export const metadata = { title: "Edit property · Admin" };
 export const dynamic = "force-dynamic";
 
-export default async function AdminEditPropertyPage({ params }: { params: { id: string } }) {
+export default async function AdminEditPropertyPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = await getServerUser();
   if (!session || session.role !== UserRole.ADMIN) redirect("/admin/login");
   const property = await getPropertyById(params.id);

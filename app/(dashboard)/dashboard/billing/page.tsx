@@ -32,7 +32,7 @@ function features(p: PlanDef, t: TFunc) {
 
 export default async function BillingPage() {
   const { agent, plans, limits } = await requireAgentPage();
-  const t = serverT();
+  const t = await serverT();
   const [site, history] = await Promise.all([getSiteConfig(), getPaymentRequests({ agentId: agent.id })]);
   const status = effectiveStatus(agent.plan);
   const paid = PAID_PLAN_IDS.map((id) => plans.plans[id]);

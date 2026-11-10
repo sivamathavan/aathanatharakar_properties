@@ -6,7 +6,8 @@ import { TYPE_LABEL } from "@/lib/crm/properties";
 import { LeadStatus, UserRole } from "@/types";
 
 // Website enquiry → tracker deal, carrying the buyer and the property across.
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const admin = await requireRole(req, UserRole.ADMIN);
   if (!admin) return new NextResponse("Unauthorized", { status: 401 });
   const lead = await getLeadById(params.id);

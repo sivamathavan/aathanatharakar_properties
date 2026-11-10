@@ -13,7 +13,8 @@ const schema = z.object({
   note: z.string().trim().max(300).optional().nullable(),
 });
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const admin = await requireRole(req, UserRole.ADMIN);
   if (!admin) return new NextResponse("Unauthorized", { status: 401 });
   try {

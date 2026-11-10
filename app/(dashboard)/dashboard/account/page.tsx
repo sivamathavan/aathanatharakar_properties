@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
   const { agent, limits } = await requireAgentPage();
-  const t = serverT();
+  const t = await serverT();
   return (
     <div className="space-y-6 max-w-2xl">
       <div>

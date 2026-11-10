@@ -65,7 +65,7 @@ export async function getRequestUser(request: Request): Promise<(AuthedUser & { 
 /** Current user in a server component, or null. */
 export async function getServerUser(): Promise<(AuthedUser & { user: UserDoc }) | null> {
   try {
-    const session = cookies().get(SESSION_COOKIE)?.value;
+    const session = (await cookies()).get(SESSION_COOKIE)?.value;
     if (!session) return null;
     const decoded = await adminAuth.verifySessionCookie(session, true);
     return toAuthedUser(decoded);

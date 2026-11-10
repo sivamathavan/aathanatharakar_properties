@@ -16,7 +16,7 @@ import { isPlanLive } from "@/lib/plans";
 import { mediaBelongsTo, privateFields, propertyInputSchema, publicFields, refreshListingCaches } from "@/lib/property-input";
 import { PropertyDoc, PropertyStatus, UserRole } from "@/types";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 async function loadForEdit(req: Request, id: string) {
   const user = await getRequestUser(req);
@@ -32,7 +32,8 @@ async function loadForEdit(req: Request, id: string) {
 // Public read of an ACTIVE listing. Only the listing's owner gets its private
 // details (owner name, phone, survey number); the admin sees an agent's listing
 // like the public does, so agents can trust that those details stay theirs.
-export async function GET(req: Request, { params }: Params) {
+export async function GET(req: Request, props: Params) {
+  const params = await props.params;
   const user = await getRequestUser(req);
   const property = await getPropertyById(params.id);
   if (!property) return new NextResponse("Listing not found.", { status: 404 });
@@ -45,7 +46,8 @@ export async function GET(req: Request, { params }: Params) {
   return NextResponse.json({ ...property, private: await getPropertyPrivate(params.id) });
 }
 
-export async function PUT(req: Request, { params }: Params) {
+export async function PUT(req: Request, props: Params) {
+  const params = await props.params;
   try {
     const loaded = await loadForEdit(req, params.id);
     if ("error" in loaded) return loaded.error;
@@ -92,7 +94,8 @@ const patchSchema = z.object({
 const CLOSED = [PropertyStatus.SOLD, PropertyStatus.RENTED];
 
 // Quick status change from the listings table (publish, hide, mark sold).
-export async function PATCH(req: Request, { params }: Params) {
+export async function PATCH(req: Request, props: Params) {
+  const params = await props.params;
   try {
     const loaded = await loadForEdit(req, params.id);
     if ("error" in loaded) return loaded.error;
@@ -129,7 +132,8 @@ export async function PATCH(req: Request, { params }: Params) {
 }
 
 // Delete for good (frees a slot in the agent's plan) and remove its photos.
-export async function DELETE(req: Request, { params }: Params) {
+export async function DELETE(req: Request, props: Params) {
+  const params = await props.params;
   try {
     const loaded = await loadForEdit(req, params.id);
     if ("error" in loaded) return loaded.error;

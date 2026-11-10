@@ -11,7 +11,8 @@ function collectionOf(name: string): CrmCollection | null {
   return (CRM_COLLECTIONS as string[]).includes(name) ? (name as CrmCollection) : null;
 }
 
-export async function GET(req: Request, { params }: { params: { collection: string } }) {
+export async function GET(req: Request, props: { params: Promise<{ collection: string }> }) {
+  const params = await props.params;
   if (!(await requireRole(req, UserRole.ADMIN))) return new NextResponse("Unauthorized", { status: 401 });
   const c = collectionOf(params.collection);
   if (!c) return new NextResponse("Not found", { status: 404 });
@@ -19,7 +20,8 @@ export async function GET(req: Request, { params }: { params: { collection: stri
   return NextResponse.json({ data });
 }
 
-export async function POST(req: Request, { params }: { params: { collection: string } }) {
+export async function POST(req: Request, props: { params: Promise<{ collection: string }> }) {
+  const params = await props.params;
   const admin = await requireRole(req, UserRole.ADMIN);
   if (!admin) return new NextResponse("Unauthorized", { status: 401 });
   const c = collectionOf(params.collection);

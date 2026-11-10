@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function NewPropertyPage() {
   const { agent, limits } = await requireAgentPage();
   const used = await countOwnerProperties(agent.id);
-  const t = serverT();
+  const t = await serverT();
 
   if (!hasPlanTime(agent.plan) || used >= limits.listingLimit) {
     return (

@@ -7,9 +7,10 @@ import { PropertyStatus } from "@/types";
 export const metadata = { title: "Enquiries" };
 export const dynamic = "force-dynamic";
 
-export default async function EnquiriesPage({ searchParams }: { searchParams: { view?: string } }) {
+export default async function EnquiriesPage(props: { searchParams: Promise<{ view?: string }> }) {
+  const searchParams = await props.searchParams;
   const { agent } = await requireAgentPage();
-  const t = serverT();
+  const t = await serverT();
   const [leads, properties] = await Promise.all([getLeadsForOwner(agent.id), getOwnerProperties(agent.id)]);
   const listings = properties.filter((p) => p.status === PropertyStatus.ACTIVE || p.status === PropertyStatus.INACTIVE).map((p) => ({ id: p.id, title: p.title }));
   return (

@@ -8,10 +8,8 @@ import { recordStat } from "@/lib/stats";
 const buckets = new Map<string, number>();
 const WINDOW_MS = 30 * 60 * 1000;
 
-export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const key = `${clientIp(req)}:${params.id}`;
     const now = Date.now();

@@ -3,9 +3,10 @@ import { requireRole } from "@/lib/auth";
 import { agentBuyersCol, buyerInputSchema, getOwnBuyer } from "@/lib/buyers";
 import { UserRole } from "@/types";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
-export async function PUT(req: Request, { params }: Params) {
+export async function PUT(req: Request, props: Params) {
+  const params = await props.params;
   const user = await requireRole(req, UserRole.AGENT);
   if (!user) return new NextResponse("Please sign in again.", { status: 401 });
   try {
@@ -22,7 +23,8 @@ export async function PUT(req: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(req: Request, { params }: Params) {
+export async function DELETE(req: Request, props: Params) {
+  const params = await props.params;
   const user = await requireRole(req, UserRole.AGENT);
   if (!user) return new NextResponse("Please sign in again.", { status: 401 });
   const buyer = await getOwnBuyer(params.id, user.uid);

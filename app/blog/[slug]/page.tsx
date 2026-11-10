@@ -58,11 +58,12 @@ async function resolvePost(slug: string): Promise<ResolvedPost | null> {
   return null;
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const post = await resolvePost(params.slug);
   if (!post) return { title: "Post Not Found" };
 
@@ -78,11 +79,12 @@ export async function generateMetadata({
   };
 }
 
-export default async function BlogPostPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function BlogPostPage(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   const post = await resolvePost(params.slug);
   if (!post) notFound();
 

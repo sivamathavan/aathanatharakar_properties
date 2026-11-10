@@ -12,7 +12,7 @@ import { GetAppLink } from "@/components/app/GetAppLink";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { agent, limits } = await requireAgentPage();
-  const lang = getLang();
+  const lang = await getLang();
   const t = makeT(lang);
   const status = effectiveStatus(agent.plan);
   const left = daysLeft(agent.plan);

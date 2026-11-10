@@ -17,9 +17,10 @@ export const dynamic = "force-dynamic";
 
 const OPEN = ["NEW", "CONTACTED", "SITE_VISIT", "NEGOTIATION"];
 
-export default async function DashboardOverview({ searchParams }: { searchParams: { welcome?: string } }) {
+export default async function DashboardOverview(props: { searchParams: Promise<{ welcome?: string }> }) {
+  const searchParams = await props.searchParams;
   const { agent, limits } = await requireAgentPage();
-  const t = serverT();
+  const t = await serverT();
   const [properties, leads] = await Promise.all([getOwnerProperties(agent.id), getLeadsForOwner(agent.id, 200)]);
   const active = properties.filter((p) => p.status === PropertyStatus.ACTIVE).length;
   const inPlan = properties.filter((p) => p.status !== PropertyStatus.SOLD && p.status !== PropertyStatus.RENTED).length;

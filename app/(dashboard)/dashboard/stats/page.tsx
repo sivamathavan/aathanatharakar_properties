@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function StatsPage() {
   const { agent, limits } = await requireAgentPage();
-  const t = serverT();
+  const t = await serverT();
   const [properties, daily] = await Promise.all([getOwnerProperties(agent.id), getAgentDaily(agent.id, 30)]);
   const pro = limits.viewStats;
   const sum = (k: "pageViews" | "listingViews" | "waTaps" | "callTaps" | "enquiries") => daily.reduce((s, d) => s + (d[k] || 0), 0);

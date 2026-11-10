@@ -17,11 +17,12 @@ function toIntOrUndefined(v: string | string[] | undefined): number | undefined 
   return Number.isFinite(n) && n >= 0 ? n : undefined;
 }
 
-export default async function PropertiesPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
+export default async function PropertiesPage(
+  props: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const city = typeof searchParams.city === "string" ? searchParams.city : undefined;
   const type = typeof searchParams.type === "string" ? searchParams.type : undefined;
   const listingType =

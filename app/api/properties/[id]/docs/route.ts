@@ -14,7 +14,8 @@ const schema = z.object({ items: z.partialRecord(z.enum(DOC_ITEMS), item) });
 
 // Title-document checklist (Patta, Chitta, EC…) on the owner's own listing.
 // Kept in the listing's private details; files live in agent-docs/{uid}/{listing}/.
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const user = await getRequestUser(req);
   if (!user) return new NextResponse("Please sign in again.", { status: 401 });
   const property = await getPropertyById(params.id);

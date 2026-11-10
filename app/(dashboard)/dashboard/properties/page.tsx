@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MyPropertiesPage() {
   const { agent, limits, plans } = await requireAgentPage();
-  const t = serverT();
+  const t = await serverT();
   const [properties, site, buyers] = await Promise.all([getOwnerProperties(agent.id), getSiteConfig(), getBuyersForOwner(agent.id)]);
   const privates = properties.length ? await adminDb.getAll(...properties.map((p) => privateDetailsRef(p.id))) : [];
   const verified = new Map(privates.map((d) => [d.ref.parent.parent!.id, Object.values((d.data()?.docChecklist || {}) as Record<string, { status: string }>).filter((v) => v.status === "VERIFIED").length]));

@@ -30,7 +30,8 @@ async function load(slug: string, propertyId: string) {
 }
 
 // The WhatsApp preview image comes from ./opengraph-image.tsx (photo, price, place, agent logo).
-export async function generateMetadata({ params }: { params: { slug: string; propertyId: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string; propertyId: string }> }): Promise<Metadata> {
+  const params = await props.params;
   const data = await load(params.slug, params.propertyId);
   if (!data?.property) return { title: "Property not found" };
   const { agent, property, live } = data;
@@ -48,7 +49,8 @@ export async function generateMetadata({ params }: { params: { slug: string; pro
   };
 }
 
-export default async function AgentPropertyPage({ params }: { params: { slug: string; propertyId: string } }) {
+export default async function AgentPropertyPage(props: { params: Promise<{ slug: string; propertyId: string }> }) {
+  const params = await props.params;
   const data = await load(params.slug, params.propertyId);
   if (!data) notFound();
   const { agent, live, property } = data;

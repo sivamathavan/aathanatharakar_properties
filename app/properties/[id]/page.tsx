@@ -15,7 +15,8 @@ function describe(p: { bedrooms?: number | null; type: string; listingType: stri
   return `${kind} for ${p.listingType === "RENT" ? "rent" : p.listingType === "LEASE" ? "lease" : "sale"} in ${p.locality}, ${p.city} — ₹${Number(p.price).toLocaleString("en-IN")}`;
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const params = await props.params;
   const property = await getPropertyById(params.id);
   if (!property || property.status !== PropertyStatus.ACTIVE) return { title: "Property not found" };
   const title = property.title;
@@ -30,7 +31,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default async function PropertyDetailPage({ params }: { params: { id: string } }) {
+export default async function PropertyDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const property = await getPropertyById(params.id);
   if (!property) notFound();
 

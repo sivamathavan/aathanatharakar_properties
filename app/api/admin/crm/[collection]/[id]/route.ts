@@ -10,7 +10,11 @@ function collectionOf(name: string): CrmCollection | null {
 }
 
 // Partial updates are allowed (e.g. pin a person, change a deal's stage).
-export async function PUT(req: Request, { params }: { params: { collection: string; id: string } }) {
+export async function PUT(
+  req: Request,
+  props: { params: Promise<{ collection: string; id: string }> }
+) {
+  const params = await props.params;
   if (!(await requireRole(req, UserRole.ADMIN))) return new NextResponse("Unauthorized", { status: 401 });
   const c = collectionOf(params.collection);
   if (!c) return new NextResponse("Not found", { status: 404 });
@@ -29,7 +33,11 @@ export async function PUT(req: Request, { params }: { params: { collection: stri
 }
 
 // Soft delete, like the tracker: rows disappear from lists but stay recoverable.
-export async function DELETE(req: Request, { params }: { params: { collection: string; id: string } }) {
+export async function DELETE(
+  req: Request,
+  props: { params: Promise<{ collection: string; id: string }> }
+) {
+  const params = await props.params;
   if (!(await requireRole(req, UserRole.ADMIN))) return new NextResponse("Unauthorized", { status: 401 });
   const c = collectionOf(params.collection);
   if (!c) return new NextResponse("Not found", { status: 404 });

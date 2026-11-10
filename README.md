@@ -18,7 +18,7 @@ changed with `NEXT_PUBLIC_*` variables (see `.env.example` and `apphosting.yaml`
 
 ## Stack
 
-- Next.js 14 (App Router) on Firebase App Hosting
+- Next.js 15 (App Router) on Firebase App Hosting
 - Firestore (server-only access through firebase-admin), Firebase Auth, Firebase Storage
 - Roles come from server-set custom claims; sessions use 14-day Firebase session cookies
 - Tailwind CSS; charts with Recharts; CSV/PDF exports with papaparse and jsPDF

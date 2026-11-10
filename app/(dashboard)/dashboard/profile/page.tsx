@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
   const { agent, limits } = await requireAgentPage();
-  const t = serverT();
+  const t = await serverT();
   const plain = JSON.parse(JSON.stringify(agent));
   return (
     <div className="space-y-6 max-w-2xl">

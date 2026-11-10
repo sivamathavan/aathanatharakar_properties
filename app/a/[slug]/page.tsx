@@ -17,7 +17,8 @@ export async function generateStaticParams() {
   return [];
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const params = await props.params;
   const { agent, live } = await loadPublicAgent(params.slug);
   if (!agent) return { title: "Page not found" };
   const title = `${agent.displayName}${agent.agencyName ? ` — ${agent.agencyName}` : ""} | Properties in ${agent.city}`;
@@ -33,7 +34,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function AgentPage({ params }: { params: { slug: string } }) {
+export default async function AgentPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const { agent, live } = await loadPublicAgent(params.slug);
   if (!agent) notFound();
   if (agent.slug !== params.slug.toLowerCase()) permanentRedirect(`/a/${agent.slug}`);
