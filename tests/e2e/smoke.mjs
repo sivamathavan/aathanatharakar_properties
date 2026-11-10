@@ -229,6 +229,8 @@ async function main() {
   check("boosted listing appears on the main site", r.text.includes(`Ravi plot one ${RUN}`));
   r = await call(`/properties/${agentPropId}`);
   check("main-site page for a boosted listing calls the agent", r.status === 200 && r.text.includes("Ravi Kumar"));
+  r = await call(`/properties/no-such-listing-${RUN}`);
+  check("a missing listing answers a real 404", r.status === 404 && r.text.includes("Page not found"), `${r.status}`);
 
   console.log("Tracker");
   r = await call("/api/admin/crm/people", { method: "POST", cookie: admin, body: { name: `Ganesh ${RUN}`, person_type: "Buyer", buyer_budget: 3000000, district: "Coimbatore", role: "ADMIN", created_by: "hacker" } });
@@ -379,6 +381,10 @@ async function main() {
   check("agent marks a listing sold with price and buyer", r.status === 200, r.text);
   r = await call(`/api/properties/${cIds[0]}`, { cookie: agentC });
   check("sold price and buyer stay private to the owner", r.json?.private?.soldPrice === 2400000 && r.json?.private?.soldTo === "Kumar" && !!r.json?.soldAt);
+  r = await call(`/properties/${cIds[0]}`);
+  check("a sold listing's main-site page is a 404 to visitors", r.status === 404, `${r.status}`);
+  r = await call(`/properties/${cIds[0]}`, { cookie: agentC });
+  check("its owner can still open it", r.status === 200 && r.text.includes(`Selvi plot 1 ${RUN}`), `${r.status}`);
   r = await call("/api/properties", { method: "POST", cookie: agentC, body: listing(`Selvi plot 6 ${RUN}`, [cm]) });
   check("a sold listing frees its slot", r.status === 201, `${r.status} ${r.text}`);
   r = await call(`/api/properties/${cIds[0]}`, { method: "PATCH", cookie: agentC, body: { status: "ACTIVE" } });
@@ -402,6 +408,14 @@ async function main() {
   check("browsers are told to stay on https", (res.headers.get("strict-transport-security") || "").includes("max-age="));
   res = await fetch(`${BASE}/_next/image?url=${encodeURIComponent("https://firebasestorage.googleapis.com/v0/b/someone-else/o/x.jpg?alt=media")}&w=640&q=75`);
   check("image optimizer refuses other projects' files", res.status === 400, `${res.status}`);
+
+  console.log("Blog");
+  r = await call("/blog");
+  const postSlug = r.text.match(/href="\/blog\/([a-z0-9-]+)"/)?.[1];
+  r = await call(`/blog/${postSlug}`);
+  check("a blog post opens with its preview tags", r.status === 200 && r.text.includes('property="og:title"'), `${postSlug} ${r.status}`);
+  r = await call(`/blog/no-such-post-${RUN}`);
+  check("a missing blog post answers a real 404", r.status === 404 && r.text.includes("Page not found"), `${r.status}`);
 
   console.log("Installable app");
   r = await call("/offline");

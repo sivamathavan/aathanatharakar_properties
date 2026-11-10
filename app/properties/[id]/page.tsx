@@ -1,12 +1,12 @@
 import { BRAND } from "@/lib/brand";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getAgentById, getPropertyById, getSiteConfig } from "@/lib/firestore";
-import { getServerUser } from "@/lib/auth";
+import { getSiteConfig } from "@/lib/firestore";
+import { loadListing } from "@/lib/listing-page";
 import { SITE_URL } from "@/lib/site";
-import { isPlanLive, waNumber } from "@/lib/plans";
+import { waNumber } from "@/lib/plans";
 import { PropertyDetail } from "@/components/property/PropertyDetail";
-import { PropertyStatus, UserRole } from "@/types";
+import { PropertyStatus } from "@/types";
 
 export const revalidate = 60;
 
@@ -17,7 +17,7 @@ function describe(p: { bedrooms?: number | null; type: string; listingType: stri
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const params = await props.params;
-  const property = await getPropertyById(params.id);
+  const property = (await loadListing(params.id))?.property;
   if (!property || property.status !== PropertyStatus.ACTIVE) return { title: "Property not found" };
   const title = property.title;
   const description = describe(property);
@@ -33,19 +33,12 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
 
 export default async function PropertyDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
-  const property = await getPropertyById(params.id);
-  if (!property) notFound();
+  // ./layout.tsx has already answered 404 when this is null.
+  const listing = await loadListing(params.id);
+  if (!listing) notFound();
+  const { property, agent } = listing;
 
-  const isPublic = property.status === PropertyStatus.ACTIVE;
-  if (!isPublic) {
-    const session = await getServerUser();
-    if (!session || (session.role !== UserRole.ADMIN && session.uid !== property.postedById)) notFound();
-  }
-
-  // Agent listings on the main site are boosted ones; calls go to the agent.
-  if (property.ownerType === "AGENT") {
-    const agent = await getAgentById(property.postedById);
-    if (!agent || !isPlanLive(agent.plan)) notFound();
+  if (agent) {
     return (
       <PropertyDetail
         property={property}
