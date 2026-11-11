@@ -18,7 +18,7 @@ interface Props {
   ledger: ReLedgerEntry[];
   gstRegistered: boolean;
   onSave: (e: ReLedgerEntry, isEdit: boolean) => Promise<boolean>;
-  onDelete: (id: string) => Promise<void>;
+  onDelete: (id: string) => Promise<boolean>;
   onActivity: (action: string, entity: string, id: string) => void;
 }
 
@@ -281,7 +281,7 @@ export const ReCommissionTab: React.FC<Props> = ({ deals, people, ledger, gstReg
         )}
       </ReModal>
 
-      <ReConfirm open={!!confirmDel} onClose={() => setConfirmDel(null)} onConfirm={() => confirmDel && onDelete(confirmDel.id)}
+      <ReConfirm open={!!confirmDel} onClose={() => setConfirmDel(null)} onConfirm={() => (confirmDel ? onDelete(confirmDel.id) : false)}
         title="Delete this entry?" message={confirmDel ? `${confirmDel.person_name} — ${formatINR(confirmDel.amount)}` : ''} />
     </div>
   );

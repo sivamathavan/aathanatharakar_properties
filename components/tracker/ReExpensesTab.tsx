@@ -21,7 +21,7 @@ interface Props {
   expenses: ReExpense[];
   ledger: ReLedgerEntry[];
   onSave: (e: ReExpense, isEdit: boolean) => Promise<boolean>;
-  onDelete: (id: string) => Promise<void>;
+  onDelete: (id: string) => Promise<boolean>;
 }
 
 const blank = (): ReExpense => ({
@@ -161,7 +161,7 @@ export const ReExpensesTab: React.FC<Props> = ({ expenses, ledger, onSave, onDel
         )}
       </ReModal>
 
-      <ReConfirm open={!!confirm} onClose={() => setConfirm(null)} onConfirm={() => confirm && onDelete(confirm.id)} title="Delete this expense?" message={confirm ? `${confirm.category} — ${formatINR(confirm.amount)}` : ''} />
+      <ReConfirm open={!!confirm} onClose={() => setConfirm(null)} onConfirm={() => (confirm ? onDelete(confirm.id) : false)} title="Delete this expense?" message={confirm ? `${confirm.category} — ${formatINR(confirm.amount)}` : ''} />
     </div>
   );
 };

@@ -1,14 +1,24 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { collectKeys, keysIn } from "../../scripts/i18n-keys";
+import { PENDING_TAMIL } from "../../scripts/i18n-pending";
 import { TA } from "../../lib/i18n/ta";
 import { translate } from "../../lib/i18n";
 
 const placeholders = (s: string) => (s.match(/\{\w+\}/g) || []).sort().join(",");
 
-test("every string on agent screens has a Tamil line", () => {
+test("every string on agent screens has a Tamil line (or is listed as waiting for one)", (t) => {
+  const pending = new Set(PENDING_TAMIL);
   const missing = collectKeys().filter((k) => !(k in TA));
-  assert.deepEqual(missing, [], `Add these to lib/i18n/ta.ts:\n${missing.join("\n")}`);
+  const unlisted = missing.filter((k) => !pending.has(k));
+  assert.deepEqual(unlisted, [], `Add these to lib/i18n/ta.ts, or to scripts/i18n-pending.ts until the Tamil team does:\n${unlisted.join("\n")}`);
+  t.diagnostic(`${missing.length} strings are waiting for Tamil (scripts/i18n-pending.ts)`);
+});
+
+test("the waiting-for-Tamil list holds only strings still used on agent screens", () => {
+  const used = new Set(collectKeys());
+  const stale = PENDING_TAMIL.filter((k) => !used.has(k));
+  assert.deepEqual(stale, [], `Remove these from scripts/i18n-pending.ts:\n${stale.join("\n")}`);
 });
 
 test("Tamil lines keep the same {placeholders}", () => {

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
 import { FaWhatsapp } from "react-icons/fa";
 import { Phone, ChevronDown, ChevronUp, CalendarClock, CalendarPlus, MapPin, UserPlus, Search, X, Users } from "lucide-react";
 import { waNumber } from "@/lib/plans";
@@ -114,7 +114,7 @@ export function LeadsInbox({
 
   const patch = async (id: string, body: object) => {
     const res = await fetch(`${apiBase}/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    if (!res.ok) return void toast.error((await res.text()) || t("Could not update."));
+    if (!res.ok) return void toast.error(await errorText(res, t("Could not update.")));
     const updated = await res.json();
     setLeads((ls) => ls.map((l) => (l.id === id ? { ...l, status: updated.status, nextFollowUpAt: updated.nextFollowUpAt, siteVisitDate: updated.siteVisitDate } : l)));
     setNotes((n) => ({ ...n, [id]: updated.notes || [] }));
@@ -373,7 +373,7 @@ function AddClientForm({ listings, selfName, onAdded, onCancel, onShowExisting }
         const data = await res.json().catch(() => null);
         if (data?.duplicate) return void setDuplicate(data.duplicate);
       }
-      if (!res.ok) return void toast.error((await res.text()) || t("Could not add the client."));
+      if (!res.ok) return void toast.error(await errorText(res, t("Could not add the client.")));
       const lead = await res.json();
       toast.success(t("Client added."));
       onAdded({ ...lead, createdAt: new Date(lead.createdAt).toISOString(), nextFollowUpAt: lead.nextFollowUpAt ? new Date(lead.nextFollowUpAt).toISOString() : null });

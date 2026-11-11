@@ -7,6 +7,7 @@ import {
   type User,
 } from "firebase/auth";
 import { forgetPushOnThisPhone } from "@/lib/push-client";
+import { errorText } from "@/lib/notify";
 
 async function startSession(user: User): Promise<string> {
   // Force refresh so a role set moments ago (signup) is in the token.
@@ -18,7 +19,7 @@ async function startSession(user: User): Promise<string> {
   });
   if (!res.ok) {
     await fbSignOut(auth);
-    throw new Error((await res.text()) || "Could not start your session");
+    throw new Error(await errorText(res, "Could not sign you in. Please try again."));
   }
   const data = await res.json();
   return data.role as string;
@@ -49,7 +50,7 @@ export async function signUpAgent(input: AgentSignupInput) {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
       body: JSON.stringify({ name: input.name, phone: input.phone, agencyName: input.agencyName, city: input.city }),
     });
-    if (!res.ok) throw new Error((await res.text()) || "Signup failed");
+    if (!res.ok) throw new Error(await errorText(res, "Could not start your trial. Please try again."));
   } catch (err) {
     // Don't leave a half-made account behind.
     await cred.user.delete().catch(() => {});
@@ -75,7 +76,7 @@ export function friendlyAuthError(err: any): string {
   if (code.includes("weak-password")) return "Use a password of at least 8 characters.";
   if (code.includes("too-many-requests")) return "Too many attempts. Wait a few minutes and try again.";
   if (code.includes("network")) return "No internet connection. Check your network and try again.";
-  return err?.message || "Something went wrong. Please try again.";
+  return err?.message || "Could not do that. Please try again.";
 }
 
 /** The "confirm your email" link brings the agent back to their dashboard afterwards. */

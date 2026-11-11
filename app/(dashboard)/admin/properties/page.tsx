@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Check, X, Eye, Building2, MapPin, Trash2, Pencil } from "lucide-react";
 import Link from "next/link";
 
@@ -12,6 +13,7 @@ export default function AdminPropertiesPage() {
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [deleting, setDeleting] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
     fetchProperties();
@@ -20,51 +22,36 @@ export default function AdminPropertiesPage() {
   const fetchProperties = async () => {
     try {
       const res = await fetch("/api/admin/properties");
-      const data = await res.json();
-      setProperties(data);
+      if (!res.ok) throw new Error(String(res.status));
+      setProperties(await res.json());
     } catch (error) {
-      toast.error("Failed to load properties");
+      toast.error("Could not load the properties. Reload the page to try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const STATUS_WORD: Record<string, string> = { ACTIVE: "approved", REJECTED: "rejected", INACTIVE: "hidden", PENDING: "pending" };
+
   const handleStatusChange = async (id: string, status: string) => {
-    try {
-      const res = await fetch(`/api/admin/properties/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
-      });
-      if (res.ok) {
-        toast.success(`Property marked as ${status}`);
-        fetchProperties();
-      } else {
-        toast.error("Failed to update status");
-      }
-    } catch (error) {
-      toast.error("An error occurred");
-    }
+    const res = await fetch(`/api/admin/properties/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    }).catch(() => null);
+    if (!res || !res.ok) return void toast.error(res ? await errorText(res, "Could not update the property.") : "No internet connection. Please try again.");
+    toast.success(`Property ${STATUS_WORD[status] || status.toLowerCase()}.`);
+    fetchProperties();
   };
 
   const handleDeleteProperty = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to permanently delete the property "${title}"? This action cannot be undone.`)) {
-      return;
+    const res = await fetch(`/api/admin/properties/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      toast.error(await errorText(res, "Could not delete the property."));
+      return false;
     }
-    try {
-      const res = await fetch(`/api/admin/properties/${id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        toast.success(`Property "${title}" deleted successfully`);
-        fetchProperties();
-      } else {
-        const errText = await res.text();
-        toast.error(errText || "Failed to delete property");
-      }
-    } catch (error) {
-      toast.error("An error occurred");
-    }
+    toast.success(`“${title}” deleted.`);
+    fetchProperties();
   };
 
   const handleBulkStatusChange = async (status: string) => {
@@ -76,15 +63,12 @@ export default function AdminPropertiesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ propertyIds: selectedIds, status }),
       });
-      if (res.ok) {
-        toast.success(`${selectedIds.length} properties marked as ${status}`);
-        setSelectedIds([]);
-        fetchProperties();
-      } else {
-        toast.error("Failed to update status in bulk");
-      }
+      if (!res.ok) return void toast.error(await errorText(res, "Could not update the properties."));
+      toast.success(`${selectedIds.length} ${selectedIds.length === 1 ? "property" : "properties"} ${STATUS_WORD[status] || status.toLowerCase()}.`);
+      setSelectedIds([]);
+      fetchProperties();
     } catch (error) {
-      toast.error("An error occurred during bulk update");
+      toast.error("No internet connection. Please try again.");
     } finally {
       setBulkLoading(false);
     }
@@ -195,7 +179,7 @@ export default function AdminPropertiesPage() {
                         Reject
                       </Button>
                     )}
-                    <Button size="sm" variant="outline" className="border-red-200 text-red-700 hover:bg-red-50 text-[10px] h-8 px-2.5 font-semibold rounded-btn flex items-center gap-1" onClick={() => handleDeleteProperty(property.id, property.title)}>
+                    <Button size="sm" variant="outline" className="border-red-200 text-red-700 hover:bg-red-50 text-[10px] h-8 px-2.5 font-semibold rounded-btn flex items-center gap-1" onClick={() => setDeleting({ id: property.id, title: property.title })}>
                       <Trash2 className="w-3.5 h-3.5 shrink-0" /> Delete
                     </Button>
                   </div>
@@ -307,8 +291,9 @@ export default function AdminPropertiesPage() {
                               variant="ghost" 
                               size="icon" 
                               className="h-8 w-8 rounded-full hover:bg-navy-50 text-red-600 hover:text-red-800" 
-                              onClick={() => handleDeleteProperty(property.id, property.title)} 
-                              title="Delete Permanently"
+                              onClick={() => setDeleting({ id: property.id, title: property.title })} 
+                              title="Delete permanently"
+                              aria-label={`Delete ${property.title} permanently`}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -328,6 +313,15 @@ export default function AdminPropertiesPage() {
           </Card>
         </>
       )}
+      <ConfirmDialog
+        open={!!deleting}
+        onOpenChange={(o) => !o && setDeleting(null)}
+        title={`Delete “${deleting?.title || ""}”?`}
+        description="The listing and its photos are removed for good, and links to it stop working. This cannot be undone."
+        confirmLabel="Delete permanently"
+        busyLabel="Deleting…"
+        onConfirm={() => (deleting ? handleDeleteProperty(deleting.id, deleting.title) : undefined)}
+      />
     </div>
   );
 }

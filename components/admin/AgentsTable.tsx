@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FaWhatsapp } from "react-icons/fa";
 import { daysLeft, effectiveStatus, graceDaysLeft, waNumber } from "@/lib/plans";
 import { renewalWhatsappText } from "@/lib/reminder-text";
@@ -45,6 +46,7 @@ export function AgentsTable({ agents, counts, siteUrl, renewPrice }: { agents: A
   const [recording, setRecording] = useState<Agent | null>(null);
   const [form, setForm] = useState({ planId: "STARTER", period: "MONTHLY", reference: "" });
   const [busy, setBusy] = useState(false);
+  const [suspending, setSuspending] = useState<Agent | null>(null);
 
   const rows = useMemo(() => {
     const needle = q.toLowerCase();
@@ -58,12 +60,15 @@ export function AgentsTable({ agents, counts, siteUrl, renewPrice }: { agents: A
 
   const act = async (id: string, body: object, done: string) => {
     setBusy(true);
-    const res = await fetch(`/api/admin/agents/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const res = await fetch(`/api/admin/agents/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(() => null);
     setBusy(false);
-    if (!res.ok) return void toast.error((await res.text()) || "Could not update.");
+    if (!res || !res.ok) {
+      toast.error(res ? await errorText(res, "Could not update the agent.") : "No internet connection. Please try again.");
+      return false;
+    }
     toast.success(done);
-    setRecording(null);
     router.refresh();
+    return true;
   };
 
   return (
@@ -109,7 +114,7 @@ export function AgentsTable({ agents, counts, siteUrl, renewPrice }: { agents: A
                       {st === "SUSPENDED" ? (
                         <button type="button" disabled={busy} onClick={() => act(a.id, { action: "restore" }, "Agent restored.")} className="h-8 px-2 rounded-btn border text-xs">Restore</button>
                       ) : (
-                        <button type="button" disabled={busy} onClick={() => act(a.id, { action: "suspend" }, "Agent suspended. Their page is paused.")} className="h-8 px-2 rounded-btn border border-red-300 text-red-700 text-xs">Suspend</button>
+                        <button type="button" disabled={busy} onClick={() => setSuspending(a)} className="h-8 px-2 rounded-btn border border-red-300 text-red-700 text-xs">Suspend</button>
                       )}
                     </div>
                   </td>
@@ -123,42 +128,47 @@ export function AgentsTable({ agents, counts, siteUrl, renewPrice }: { agents: A
         </table>
       </div>
 
-      {recording && (
-        <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Record payment">
-          <form
-            className="bg-white rounded-2xl p-5 w-full max-w-sm space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              act(recording.id, { action: "record-payment", ...form }, "Payment recorded. Plan extended.");
-            }}
-          >
-            <h2 className="text-lg font-bold text-navy-900">Record a payment from {recording.displayName}</h2>
-            <p className="text-xs text-navy-600">For cash or bank transfers you received directly. Adds the time on top of what's left.</p>
-            <label className="block text-sm space-y-1">
-              <span>Plan</span>
-              <select className="w-full h-10 px-3 border rounded-md" value={form.planId} onChange={(e) => setForm({ ...form, planId: e.target.value })}>
-                <option value="STARTER">Starter</option>
-                <option value="PRO">Pro</option>
-              </select>
-            </label>
-            <label className="block text-sm space-y-1">
-              <span>Period</span>
-              <select className="w-full h-10 px-3 border rounded-md" value={form.period} onChange={(e) => setForm({ ...form, period: e.target.value })}>
-                <option value="MONTHLY">1 month</option>
-                <option value="YEARLY">1 year</option>
-              </select>
-            </label>
-            <label className="block text-sm space-y-1">
-              <span>Reference (optional)</span>
-              <input className="w-full h-10 px-3 border rounded-md" maxLength={30} value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} placeholder="e.g. cash receipt 104" />
-            </label>
-            <div className="flex gap-2">
-              <button type="submit" disabled={busy} className="flex-1 h-10 rounded-btn bg-navy-900 text-gold-500 font-bold">Save</button>
-              <button type="button" onClick={() => setRecording(null)} className="flex-1 h-10 rounded-btn border">Cancel</button>
-            </div>
-          </form>
+      <ConfirmDialog
+        open={!!suspending}
+        onOpenChange={(o) => !o && setSuspending(null)}
+        title={`Suspend ${suspending?.displayName || "this agent"}?`}
+        description="Their page is paused for buyers and they can't add listings. Nothing is deleted; Restore brings it all back."
+        confirmLabel="Suspend"
+        busyLabel="Suspending…"
+        onConfirm={() => (suspending ? act(suspending.id, { action: "suspend" }, "Agent suspended. Their page is paused.") : undefined)}
+      />
+
+      <ConfirmDialog
+        open={!!recording}
+        onOpenChange={(o) => !o && setRecording(null)}
+        tone="default"
+        title={`Record a payment from ${recording?.displayName || ""}`}
+        description="For cash or bank transfers you received directly. Adds the time on top of what's left."
+        confirmLabel="Record payment"
+        busyLabel="Saving…"
+        onConfirm={() => (recording ? act(recording.id, { action: "record-payment", ...form }, "Payment recorded. Plan extended.") : undefined)}
+      >
+        <div className="space-y-3">
+          <label className="block text-sm space-y-1">
+            <span>Plan</span>
+            <select className="w-full h-11 px-3 border rounded-md bg-white" value={form.planId} onChange={(e) => setForm({ ...form, planId: e.target.value })}>
+              <option value="STARTER">Starter</option>
+              <option value="PRO">Pro</option>
+            </select>
+          </label>
+          <label className="block text-sm space-y-1">
+            <span>Period</span>
+            <select className="w-full h-11 px-3 border rounded-md bg-white" value={form.period} onChange={(e) => setForm({ ...form, period: e.target.value })}>
+              <option value="MONTHLY">1 month</option>
+              <option value="YEARLY">1 year</option>
+            </select>
+          </label>
+          <label className="block text-sm space-y-1">
+            <span>Reference (optional)</span>
+            <input className="w-full h-11 px-3 border rounded-md" maxLength={30} value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} placeholder="e.g. cash receipt 104" />
+          </label>
         </div>
-      )}
+      </ConfirmDialog>
     </div>
   );
 }

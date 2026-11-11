@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { toast } from "@/lib/notify";
 import { FileText, Lock } from "lucide-react";
 import { canvasesToPdf, downloadBlob, drawBrochure, type KitAgent } from "@/components/dashboard/kit/canvasKit";
 import { listingArea, listingKind, shortPrice } from "@/lib/listing-text";

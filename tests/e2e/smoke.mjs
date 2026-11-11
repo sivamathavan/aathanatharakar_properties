@@ -232,6 +232,66 @@ async function main() {
   r = await call(`/properties/no-such-listing-${RUN}`);
   check("a missing listing answers a real 404", r.status === 404 && r.text.includes("Page not found"), `${r.status}`);
 
+  console.log("Help chat and contact support");
+  const HELP = "data-help-launcher";
+  for (const path of ["/", "/for-agents", "/login"]) {
+    r = await call(path);
+    check(`help button shows on ${path}`, r.status === 200 && r.text.includes(HELP), `${r.status}`);
+  }
+  r = await call("/dashboard", { cookie: agent });
+  check("help button shows on the dashboard", r.status === 200 && r.text.includes(HELP));
+  r = await call(`/a/${slug}`);
+  check("no help button on an agent's own page", r.status === 200 && !r.text.includes(HELP), `${r.status}`);
+  r = await call(`/a/${slug}/${agentPropId}`);
+  check("no help button on an agent's listing page", r.status === 200 && !r.text.includes(HELP), `${r.status}`);
+  r = await call(`/properties/${agentPropId}`);
+  check("no help button on a main-site listing page", r.status === 200 && !r.text.includes(HELP), `${r.status}`);
+  r = await call("/properties");
+  check("no help button on the buyers' search page", r.status === 200 && !r.text.includes(HELP), `${r.status}`);
+  r = await call("/admin", { cookie: admin });
+  check("no help button in admin", r.status === 200 && !r.text.includes(HELP), `${r.status}`);
+
+  r = await call("/api/support", { method: "POST", body: { message: "help", name: "Kavitha", phone: "9876501234" } });
+  check("support message needs a few words", r.status === 400, `${r.status} ${r.text}`);
+  r = await call("/api/support", { method: "POST", body: { message: "How do I pay for a year by UPI?", name: "Kavitha", phone: "" } });
+  check("visitors must leave a phone number for the reply", r.status === 400 && r.text.includes("phone"), `${r.status} ${r.text}`);
+  r = await call("/api/support", { method: "POST", body: { message: `Visitor question ${RUN}: is there a yearly plan?`, name: "Kavitha", phone: "98765 01234", email: "kavitha@example.com", page: "/for-agents?token=secret#x", topic: "price" } });
+  check("a visitor sends a support message", r.status === 201 && !!r.json?.id, `${r.status} ${r.text}`);
+  const visitorMsg = r.json?.id;
+  r = await call("/api/support", { method: "POST", body: { message: `Bot spam ${RUN} buy followers now`, name: "Bot", phone: "9000000000", website: "spam.example" } });
+  check("support honeypot pretends to work", r.status === 201, `${r.status}`);
+  r = await call("/api/support", { method: "POST", cookie: agent, body: { message: `Agent question ${RUN}: my payment is still being checked`, name: "Someone else", phone: "9000000009" } });
+  check("a signed-in agent sends a support message", r.status === 201, `${r.status} ${r.text}`);
+  const agentMsg = r.json?.id;
+  let limited = false;
+  for (let i = 0; i < 3 && !limited; i++) {
+    r = await call("/api/support", { method: "POST", body: { message: `Flood ${RUN} ${i} lorem ipsum dolor`, name: "Flood", phone: "9000000001" } });
+    limited = r.status === 429;
+  }
+  check("visitors' support messages are rate limited", limited, `${r.status}`);
+
+  r = await call("/admin/support", { cookie: admin });
+  check("admin sees both messages in Support", r.status === 200 && r.text.includes(`Visitor question ${RUN}`) && r.text.includes(`Agent question ${RUN}`), `${r.status}`);
+  check("the agent's account details are attached, not what the form claimed", r.text.includes("Ravi Kumar") && !r.text.includes("Someone else") && !r.text.includes("9000000009"));
+  check("only the page path is kept, never its query", r.text.includes("/for-agents") && !r.text.includes("token=secret"));
+  check("the honeypot message was not stored", !r.text.includes(`Bot spam ${RUN}`));
+  r = await call("/admin", { cookie: admin });
+  check("admin overview points to new support messages", r.text.includes("new support message"));
+  r = await call("/admin/support", { cookie: agent });
+  check("agents can't open the support inbox", r.status !== 200 || !r.text.includes(`Visitor question ${RUN}`), `${r.status}`);
+  r = await call(`/api/admin/support/${visitorMsg}`, { method: "PATCH", cookie: agent, body: { status: "DONE" } });
+  check("agents can't change support messages", r.status === 401, `${r.status}`);
+  r = await call(`/api/admin/support/${visitorMsg}`, { method: "DELETE" });
+  check("visitors can't delete support messages", r.status === 401, `${r.status}`);
+  r = await call(`/api/admin/support/${visitorMsg}`, { method: "PATCH", cookie: admin, body: { status: "DONE" } });
+  check("admin marks a message done", r.status === 200, r.text);
+  r = await call(`/api/admin/support/${visitorMsg}`, { method: "PATCH", cookie: admin, body: { status: "LOST" } });
+  check("only New or Done are accepted", r.status === 400, `${r.status}`);
+  r = await call(`/api/admin/support/${agentMsg}`, { method: "DELETE", cookie: admin });
+  check("admin deletes a message", r.status === 200, r.text);
+  r = await call(`/api/admin/support/${agentMsg}`, { method: "DELETE", cookie: admin });
+  check("a deleted message is gone", r.status === 404, `${r.status}`);
+
   console.log("Tracker");
   r = await call("/api/admin/crm/people", { method: "POST", cookie: admin, body: { name: `Ganesh ${RUN}`, person_type: "Buyer", buyer_budget: 3000000, district: "Coimbatore", role: "ADMIN", created_by: "hacker" } });
   check("admin adds a buyer", r.status === 201, r.text);
@@ -396,7 +456,7 @@ async function main() {
     r = await call(path, { cookie: agent });
     check(`agent screen ${path} renders`, r.status === 200 && !broken(r.text), `${r.status}`);
   }
-  for (const path of ["/admin", "/admin/properties", `/admin/properties/${adminPropId}/edit`, "/admin/leads", "/admin/agents", "/admin/payments", "/admin/analytics", "/admin/settings", "/admin/tracker"]) {
+  for (const path of ["/admin", "/admin/properties", `/admin/properties/${adminPropId}/edit`, "/admin/leads", "/admin/agents", "/admin/payments", "/admin/support", "/admin/analytics", "/admin/settings", "/admin/tracker"]) {
     r = await call(path, { cookie: admin });
     check(`admin screen ${path} renders`, r.status === 200 && !broken(r.text), `${r.status}`);
   }
@@ -458,9 +518,12 @@ async function main() {
   check("agents can't open analytics", r.status !== 200 || !r.text.includes("Signup funnel"), `${r.status}`);
 
   console.log("Download my data and delete my account");
+  r = await call("/api/support", { method: "POST", cookie: agentC, body: { message: `Selvi support ${RUN}: how do I add a co-agent?` } });
+  check("agent sends a support message before leaving", r.status === 201, `${r.status} ${r.text}`);
   res = await fetch(`${BASE}/api/agent/export`, { headers: { cookie: agentC } });
   const exported = await res.json();
   check("agent downloads all their data", res.status === 200 && (res.headers.get("content-disposition") || "").includes("attachment") && exported.listings?.length === 6 && exported.profile?.phone === cPhone);
+  check("their data includes their support messages", exported.supportMessages?.length === 1 && exported.supportMessages[0].message.includes(`Selvi support ${RUN}`), JSON.stringify(exported.supportMessages));
   r = await call("/api/agent/account", { method: "DELETE", cookie: agentC, body: { confirm: "DELETE" } });
   check("deleting needs a fresh password check", r.status === 401, `${r.status}`);
   const fresh = await signIn(`c-${RUN}@proppage.test`, pw);
@@ -472,6 +535,8 @@ async function main() {
   check("their listings are erased", gone.status === 404, `${gone.status}`);
   const login = await fetch(`${AUTH}/accounts:signInWithPassword?key=demo-key`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: `c-${RUN}@proppage.test`, password: pw, returnSecureToken: true }) });
   check("their login is removed", login.status === 400, `${login.status}`);
+  r = await call("/admin/support", { cookie: admin });
+  check("their support messages are erased", r.status === 200 && !r.text.includes(`Selvi support ${RUN}`), `${r.status}`);
   const again = await signUp(`c2-${RUN}@proppage.test`, pw);
   r = await call("/api/register", { method: "POST", bearer: again.idToken, body: { name: "Selvi again", phone: cPhone, agencyName: "", city: "Madurai" } });
   check("the same phone can't start a second free trial", r.status === 409 && r.text.includes("free trial"), `${r.status} ${r.text}`);

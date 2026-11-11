@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════
 import React from 'react';
 import { X, Search } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 // ── Modal Shell ─────────────────────────
 
@@ -145,23 +146,20 @@ export const ReDocScoreBar: React.FC<{ score: number }> = ({ score }) => {
 
 // ── Confirm Dialog ──────────────────────
 
+/** The tracker's delete confirmation: the app-wide ConfirmDialog with the tracker's props. */
 export const ReConfirm: React.FC<{
-  open: boolean; onClose: () => void; onConfirm: () => void; title: string; message: string;
-}> = ({ open, onClose, onConfirm, title, message }) => {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="max-w-sm w-full bg-brand-card border border-brand-border rounded-2xl p-6 shadow-2xl">
-        <h4 className="font-heading font-bold text-white mb-2">{title}</h4>
-        <p className="text-sm text-gray-400 mb-5">{message}</p>
-        <div className="flex gap-3 justify-end">
-          <button onClick={onClose} className="px-4 py-2 rounded-xl text-sm text-gray-400 hover:text-white border border-brand-border hover:bg-white/5 transition-colors">Cancel</button>
-          <button onClick={() => { onConfirm(); onClose(); }} className="px-4 py-2 rounded-xl text-sm font-semibold bg-red-500 hover:bg-red-600 text-white transition-colors">Delete</button>
-        </div>
-      </div>
-    </div>
-  );
-};
+  open: boolean; onClose: () => void; onConfirm: () => unknown; title: string; message: string; confirmLabel?: string;
+}> = ({ open, onClose, onConfirm, title, message, confirmLabel = 'Delete' }) => (
+  <ConfirmDialog
+    open={open}
+    onOpenChange={(o) => { if (!o) onClose(); }}
+    title={title}
+    description={message || undefined}
+    confirmLabel={confirmLabel}
+    busyLabel="Deleting…"
+    onConfirm={async () => { const ok = await onConfirm(); return ok !== false; }}
+  />
+);
 
 // ── Modal Tabs ──────────────────────────
 

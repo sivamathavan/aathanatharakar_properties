@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Loader2, UploadCloud, X, ArrowLeft, ArrowRight } from "lucide-react";
 import Image from "next/image";
-import { toast } from "sonner";
+import { toast } from "@/lib/notify";
 import { useT } from "@/components/i18n/I18nProvider";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";

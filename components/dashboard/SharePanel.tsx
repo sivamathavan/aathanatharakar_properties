@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/notify";
 import { FaWhatsapp } from "react-icons/fa";
 import { Download, FileText, Share2 } from "lucide-react";
 import { CopyButton } from "@/components/dashboard/CopyButton";

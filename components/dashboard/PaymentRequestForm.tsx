@@ -4,7 +4,7 @@ import { BRAND } from "@/lib/brand";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,7 +69,7 @@ export function PaymentRequestForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ kind, planId, period, propertyId, weeks, utr: utr.trim() }),
       });
-      if (!res.ok) return void toast.error((await res.text()) || t("Could not send. Please try again."));
+      if (!res.ok) return void toast.error(await errorText(res, t("Could not send. Please try again.")));
       toast.success(t("Payment sent for checking. We'll switch it on within a few hours."));
       setUtr("");
       onDone?.();

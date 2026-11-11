@@ -36,8 +36,9 @@ export function TrackerDashboard({ gstRegistered }: { gstRegistered: boolean }) 
     return ok;
   };
   const deleteLedger = async (id: string) => {
-    await data.deleteLedger(id);
-    await data.refreshDeals();
+    const ok = await data.deleteLedger(id);
+    if (ok) await data.refreshDeals();
+    return ok;
   };
 
   return (

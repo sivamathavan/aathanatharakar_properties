@@ -9,9 +9,11 @@ import { I18nProvider } from "@/components/i18n/I18nProvider";
 import { AgentBottomNav, AgentSidebar } from "@/components/dashboard/AgentNav";
 import { SupportLinks, hasSupport } from "@/components/support/SupportLinks";
 import { GetAppLink } from "@/components/app/GetAppLink";
+import { HelpWidget } from "@/components/help/HelpWidget";
+import { HelpButtons } from "@/components/dashboard/HelpButtons";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { agent, limits } = await requireAgentPage();
+  const { agent, limits, plans } = await requireAgentPage();
   const lang = await getLang();
   const t = makeT(lang);
   const status = effectiveStatus(agent.plan);
@@ -53,11 +55,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const help = (
     <>
       <GetAppLink />
-      {hasSupport() ? (
-        <SupportLinks message={`Hi ${BRAND.name} team, I'm ${agent.displayName} (${agent.email}). I need help with:`} />
-      ) : (
-        <p className="text-xs text-navy-600">{t("Need help? Reply to any email from us.")}</p>
-      )}
+      <HelpButtons />
+      {hasSupport() && <SupportLinks message={`Hi ${BRAND.name} team, I'm ${agent.displayName} (${agent.email}). I need help with:`} />}
     </>
   );
 
@@ -67,10 +66,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <AgentSidebar name={agent.displayName} planLine={planLine} help={help} />
         <div className="flex-1 min-w-0 overflow-y-auto">
           {banner}
-          <div className="p-4 md:p-8">{children}</div>
+          {/* Extra room at the bottom so the last button scrolls clear of the Help button. */}
+          <div className="p-4 pb-20 md:p-8 md:pb-24">{children}</div>
         </div>
         <DictationDock mobileBottom={92} />
         <AgentBottomNav help={help} />
+        <HelpWidget surface="dashboard" brand={BRAND.name} plans={plans} agent={{ name: agent.displayName, phone: agent.phone, email: agent.email }} />
       </div>
     </I18nProvider>
   );

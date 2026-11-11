@@ -4,15 +4,18 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
 import type { RePerson, ReDeal, ReProperty, ReLedgerEntry, ReExpense, ReActivity } from "./re-types";
 
+/** Throws an Error whose message is ready for a toast, or empty to use the caller's wording. */
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api/admin/crm/${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+  }).catch(() => {
+    throw new Error("No internet connection. Please try again.");
   });
-  if (!res.ok) throw new Error((await res.text()) || `Request failed (${res.status})`);
+  if (!res.ok) throw new Error(await errorText(res, ""));
   return res.json();
 }
 
@@ -44,7 +47,7 @@ export function useReData() {
       setExpenses(exp.data);
       setActivities(acts.data);
     } catch (e: any) {
-      toast.error(e.message || "Could not load the tracker");
+      toast.error(e.message || "Could not load the tracker. Reload the page to try again.");
     } finally {
       setLoading(false);
     }
@@ -71,10 +74,10 @@ export function useReData() {
           const res = await api<{ data: T }>(collection, { method: "POST", body: JSON.stringify(strip(row)) });
           setList((prev) => [res.data, ...prev]);
         }
-        toast.success(isEdit ? `${label} updated` : `${label} added`);
+        toast.success(isEdit ? `${label} updated.` : `${label} added.`);
         return true;
       } catch (e: any) {
-        toast.error(e.message || `Could not save ${label.toLowerCase()}`);
+        toast.error(e.message || `Could not save the ${label.toLowerCase()}.`);
         return false;
       }
     };
@@ -85,9 +88,11 @@ export function useReData() {
       try {
         await api(`${collection}/${id}`, { method: "DELETE" });
         setList((prev) => prev.filter((x) => x.id !== id));
-        toast.success(`${label} removed`);
+        toast.success(`${label} deleted.`);
+        return true;
       } catch (e: any) {
-        toast.error(e.message || `Could not remove ${label.toLowerCase()}`);
+        toast.error(e.message || `Could not delete the ${label.toLowerCase()}.`);
+        return false;
       }
     };
   }
@@ -109,7 +114,7 @@ export function useReData() {
         await api(`people/${id}`, { method: "PUT", body: JSON.stringify({ pinned: !person.pinned }) });
         setPeople((prev) => prev.map((x) => (x.id === id ? { ...x, pinned: !x.pinned } : x)));
       } catch {
-        toast.error("Could not pin");
+        toast.error("Could not pin. Please try again.");
       }
     },
     [people]
@@ -120,7 +125,7 @@ export function useReData() {
       await api(`deals/${id}`, { method: "PUT", body: JSON.stringify({ status }) });
       setDeals((prev) => prev.map((x) => (x.id === id ? { ...x, status } : x)));
     } catch {
-      toast.error("Could not update the stage");
+      toast.error("Could not update the stage. Please try again.");
     }
   }, []);
 

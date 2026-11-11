@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { slugify } from "@/lib/plans";
 import { useT } from "@/components/i18n/I18nProvider";
 
@@ -15,7 +16,6 @@ export function LinkNameForm({ slug, siteUrl, locked }: { slug: string; siteUrl:
   const [value, setValue] = useState(slug);
   const [check, setCheck] = useState<{ slug: string; ok: boolean; error: string | null } | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [saving, setSaving] = useState(false);
   const wanted = slugify(value);
 
   useEffect(() => {
@@ -28,16 +28,13 @@ export function LinkNameForm({ slug, siteUrl, locked }: { slug: string; siteUrl:
   }, [wanted, slug, locked]);
 
   const save = async () => {
-    setSaving(true);
-    try {
-      const res = await fetch("/api/agent/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: wanted }) });
-      if (!res.ok) return void toast.error((await res.text()) || t("Could not change your link."));
-      toast.success(t("Your new link is ready. The old one still works."));
-      setConfirming(false);
-      router.refresh();
-    } finally {
-      setSaving(false);
+    const res = await fetch("/api/agent/slug", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug: wanted }) });
+    if (!res.ok) {
+      toast.error(await errorText(res, t("Could not change your link.")));
+      return false;
     }
+    toast.success(t("Your new link is ready. The old one still works."));
+    router.refresh();
   };
 
   if (locked) {
@@ -67,17 +64,16 @@ export function LinkNameForm({ slug, siteUrl, locked }: { slug: string; siteUrl:
         {check?.slug === wanted && check.ok && <p className="text-green-700 flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> {t("Available")}</p>}
         {check?.slug === wanted && !check.ok && <p className="text-red-700 flex items-center gap-1"><XCircle className="w-4 h-4" /> {check.error}</p>}
       </div>
-      {confirming ? (
-        <div className="rounded-lg bg-gold-50 border border-gold-300 p-3 space-y-2">
-          <p className="text-sm text-navy-900">{t("Change your link to {link}? You can do this only once.", { link: `/a/${wanted}` })}</p>
-          <div className="flex gap-2">
-            <Button type="button" onClick={save} disabled={saving} className="h-10 bg-navy-900 text-gold-500 font-bold">{saving ? t("Saving…") : t("Yes, change it")}</Button>
-            <Button type="button" variant="outline" onClick={() => setConfirming(false)} className="h-10">{t("Cancel")}</Button>
-          </div>
-        </div>
-      ) : (
-        <Button type="button" disabled={!ready} onClick={() => setConfirming(true)} className="h-11 bg-navy-900 text-gold-500 font-bold disabled:opacity-50">{t("Use this link")}</Button>
-      )}
+      <Button type="button" disabled={!ready} onClick={() => setConfirming(true)} className="h-11 bg-navy-900 text-gold-500 font-bold disabled:opacity-50">{t("Use this link")}</Button>
+      <ConfirmDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        tone="default"
+        title={t("Change your link to {link}? You can do this only once.", { link: `/a/${wanted}` })}
+        confirmLabel={t("Yes, change it")}
+        busyLabel={t("Saving…")}
+        onConfirm={save}
+      />
     </div>
   );
 }

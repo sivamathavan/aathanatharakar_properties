@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FaWhatsapp } from "react-icons/fa";
 import { Phone, Pencil, Trash2, UserPlus, Archive, RotateCcw, Sparkles } from "lucide-react";
 import { matchesFor, matchLabel } from "@/lib/match";
@@ -56,15 +57,20 @@ export function BuyersBoard({ buyers, listings, pageBase, prefill }: { buyers: B
   const [tab, setTab] = useState<"ACTIVE" | "CLOSED">("ACTIVE");
   const [editing, setEditing] = useState<Partial<BuyerRow> | null>(prefill || null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<BuyerRow | null>(null);
   const shown = buyers.filter((b) => b.status === tab);
 
   const matches = useMemo(() => Object.fromEntries(buyers.map((b) => [b.id, matchesFor(b, listings)])), [buyers, listings]);
 
   const act = async (b: BuyerRow, body: Partial<BuyerRow> | "delete") => {
-    const res = await fetch(`/api/buyers/${b.id}`, body === "delete" ? { method: "DELETE" } : { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...b, ...body }) });
-    if (!res.ok) return void toast.error((await res.text()) || t("Could not save."));
+    const res = await fetch(`/api/buyers/${b.id}`, body === "delete" ? { method: "DELETE" } : { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...b, ...body }) }).catch(() => null);
+    if (!res || !res.ok) {
+      toast.error(res ? await errorText(res, t("Could not save.")) : t("No internet connection. Please try again."));
+      return false;
+    }
     toast.success(body === "delete" ? t("Buyer deleted.") : t("Saved."));
     router.refresh();
+    return true;
   };
 
   const summary = (b: BuyerRow) =>
@@ -172,13 +178,23 @@ export function BuyersBoard({ buyers, listings, pageBase, prefill }: { buyers: B
                   ) : (
                     <button type="button" onClick={() => act(b, { status: "ACTIVE" })} className="h-10 px-3 rounded-btn border inline-flex items-center gap-1.5"><RotateCcw className="w-4 h-4" /> {t("Looking again")}</button>
                   )}
-                  <button type="button" onClick={() => confirm(t("Delete {name}?", { name: b.name })) && act(b, "delete")} className="h-10 px-3 rounded-btn text-red-700 inline-flex items-center gap-1.5"><Trash2 className="w-4 h-4" /> {t("Delete")}</button>
+                  <button type="button" onClick={() => setDeleting(b)} className="h-10 px-3 rounded-btn text-red-700 inline-flex items-center gap-1.5"><Trash2 className="w-4 h-4" /> {t("Delete")}</button>
                 </div>
               </li>
             );
           })}
         </ul>
       )}
+      <ConfirmDialog
+        open={!!deleting}
+        onOpenChange={(o) => !o && setDeleting(null)}
+        title={t("Delete {name}?", { name: deleting?.name || "" })}
+        description={t("Their search, budget and notes are removed. This cannot be undone.")}
+        confirmLabel={t("Delete")}
+        busyLabel={t("Deleting…")}
+        cancelLabel={t("Keep")}
+        onConfirm={() => (deleting ? act(deleting, "delete") : undefined)}
+      />
     </div>
   );
 }
@@ -206,9 +222,11 @@ function BuyerForm({ initial, onDone, onCancel }: { initial: Partial<BuyerRow>; 
     try {
       const body = { ...v, localities: v.localities.split(",").map((s) => s.trim()).filter(Boolean), status: initial.status || "ACTIVE", leadId: initial.leadId || null };
       const res = await fetch(initial.id ? `/api/buyers/${initial.id}` : "/api/buyers", { method: initial.id ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      if (!res.ok) return void toast.error((await res.text()) || t("Could not save the buyer."));
+      if (!res.ok) return void toast.error(await errorText(res, t("Could not save the buyer.")));
       toast.success(initial.id ? t("Buyer updated.") : t("Buyer saved. Matching listings are shown below."));
       onDone();
+    } catch {
+      toast.error(t("No internet connection. Please try again."));
     } finally {
       setSaving(false);
     }

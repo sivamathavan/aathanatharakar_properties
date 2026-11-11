@@ -12,6 +12,9 @@ export const AGENT_SOURCES = [
   "components/support/ErrorPanel.tsx",
   "components/property/PropertyForm.tsx",
   "components/ui/FirebaseUpload.tsx",
+  "components/ui/confirm-dialog.tsx",
+  "components/help",
+  "lib/help/topics.ts",
   "lib/reminders.ts",
 ];
 

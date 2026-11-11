@@ -14,7 +14,7 @@ interface Props {
   people: RePerson[];
   properties?: ReProperty[];
   onSave: (p: RePerson, isEdit: boolean) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<boolean>;
   onTogglePin: (id: string) => void;
   onActivity: (action: string, entity: string, id: string) => void;
 }
@@ -330,7 +330,7 @@ export const RePeopleTab: React.FC<Props> = ({ people, properties = [], onSave, 
       </ReModal>
 
       {/* Delete confirm */}
-      <ReConfirm open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={() => { if (deleteId) { onDelete(deleteId); onActivity('Deleted person', '', deleteId); } }} title="Delete Person" message="Are you sure? This action cannot be undone." />
+      <ReConfirm open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={async () => { if (!deleteId) return false; const ok = await onDelete(deleteId); if (ok) onActivity('Deleted person', '', deleteId); return ok; }} title="Delete this person?" message="The person and their notes are removed from the tracker. This cannot be undone." />
     </div>
   );
 };

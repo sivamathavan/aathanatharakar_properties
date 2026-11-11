@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/lib/notify";
 import { Loader2 } from "lucide-react";
 import { friendlyAuthError, signUpAgent } from "@/lib/auth-client";
 import { TN_CITIES } from "@/lib/constants";

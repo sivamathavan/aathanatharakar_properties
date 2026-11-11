@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
 import { Loader2, Mic, Square, Sparkles } from "lucide-react";
 import { readVoiceLang, saveVoiceLang, useSpeech, type VoiceLang } from "@/components/voice/useSpeech";
 
@@ -52,7 +52,7 @@ export function SpeakListingPanel({ onFill }: { onFill: (values: DraftValues) =>
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text, writeIn }),
       });
-      if (!res.ok) return void toast.error((await res.text()) || "Couldn't read that. Please try again.");
+      if (!res.ok) return void toast.error(await errorText(res, "Could not read that. Please try again."));
       const data = await res.json();
       onFill(data.values);
       setResult({ missing: data.missing, remaining: data.remaining });

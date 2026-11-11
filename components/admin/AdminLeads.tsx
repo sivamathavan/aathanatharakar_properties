@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
 import { Handshake } from "lucide-react";
 import { LeadsInbox } from "@/components/dashboard/LeadsInbox";
 
@@ -11,7 +11,7 @@ export function AdminLeads({ leads }: { leads: any[] }) {
 
   const convert = async (id: string) => {
     const res = await fetch(`/api/admin/leads/${id}/convert`, { method: "POST" });
-    if (!res.ok) return void toast.error((await res.text()) || "Could not create the deal.");
+    if (!res.ok) return void toast.error(await errorText(res, "Could not create the deal."));
     const data = await res.json();
     setConverted((c) => ({ ...c, [id]: true }));
     toast.success(data.existed ? "This enquiry already has a deal in the Tracker." : "Deal created in the Tracker.");

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { formatINR } from "@/lib/plans";
 import { ST } from "@/components/ui/stack-table";
 
@@ -29,19 +30,22 @@ function what(p: Payment) {
 export function PaymentsReview({ pending, decided }: { pending: Payment[]; decided: Payment[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
-  const [rejecting, setRejecting] = useState<string | null>(null);
+  const [rejecting, setRejecting] = useState<Payment | null>(null);
   const [note, setNote] = useState("");
 
   const decide = async (id: string, decision: "APPROVE" | "REJECT") => {
     setBusy(id);
-    const res = await fetch(`/api/admin/payments/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision, note: decision === "REJECT" ? note : null }) });
+    const res = await fetch(`/api/admin/payments/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision, note: decision === "REJECT" ? note : null }) }).catch(() => null);
     setBusy(null);
-    if (!res.ok) return void toast.error((await res.text()) || "Could not save.");
+    if (!res || !res.ok) {
+      toast.error(res ? await errorText(res, "Could not save the decision.") : "No internet connection. Please try again.");
+      return false;
+    }
     const data = await res.json();
-    toast.success(decision === "APPROVE" ? `Approved: ${data.summary}` : "Rejected. The agent has been emailed.");
-    setRejecting(null);
+    toast.success(decision === "APPROVE" ? `Approved: ${data.summary}.` : "Rejected. The agent has been emailed.");
     setNote("");
     router.refresh();
+    return true;
   };
 
   const total = decided.filter((d) => d.status === "APPROVED" && d.decidedAt && new Date(d.decidedAt).getMonth() === new Date().getMonth() && new Date(d.decidedAt).getFullYear() === new Date().getFullYear()).reduce((s, d) => s + d.amount, 0);
@@ -61,23 +65,35 @@ export function PaymentsReview({ pending, decided }: { pending: Payment[]; decid
                   <p className="text-sm text-navy-700">{what(p)}</p>
                   <p className="text-xs text-navy-600">UTR <span className="font-mono font-semibold text-navy-900">{p.utr}</span> · {new Date(p.createdAt).toLocaleString("en-IN")}</p>
                 </div>
-                {rejecting === p.id ? (
-                  <div className="flex flex-col sm:flex-row gap-2 md:w-96">
-                    <input aria-label="Reason" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Reason (sent to agent)" className="flex-1 h-9 px-3 border rounded-md text-sm" />
-                    <button type="button" disabled={busy === p.id} onClick={() => decide(p.id, "REJECT")} className="h-9 px-3 rounded-btn bg-red-600 text-white text-sm font-semibold">Reject</button>
-                    <button type="button" onClick={() => setRejecting(null)} className="h-9 px-3 rounded-btn border text-sm">Back</button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <button type="button" disabled={busy === p.id} onClick={() => decide(p.id, "APPROVE")} className="h-9 px-4 rounded-btn bg-green-600 text-white text-sm font-semibold">Approve</button>
-                    <button type="button" onClick={() => setRejecting(p.id)} className="h-9 px-4 rounded-btn border border-red-300 text-red-700 text-sm">Not received</button>
-                  </div>
-                )}
+                <div className="flex gap-2">
+                  <button type="button" disabled={busy === p.id} onClick={() => decide(p.id, "APPROVE")} className="h-9 px-4 rounded-btn bg-green-600 text-white text-sm font-semibold">Approve</button>
+                  <button type="button" disabled={busy === p.id} onClick={() => setRejecting(p)} className="h-9 px-4 rounded-btn border border-red-300 text-red-700 text-sm">Not received</button>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      <ConfirmDialog
+        open={!!rejecting}
+        onOpenChange={(o) => {
+          if (!o) {
+            setRejecting(null);
+            setNote("");
+          }
+        }}
+        title="Reject this payment?"
+        description={rejecting ? `${rejecting.agentName} · ${formatINR(rejecting.amount)} · UTR ${rejecting.utr}. The agent is emailed that the payment wasn't found, with your reason.` : undefined}
+        confirmLabel="Reject payment"
+        busyLabel="Rejecting…"
+        onConfirm={() => (rejecting ? decide(rejecting.id, "REJECT") : undefined)}
+      >
+        <label className="block text-sm space-y-1">
+          <span className="font-medium text-navy-900">Reason (sent to the agent)</span>
+          <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={300} placeholder="e.g. No payment with this UTR reached our account." className="w-full px-3 py-2 border rounded-md text-sm" />
+        </label>
+      </ConfirmDialog>
 
       <section className="space-y-3">
         <div className="flex items-baseline justify-between">

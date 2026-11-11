@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
 import { Label } from "@/components/ui/label";
 import { Loader2, ShieldCheck } from "lucide-react";
 
@@ -28,8 +28,8 @@ export function EnquiryForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) return toast.error("Please enter your name");
-    if (formData.phone.replace(/[^0-9]/g, "").length < 10) return toast.error("Please enter a valid phone number");
+    if (!formData.name.trim()) return toast.error("Enter your name.");
+    if (formData.phone.replace(/[^0-9]/g, "").length < 10) return toast.error("Enter a valid 10-digit phone number.");
 
     setLoading(true);
     try {
@@ -43,7 +43,7 @@ export function EnquiryForm({
         toast.success("Enquiry sent. You'll get a call back shortly.");
         setFormData({ name: "", email: "", phone: "", message: DEFAULT_MESSAGE, website: "" });
       } else {
-        toast.error((await res.text()) || "Could not send your enquiry. Please try again.");
+        toast.error(await errorText(res, "Could not send your enquiry. Please try again."));
       }
     } catch {
       toast.error("No internet connection. Please try again.");

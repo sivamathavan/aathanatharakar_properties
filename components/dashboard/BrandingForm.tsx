@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
 import { Check, Lock, MapPin, Phone } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -73,7 +73,7 @@ export function BrandingForm({ agent, pro }: { agent: AgentBrandLite; pro: boole
     setSaving(true);
     try {
       const res = await fetch("/api/agent/branding", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(v) });
-      if (!res.ok) return void toast.error((await res.text()) || t("Could not save."));
+      if (!res.ok) return void toast.error(await errorText(res, t("Could not save.")));
       toast.success(t("Branding saved."));
       router.refresh();
     } finally {

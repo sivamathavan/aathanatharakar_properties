@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Building, Users2, IndianRupee, Zap, AlarmClock, BadgeCheck } from "lucide-react";
+import { Building, Users2, IndianRupee, Zap, AlarmClock, BadgeCheck, LifeBuoy, ArrowRight } from "lucide-react";
 import { getAdminLeads, getPaymentRequests, listAgents, propertiesCol } from "@/lib/firestore";
 import { daysLeft, effectiveStatus, formatINR } from "@/lib/plans";
 import { PropertyStatus } from "@/types";
 import { PushAlertsCard } from "@/components/dashboard/PushAlertsCard";
+import { countNewSupportMessages } from "@/lib/support";
 
 export const metadata = { title: "Admin overview" };
 export const dynamic = "force-dynamic";
@@ -22,12 +23,13 @@ function Tile({ href, label, value, sub, icon: Icon, alert }: { href: string; la
 
 export default async function AdminOverviewPage() {
   const now = new Date();
-  const [agents, pending, payments, leads, myActive] = await Promise.all([
+  const [agents, pending, payments, leads, myActive, support] = await Promise.all([
     listAgents(),
     getPaymentRequests({ status: "PENDING" }),
     getPaymentRequests({ status: "APPROVED" }),
     getAdminLeads(200),
     propertiesCol().where("ownerType", "==", "ADMIN").where("status", "==", PropertyStatus.ACTIVE).count().get(),
+    countNewSupportMessages(),
   ]);
 
   const statuses = agents.map((a) => effectiveStatus(a.plan, now));
@@ -48,6 +50,14 @@ export default async function AdminOverviewPage() {
         <h1 className="font-display font-bold text-xl md:text-2xl text-navy-900">Overview</h1>
         <p className="text-xs text-navy-700 mt-0.5">Your listings, your agents and what they paid.</p>
       </div>
+
+      {support > 0 && (
+        <Link href="/admin/support" className="flex items-center gap-3 rounded-card border border-gold-500 bg-gold-50 p-4 text-sm font-semibold text-navy-900 hover:shadow-sm">
+          <LifeBuoy className="w-5 h-5 text-gold-700 shrink-0" aria-hidden />
+          <span className="flex-1">{support === 1 ? "1 new support message" : `${support} new support messages`}</span>
+          <ArrowRight className="w-4 h-4" aria-hidden />
+        </Link>
+      )}
 
       {/* Alerts for enquiries on your own listings */}
       <PushAlertsCard />

@@ -8,7 +8,7 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Pencil, Download, MapPin, ExternalLink, FileCheck2, Upload, Eye } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast, errorText } from "@/lib/notify";
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 import { RE_PROPERTY_TYPES, RE_PROPERTY_STATUSES, RE_DOC_ITEMS, type ReProperty } from './re-types';
@@ -58,7 +58,7 @@ export const RePropertiesTab: React.FC<Props> = ({ properties, onChanged, onActi
       body: JSON.stringify({ docChecklist: Object.fromEntries(Object.entries(next).map(([k, v]) => [k, { status: v.status, filePath: v.filePath || null, fileUrl: null }])) }),
     });
     if (!res.ok) {
-      toast.error((await res.text()) || 'Could not save documents');
+      toast.error(await errorText(res, 'Could not save the documents.'));
       return false;
     }
     const checklist = Object.fromEntries(Object.entries(next).map(([k, v]) => [k, FROM_API[v.status]])) as ReProperty['doc_checklist'];
@@ -69,7 +69,7 @@ export const RePropertiesTab: React.FC<Props> = ({ properties, onChanged, onActi
 
   const upload = async (item: string, file?: File) => {
     if (!file || !docsFor) return;
-    if (file.size > 15 * 1024 * 1024) return void toast.error('File is larger than 15 MB');
+    if (file.size > 15 * 1024 * 1024) return void toast.error('The file must be under 15 MB.');
     setBusy(item);
     try {
       const ext = file.name.split('.').pop() || 'pdf';
@@ -79,10 +79,10 @@ export const RePropertiesTab: React.FC<Props> = ({ properties, onChanged, onActi
       if (await saveDocs(next, docsFor)) {
         setDocs(next);
         onActivity('Uploaded document', `${item} — ${docsFor.title}`, docsFor.id);
-        toast.success(`${item} uploaded`);
+        toast.success(`${item} uploaded.`);
       }
     } catch {
-      toast.error('Upload failed. Check your connection.');
+      toast.error('Could not upload. Check your connection and try again.');
     } finally {
       setBusy(null);
     }
@@ -93,7 +93,7 @@ export const RePropertiesTab: React.FC<Props> = ({ properties, onChanged, onActi
     try {
       window.open(await getDownloadURL(ref(storage, path)), '_blank', 'noopener');
     } catch {
-      toast.error('Could not open the file');
+      toast.error('Could not open the file. Please try again.');
     }
   };
 

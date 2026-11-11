@@ -7,12 +7,13 @@ import { agentBuyersCol } from "@/lib/buyers";
 import { agentDailyCol } from "@/lib/stats";
 import { trialPhoneKey } from "@/lib/trial";
 import { pushTokensCol } from "@/lib/push";
+import { supportMessagesCol } from "@/lib/support";
 
 const plain = (snap: FirebaseFirestore.QuerySnapshot) => snap.docs.map((d) => docToTyped<Record<string, unknown>>(d)!);
 
 /** Everything stored about the agent, as one JSON-friendly object. */
 export async function exportAgentData(uid: string) {
-  const [user, agent, props, leads, buyers, payments, daily] = await Promise.all([
+  const [user, agent, props, leads, buyers, payments, daily, support] = await Promise.all([
     getUserById(uid),
     getAgentById(uid),
     propertiesCol().where("postedById", "==", uid).get(),
@@ -20,6 +21,7 @@ export async function exportAgentData(uid: string) {
     agentBuyersCol().where("ownerId", "==", uid).get(),
     paymentRequestsCol().where("agentId", "==", uid).get(),
     agentDailyCol().where("agentId", "==", uid).get(),
+    supportMessagesCol().where("agentId", "==", uid).get(),
   ]);
   const privates = props.size ? await adminDb.getAll(...props.docs.map((d) => privateDetailsRef(d.id))) : [];
   const privateById = new Map(privates.map((p) => [p.ref.parent.parent!.id, p.exists ? docToTyped<Record<string, unknown>>(p) : null]));
@@ -37,6 +39,7 @@ export async function exportAgentData(uid: string) {
     buyers: plain(buyers),
     payments: plain(payments),
     dailyStats: plain(daily),
+    supportMessages: plain(support),
   };
 }
 
@@ -53,7 +56,7 @@ async function deleteAll(query: FirebaseFirestore.Query) {
 
 /**
  * Erase the agent: listings (and their photos and documents), enquiries and
- * notes, buyers, stats, link names, profile and login. Payment records stay
+ * notes, buyers, stats, support messages, link names, profile and login. Payment records stay
  * (tax law) and the trial record keeps only a hash of the phone number.
  */
 export async function deleteAgentAccount(uid: string): Promise<{ slug: string | null; slugs: string[] }> {
@@ -79,6 +82,7 @@ export async function deleteAgentAccount(uid: string): Promise<{ slug: string | 
   await deleteAll(agentBuyersCol().where("ownerId", "==", uid));
   await deleteAll(agentDailyCol().where("agentId", "==", uid));
   await deleteAll(pushTokensCol().where("uid", "==", uid));
+  await deleteAll(supportMessagesCol().where("agentId", "==", uid));
 
   const slugs = await agentSlugsCol().where("uid", "==", uid).get();
   const batch = adminDb.batch();

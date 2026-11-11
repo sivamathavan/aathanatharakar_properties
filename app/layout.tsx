@@ -12,6 +12,7 @@ import { IOSInstallPrompt } from "@/components/layout/IOSInstallPrompt";
 import { HideOnAgentPages } from "@/components/layout/HideOnAgentPages";
 import { ServiceWorker } from "@/components/layout/ServiceWorker";
 import { AppLaunchMark } from "@/components/app/AppLaunchMark";
+import { SiteHelp } from "@/components/help/SiteHelp";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -70,7 +71,8 @@ export default function RootLayout({
           <IOSInstallPrompt />
           <ServiceWorker />
           <AppLaunchMark />
-          <Toaster position="top-center" richColors />
+          <SiteHelp />
+          <Toaster />
         </AuthProvider>
       </body>
     </html>

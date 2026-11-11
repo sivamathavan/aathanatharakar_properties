@@ -13,7 +13,7 @@ import { exportToCSV, exportToPDF } from './exportHelpers';
 interface Props {
   deals: ReDeal[];
   onSave: (d: ReDeal, isEdit: boolean) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<boolean>;
   onUpdateStatus: (id: string, status: ReDealStatus) => void;
   onActivity: (action: string, entity: string, id: string) => void;
 }
@@ -329,7 +329,7 @@ export const ReDealsTab: React.FC<Props> = ({ deals, onSave, onDelete, onUpdateS
         </div>
       </ReModal>
 
-      <ReConfirm open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={() => { if (deleteId) { onDelete(deleteId); onActivity('Deleted deal', '', deleteId); } }} title="Delete Deal" message="Are you sure? This action cannot be undone." />
+      <ReConfirm open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={async () => { if (!deleteId) return false; const ok = await onDelete(deleteId); if (ok) onActivity('Deleted deal', '', deleteId); return ok; }} title="Delete this deal?" message="The deal and its notes are removed from the tracker. This cannot be undone." />
     </div>
   );
 };

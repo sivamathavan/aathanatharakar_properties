@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/notify";
 import { trackTap } from "@/components/agent/TapLink";
 
 export function SharePropertyButton({ title, url, agentId, propertyId }: { title: string; url: string; agentId?: string; propertyId?: string }) {
@@ -20,9 +20,9 @@ export function SharePropertyButton({ title, url, agentId, propertyId }: { title
     } else {
       try {
         await navigator.clipboard.writeText(url);
-        toast.success("Link copied to clipboard!");
+        toast.success("Link copied.");
       } catch (err) {
-        toast.error("Failed to copy link");
+        toast.error("Could not copy the link. Copy it from the address bar.");
       }
     }
   };

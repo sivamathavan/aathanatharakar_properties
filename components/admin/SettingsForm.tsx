@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
 import type { PlansConfig, SiteConfig } from "@/types";
 
 function Field({ id, label, value, onChange, type = "number", hint }: { id: string; label: string; value: string | number; onChange: (v: string) => void; type?: string; hint?: string }) {
@@ -32,7 +32,7 @@ export function SettingsForm({ plans, site }: { plans: PlansConfig; site: SiteCo
     setSaving(true);
     const res = await fetch("/api/admin/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plans: p, site: s }) });
     setSaving(false);
-    if (!res.ok) return void toast.error((await res.text()) || "Could not save.");
+    if (!res.ok) return void toast.error(await errorText(res, "Could not save."));
     toast.success("Settings saved.");
     router.refresh();
   };

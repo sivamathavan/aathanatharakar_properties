@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { sendEmailVerification } from "firebase/auth";
-import { toast } from "sonner";
+import { toast } from "@/lib/notify";
 import { auth } from "@/lib/firebase";
 import { confirmLinkSettings, syncEmailVerified } from "@/lib/auth-client";
 import { useT } from "@/components/i18n/I18nProvider";

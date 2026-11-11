@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { FileCheck2, Paperclip, Lock, X } from "lucide-react";
 import { storage } from "@/lib/firebase";
@@ -28,7 +28,7 @@ export function DocsChecklist({ propertyId, uid, initial }: { propertyId: string
     setBusy(name);
     const res = await fetch(`/api/properties/${propertyId}/docs`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: next }) });
     setBusy(null);
-    if (!res.ok) return void toast.error((await res.text()) || t("Could not save."));
+    if (!res.ok) return void toast.error(await errorText(res, t("Could not save.")));
     setItems(next);
   };
 

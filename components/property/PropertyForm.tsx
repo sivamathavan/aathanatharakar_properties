@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,7 +63,7 @@ export function PropertyForm({
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
-        toast.error((await res.text()) || t("Could not save. Please try again."));
+        toast.error(await errorText(res, t("Could not save. Please try again.")));
         return;
       }
       toast.success(propertyId ? t("Listing updated.") : t("Listing published."));

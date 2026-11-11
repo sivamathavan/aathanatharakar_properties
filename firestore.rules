@@ -48,6 +48,12 @@ service cloud.firestore {
     match /crm_expenses/{id} { allow read: if isAdmin(); allow write: if false; }
     match /crm_activity/{id} { allow read: if isAdmin(); allow write: if false; }
 
+    // "Send us a message" from the help panel: written and read only by the server
+    // (api/support, Admin → Support). Spelled out so a later catch-all change can't open it.
+    match /supportMessages/{id} {
+      allow read, write: if false;
+    }
+
     // Everything else (agents, leads, payments, slugs, audit, rate limits) is server-only.
     match /{document=**} {
       allow read, write: if false;

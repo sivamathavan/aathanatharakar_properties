@@ -5,7 +5,8 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FaWhatsapp } from "react-icons/fa";
 import { Pencil, Trash2, Rocket, Eye, EyeOff, CheckCircle2, FileCheck2, Users, RotateCcw } from "lucide-react";
 import { formatINR } from "@/lib/plans";
@@ -69,7 +70,7 @@ export function ListingsTable({
   const router = useRouter();
   const [tab, setTab] = useState<"OPEN" | "CLOSED">("OPEN");
   const [busy, setBusy] = useState<string | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<Row | null>(null);
   const [boosting, setBoosting] = useState<Row | null>(null);
   const [selling, setSelling] = useState<Row | null>(null);
   const open = properties.filter((p) => !CLOSED.includes(p.status));
@@ -78,20 +79,21 @@ export function ListingsTable({
 
   const setStatus = async (id: string, body: Record<string, unknown>) => {
     setBusy(id);
-    const res = await fetch(`/api/properties/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const res = await fetch(`/api/properties/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(() => null);
     setBusy(null);
-    if (!res.ok) return void toast.error((await res.text()) || t("Could not update."));
+    if (!res) return void toast.error(t("No internet connection. Please try again."));
+    if (!res.ok) return void toast.error(await errorText(res, t("Could not update.")));
     toast.success(body.status === "ACTIVE" ? t("Listing is live.") : body.status === "INACTIVE" ? t("Listing hidden.") : body.status === "RENTED" ? t("Marked as rented.") : t("Marked as sold."));
     router.refresh();
     return true;
   };
 
   const remove = async (id: string) => {
-    setBusy(id);
     const res = await fetch(`/api/properties/${id}`, { method: "DELETE" });
-    setBusy(null);
-    setConfirmDelete(null);
-    if (!res.ok) return void toast.error((await res.text()) || t("Could not delete."));
+    if (!res.ok) {
+      toast.error(await errorText(res, t("Could not delete.")));
+      return false;
+    }
     toast.success(t("Listing deleted."));
     router.refresh();
   };
@@ -159,20 +161,12 @@ export function ListingsTable({
                 )}
               </div>
               <div className="flex flex-wrap sm:flex-col gap-2 sm:w-44 shrink-0 text-sm">
-                {confirmDelete === p.id ? (
-                  <div className="flex flex-col gap-2 w-full">
-                    <span className="text-xs text-red-700">{t("Delete for good? Photos are removed too.")}</span>
-                    <div className="flex gap-2">
-                      <button type="button" onClick={() => remove(p.id)} disabled={busy === p.id} className="flex-1 h-9 rounded-btn bg-red-700 text-white font-semibold">{t("Delete")}</button>
-                      <button type="button" onClick={() => setConfirmDelete(null)} className="flex-1 h-9 rounded-btn border">{t("Keep")}</button>
-                    </div>
-                  </div>
-                ) : isClosed ? (
+                {isClosed ? (
                   <>
                     <button type="button" disabled={busy === p.id} onClick={() => setStatus(p.id, { status: "ACTIVE" })} className="h-9 px-3 rounded-btn border inline-flex items-center justify-center gap-1.5">
                       <RotateCcw className="w-4 h-4" /> {t("Make live again")}
                     </button>
-                    <button type="button" onClick={() => setConfirmDelete(p.id)} className="h-9 px-3 rounded-btn text-red-700 inline-flex items-center justify-center gap-1.5">
+                    <button type="button" onClick={() => setConfirmDelete(p)} className="h-9 px-3 rounded-btn text-red-700 inline-flex items-center justify-center gap-1.5">
                       <Trash2 className="w-4 h-4" /> {t("Delete")}
                     </button>
                   </>
@@ -204,7 +198,7 @@ export function ListingsTable({
                         <Eye className="w-4 h-4" /> {t("Make live")}
                       </button>
                     )}
-                    <button type="button" onClick={() => setConfirmDelete(p.id)} className="h-9 px-3 rounded-btn text-red-700 inline-flex items-center justify-center gap-1.5">
+                    <button type="button" onClick={() => setConfirmDelete(p)} className="h-9 px-3 rounded-btn text-red-700 inline-flex items-center justify-center gap-1.5">
                       <Trash2 className="w-4 h-4" /> {t("Delete")}
                     </button>
                   </>
@@ -214,6 +208,17 @@ export function ListingsTable({
           );
         })}
       </ul>
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onOpenChange={(o) => !o && setConfirmDelete(null)}
+        title={t("Delete {name}?", { name: confirmDelete?.title || "" })}
+        description={t("Delete for good? Photos are removed too.")}
+        confirmLabel={t("Delete")}
+        busyLabel={t("Deleting…")}
+        cancelLabel={t("Keep")}
+        onConfirm={() => (confirmDelete ? remove(confirmDelete.id) : undefined)}
+      />
 
       {selling && (
         <SoldDialog

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/notify";
 import { BellRing, BellOff } from "lucide-react";
 import { useT } from "@/components/i18n/I18nProvider";
 import { pushState, turnOffPush, turnOnPush, type PushState } from "@/lib/push-client";

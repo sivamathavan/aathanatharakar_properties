@@ -38,6 +38,7 @@ beforeEach(async () => {
     await setDoc(doc(db, "agentBuyers/b1"), { ownerId: "agentA", name: "Buyer", phone: "9000000001" });
     await setDoc(doc(db, "agentDaily/agentA_2026-11-01"), { agentId: "agentA", date: "2026-11-01", pageViews: 3 });
     await setDoc(doc(db, "pushTokens/t_a"), { uid: "agentA", token: "fcm-token-a" });
+    await setDoc(doc(db, "supportMessages/s1"), { agentId: "agentA", message: "My page is paused", status: "NEW" });
   });
 });
 
@@ -102,6 +103,16 @@ describe("Firestore", () => {
     await assertFails(addDoc(collection(agentA(), "agentBuyers"), { ownerId: "agentA", name: "x" }));
     await assertFails(getDoc(doc(agentA(), "agentDaily/agentA_2026-11-01")));
     await assertFails(setDoc(doc(anon(), "agentDaily/agentA_2026-11-01"), { pageViews: 999 }));
+  });
+
+  test("support messages are server-only: not even the sender or the admin reads them from a browser", async () => {
+    await assertFails(getDoc(doc(agentA(), "supportMessages/s1")));
+    await assertFails(getDoc(doc(admin(), "supportMessages/s1")));
+    await assertFails(getDocs(collection(admin(), "supportMessages")));
+    await assertFails(getDoc(doc(anon(), "supportMessages/s1")));
+    await assertFails(addDoc(collection(anon(), "supportMessages"), { message: "spam", status: "NEW" }));
+    await assertFails(addDoc(collection(agentA(), "supportMessages"), { agentId: "agentA", message: "hi", status: "NEW" }));
+    await assertFails(setDoc(doc(admin(), "supportMessages/s1"), { status: "DONE" }, { merge: true }));
   });
 
   test("prices are public but nobody edits them from a browser", async () => {

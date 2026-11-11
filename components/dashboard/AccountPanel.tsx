@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { toast } from "sonner";
+import { useRef, useState } from "react";
+import { toast, errorText } from "@/lib/notify";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Download, Trash2 } from "lucide-react";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -11,24 +12,30 @@ export function AccountPanel({ email }: { email: string }) {
   const t = useT();
   const [word, setWord] = useState("");
   const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const wordRef = useRef<HTMLInputElement>(null);
 
-  const remove = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (word !== "DELETE") return void toast.error(t("Type DELETE to confirm."));
-    setBusy(true);
-    try {
-      // A fresh sign-in proves it's really you.
-      const cred = await signInWithEmailAndPassword(auth, email, password).catch(() => null);
-      if (!cred) return void toast.error(t("That password is not right."));
-      const idToken = await cred.user.getIdToken(true);
-      const res = await fetch("/api/agent/account", { method: "DELETE", headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` }, body: JSON.stringify({ confirm: "DELETE" }) });
-      if (!res.ok) return void toast.error((await res.text()) || t("Could not delete your account."));
-      await signOut(auth).catch(() => {});
-      window.location.href = "/account-deleted";
-    } finally {
-      setBusy(false);
+  const remove = async () => {
+    if (word !== "DELETE") {
+      toast.error(t("Type DELETE to confirm."));
+      return false;
     }
+    // A fresh sign-in proves it's really you.
+    const cred = await signInWithEmailAndPassword(auth, email, password).catch(() => null);
+    if (!cred) {
+      toast.error(t("That password is not right."));
+      return false;
+    }
+    const idToken = await cred.user.getIdToken(true);
+    const res = await fetch("/api/agent/account", { method: "DELETE", headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` }, body: JSON.stringify({ confirm: "DELETE" }) });
+    if (!res.ok) {
+      toast.error(await errorText(res, t("Could not delete your account.")));
+      return false;
+    }
+    await signOut(auth).catch(() => {});
+    window.location.href = "/account-deleted";
+    // Stay open and busy while the browser leaves.
+    return new Promise<boolean>(() => {});
   };
 
   return (
@@ -45,19 +52,34 @@ export function AccountPanel({ email }: { email: string }) {
         <h2 className="font-bold text-red-800">{t("Delete my account")}</h2>
         <p className="text-sm text-navy-800">{t("This removes your page, all listings and photos, documents, enquiries, buyers and stats, and your login. It cannot be undone.")}</p>
         <p className="text-sm text-navy-700">{t("We keep only your payment records (tax law) and a coded copy of your mobile number so the free trial can't be repeated.")}</p>
-        <form onSubmit={remove} className="grid sm:grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label htmlFor="del-word" className="text-sm font-medium">{t("Type DELETE")}</label>
-            <input id="del-word" value={word} onChange={(e) => setWord(e.target.value)} autoComplete="off" autoCapitalize="characters" className="w-full h-11 px-3 border rounded-md" />
+        <button type="button" onClick={() => setAsking(true)} className="h-11 px-4 inline-flex items-center justify-center gap-2 rounded-btn bg-red-700 text-white text-sm font-bold">
+          <Trash2 className="w-4 h-4" /> {t("Delete my account")}
+        </button>
+        <ConfirmDialog
+          open={asking}
+          onOpenChange={(o) => {
+            setAsking(o);
+            if (!o) setPassword("");
+          }}
+          title={t("Delete my account")}
+          description={t("This removes your page, all listings and photos, documents, enquiries, buyers and stats, and your login. It cannot be undone.")}
+          confirmLabel={t("Delete my account for good")}
+          busyLabel={t("Deleting…")}
+          confirmDisabled={word !== "DELETE" || !password}
+          initialFocus={wordRef}
+          onConfirm={remove}
+        >
+          <div className="grid gap-3">
+            <div className="space-y-1">
+              <label htmlFor="del-word" className="text-sm font-medium text-navy-900">{t("Type DELETE")}</label>
+              <input id="del-word" ref={wordRef} value={word} onChange={(e) => setWord(e.target.value)} autoComplete="off" autoCapitalize="characters" data-no-voice className="w-full h-11 px-3 border rounded-md" />
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="del-pass" className="text-sm font-medium text-navy-900">{t("Your password")}</label>
+              <input id="del-pass" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required className="w-full h-11 px-3 border rounded-md" />
+            </div>
           </div>
-          <div className="space-y-1">
-            <label htmlFor="del-pass" className="text-sm font-medium">{t("Your password")}</label>
-            <input id="del-pass" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required className="w-full h-11 px-3 border rounded-md" />
-          </div>
-          <button type="submit" disabled={busy || word !== "DELETE" || !password} className="sm:col-span-2 h-11 px-4 inline-flex items-center justify-center gap-2 rounded-btn bg-red-700 text-white text-sm font-bold disabled:opacity-50">
-            <Trash2 className="w-4 h-4" /> {busy ? t("Deleting…") : t("Delete my account for good")}
-          </button>
-        </form>
+        </ConfirmDialog>
       </section>
     </div>
   );

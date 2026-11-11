@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast, errorText } from "@/lib/notify";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/lib/firebase";
 import { compressImage } from "@/components/ui/FirebaseUpload";
@@ -64,7 +64,7 @@ export function ProfileForm({ agent }: { agent: AgentLite }) {
     setSaving(true);
     try {
       const res = await fetch("/api/agent/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(v) });
-      if (!res.ok) return void toast.error((await res.text()) || t("Could not save."));
+      if (!res.ok) return void toast.error(await errorText(res, t("Could not save.")));
       toast.success(t("Profile saved."));
       router.refresh();
     } finally {

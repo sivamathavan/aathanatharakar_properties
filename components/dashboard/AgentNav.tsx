@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { OPEN_HELP_EVENT } from "@/components/help/open-help";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -65,6 +66,12 @@ export function AgentBottomNav({ help }: { help: React.ReactNode }) {
   const t = useT();
   const pathname = usePathname() || "";
   const [more, setMore] = useState(false);
+  // "Questions & answers" / "Send us a message" in More → Help open the help panel; close the sheet under it.
+  useEffect(() => {
+    const close = () => setMore(false);
+    window.addEventListener(OPEN_HELP_EVENT, close);
+    return () => window.removeEventListener(OPEN_HELP_EVENT, close);
+  }, []);
   const main = AGENT_NAV.filter((n) => MOBILE_MAIN.includes(n.href));
   const rest = AGENT_NAV.filter((n) => !MOBILE_MAIN.includes(n.href));
   const moreActive = rest.some((n) => isActive(pathname, n.href));
