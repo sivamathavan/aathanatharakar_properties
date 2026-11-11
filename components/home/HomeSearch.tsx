@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TN_CITIES, PROPERTY_TYPES } from "@/lib/constants";
+import { useT } from "@/components/providers/i18n-provider";
 
 export function HomeSearch() {
+  const t = useT();
   const router = useRouter();
   const [city, setCity] = useState("");
   const [type, setType] = useState("");
@@ -27,33 +29,36 @@ export function HomeSearch() {
       <div className="flex flex-col lg:flex-row gap-3">
         {/* City Select */}
         <div className="flex-1 space-y-1">
-          <label className="hidden lg:block text-xs font-semibold text-navy-800 ml-1">City / Locality</label>
+          <label className="hidden lg:block text-xs font-semibold text-navy-800 ml-1">{t("City / Locality")}</label>
           <select 
             value={city} 
             onChange={(e) => setCity(e.target.value)}
             className="w-full h-12 px-3 border border-gray-200 rounded-btn text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gold-400 focus:border-gold-400"
           >
-            <option value="">All Cities / Localities</option>
+            <option value="">{t("All Cities / Localities")}</option>
             {TN_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
 
         {/* Property Type Select */}
         <div className="flex-1 space-y-1">
-          <label className="hidden lg:block text-xs font-semibold text-navy-800 ml-1">Property Type</label>
+          <label className="hidden lg:block text-xs font-semibold text-navy-800 ml-1">{t("Property Type")}</label>
           <select 
             value={type} 
             onChange={(e) => setType(e.target.value)}
             className="w-full h-12 px-3 border border-gray-200 rounded-btn text-base bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gold-400 focus:border-gold-400"
           >
-            <option value="">All Property Types</option>
-            {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t.replace('_', ' ')}</option>)}
+            <option value="">{t("All Property Types")}</option>
+            {PROPERTY_TYPES.map(tKey => {
+              const formatted = tKey.replace('_', ' ');
+              return <option key={tKey} value={tKey}>{t(formatted) || formatted}</option>;
+            })}
           </select>
         </div>
 
         {/* Listing Type Stack/Tabs (Mobile: 2x2 grid, Tablet+: inline) */}
         <div className="flex-1 space-y-1">
-          <label className="hidden lg:block text-xs font-semibold text-navy-800 ml-1">Listing Type</label>
+          <label className="hidden lg:block text-xs font-semibold text-navy-800 ml-1">{t("Listing Type")}</label>
           <div className="grid grid-cols-2 xs:grid-cols-4 lg:flex lg:gap-1 p-1 bg-navy-50 rounded-btn border border-gray-100">
             {["BUY", "RENT", "LEASE"].map((mode) => {
               const active = listingType === mode;
@@ -68,7 +73,7 @@ export function HomeSearch() {
                       : "text-navy-700 hover:text-[#0C2B29]"
                   }`}
                 >
-                  {mode === "BUY" ? "Buy" : mode === "RENT" ? "Rent" : "Lease"}
+                  {mode === "BUY" ? t("Buy") : mode === "RENT" ? t("Rent") : t("Lease")}
                 </button>
               );
             })}
@@ -81,7 +86,7 @@ export function HomeSearch() {
             type="submit" 
             className="w-full lg:w-auto h-12 px-8 bg-gold-500 hover:bg-gold-400 active:bg-gold-600 text-navy-900 font-sans font-bold text-sm shadow-md rounded-btn flex items-center justify-center gap-2"
           >
-            <Search className="w-4 h-4" /> Search Properties
+            <Search className="w-4 h-4" /> {t("Search Properties")}
           </Button>
         </div>
       </div>

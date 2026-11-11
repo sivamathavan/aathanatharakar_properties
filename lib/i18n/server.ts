@@ -1,9 +1,22 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { LANG_COOKIE, makeT, parseLang, type Lang, type TFunc } from "@/lib/i18n";
 
-/** Language for agent screens, from the cookie set by the language switch. */
+/** Language from cookie, with automatic detection from mobile / browser headers as fallback. */
 export function getLang(): Lang {
-  return parseLang(cookies().get(LANG_COOKIE)?.value);
+  const cookieVal = cookies().get(LANG_COOKIE)?.value;
+  if (cookieVal) return parseLang(cookieVal);
+
+  try {
+    const accept = headers().get("accept-language")?.toLowerCase() || "";
+    if (accept.includes("ta")) return "ta";
+    if (accept.includes("hi")) return "hi";
+    if (accept.includes("ml")) return "ml";
+    if (accept.includes("kn")) return "kn";
+  } catch {
+    // Edge runtime fallback
+  }
+
+  return "en";
 }
 
 export function serverT(): TFunc {

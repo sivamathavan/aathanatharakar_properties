@@ -10,8 +10,10 @@ import { TN_CITIES } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useT } from "@/components/providers/i18n-provider";
 
 export function RegisterForm({ trialDays, trialListings }: { trialDays: number; trialListings: number }) {
+  const t = useT();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [v, setV] = useState({ name: "", agencyName: "", phone: "", city: "", email: "", password: "" });
@@ -36,51 +38,51 @@ export function RegisterForm({ trialDays, trialListings }: { trialDays: number; 
     <div className="min-h-[80vh] flex items-center justify-center bg-warm-cream p-4 py-10">
       <div className="w-full max-w-lg bg-white border border-[#E4DED2] rounded-card shadow-sm p-6 sm:p-8 space-y-6">
         <div className="space-y-1">
-          <h1 className="text-2xl font-display font-bold text-navy-900">Get your own property page</h1>
+          <h1 className="text-2xl font-display font-bold text-navy-900">{t("Get your own property page")}</h1>
           <p className="text-sm text-navy-700">
-            Free for {trialDays} days, up to {trialListings} listings. No card needed.
+            {t("Free for {trialDays} days, up to {trialListings} listings. No card needed.", { trialDays, trialListings })}
           </p>
         </div>
         <form onSubmit={submit} className="grid sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="rg-name">Your name</Label>
+            <Label htmlFor="rg-name">{t("Your name")}</Label>
             <Input id="rg-name" autoComplete="name" value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} required className="h-11" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="rg-agency">Agency name (optional)</Label>
+            <Label htmlFor="rg-agency">{t("Agency name (optional)")}</Label>
             <Input id="rg-agency" autoComplete="organization" value={v.agencyName} onChange={(e) => setV({ ...v, agencyName: e.target.value })} className="h-11" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="rg-phone">Mobile number</Label>
+            <Label htmlFor="rg-phone">{t("Mobile number")}</Label>
             <Input id="rg-phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="98765 43210" value={v.phone} onChange={(e) => setV({ ...v, phone: e.target.value })} required className="h-11" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="rg-city">City</Label>
+            <Label htmlFor="rg-city">{t("City")}</Label>
             <select id="rg-city" className="w-full h-11 px-3 border border-input rounded-md bg-white text-sm" value={v.city} onChange={(e) => setV({ ...v, city: e.target.value })} required>
-              <option value="">Choose city</option>
+              <option value="">{t("Choose city")}</option>
               {TN_CITIES.map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="rg-email">Email</Label>
+            <Label htmlFor="rg-email">{t("Email")}</Label>
             <Input id="rg-email" type="email" autoComplete="email" value={v.email} onChange={(e) => setV({ ...v, email: e.target.value })} required className="h-11" />
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="rg-password">Password</Label>
+            <Label htmlFor="rg-password">{t("Password")}</Label>
             <Input id="rg-password" type="password" autoComplete="new-password" minLength={8} value={v.password} onChange={(e) => setV({ ...v, password: e.target.value })} required className="h-11" />
-            <p className="text-xs text-navy-600">At least 8 characters.</p>
+            <p className="text-xs text-navy-600">{t("At least 8 characters.")}</p>
           </div>
           <Button type="submit" disabled={loading} className="sm:col-span-2 h-11 bg-navy-900 text-gold-500 hover:bg-navy-950 font-bold">
-            {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Creating your page…</> : "Start free trial"}
+            {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> {t("Creating your page…")}</> : t("Start free trial")}
           </Button>
         </form>
         <p className="text-xs text-navy-600">
-          By signing up you agree to our <Link href="/terms" className="underline">terms</Link> and <Link href="/privacy" className="underline">privacy policy</Link>.
+          {t("By signing up you agree to our terms and privacy policy.")}
         </p>
         <p className="text-center text-sm text-navy-700">
-          Already have an account? <Link href="/login" className="underline font-semibold text-navy-900">Sign in</Link>
+          {t("Already have an account?")} <Link href="/login" className="underline font-semibold text-navy-900">{t("Sign in")}</Link>
         </p>
       </div>
     </div>

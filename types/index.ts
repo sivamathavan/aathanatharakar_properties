@@ -150,7 +150,7 @@ export interface AgentDoc {
   showSold?: boolean; // "Recently sold" strip on the public page
   slugChangedAt?: Date | null; // the link name can be chosen once
   previousSlugs?: string[]; // old links redirect to the current one
-  uiLang?: "en" | "ta";
+  uiLang?: "en" | "ta" | "hi" | "ml" | "kn";
   // Milestones for the admin funnel and onboarding.
   emailVerifiedAt?: Date | null;
   firstListingAt?: Date | null;

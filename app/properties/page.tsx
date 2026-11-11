@@ -6,6 +6,7 @@ import { SlidersHorizontal, ArrowUpDown, Search } from "lucide-react";
 import { TN_CITIES, PROPERTY_TYPES, LISTING_TYPES, LISTING_TYPE_LABEL } from "@/lib/constants";
 import { PropertyCard } from "@/components/property/PropertyCard";
 import { MobileFilterDrawer } from "@/components/property/MobileFilterDrawer";
+import { serverT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default async function PropertiesPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const t = serverT();
   const city = typeof searchParams.city === "string" ? searchParams.city : undefined;
   const type = typeof searchParams.type === "string" ? searchParams.type : undefined;
   const listingType =
@@ -88,12 +90,14 @@ export default async function PropertiesPage({
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
             <div>
               <h1 className="font-display font-bold text-xl md:text-3xl text-navy-900 leading-tight">
-                Available Properties
+                {t("Available Properties")}
               </h1>
               <p className="text-xs sm:text-sm font-sans text-navy-700 mt-1">
                 {totalCount === 0
-                  ? "No matching listings found"
-                  : `${totalCount} verified listing${totalCount === 1 ? "" : "s"} in Tamil Nadu`}
+                  ? t("No matching listings found")
+                  : totalCount === 1
+                  ? t("{count} verified listing in Tamil Nadu", { count: totalCount })
+                  : t("{count} verified listings in Tamil Nadu", { count: totalCount })}
               </p>
             </div>
 
@@ -103,7 +107,7 @@ export default async function PropertiesPage({
                   variant="outline"
                   className="border-[#E4DED2] hover:bg-navy-50 text-navy-800 font-sans h-9 text-xs"
                 >
-                  Clear all filters ({activeFilterCount})
+                  {t("Clear all filters ({count})", { count: activeFilterCount })}
                 </Button>
               </Link>
             )}
@@ -130,15 +134,15 @@ export default async function PropertiesPage({
                 type="search"
                 name="q"
                 defaultValue={q || ""}
-                placeholder="Search by title, locality or address…"
+                placeholder={t("Search by title, locality or address…")}
                 className="w-full h-11 pl-9 pr-24 border border-[#E4DED2] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
-                aria-label="Search properties"
+                aria-label={t("Search properties")}
               />
               <button
                 type="submit"
                 className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 px-3 rounded-btn bg-navy-900 text-gold-500 text-xs font-bold hover:bg-navy-950"
               >
-                Search
+                {t("Search")}
               </button>
             </div>
           </form>
@@ -146,13 +150,13 @@ export default async function PropertiesPage({
           {/* Sort chips */}
           <div className="mt-4">
             <p className="text-xs font-semibold text-navy-800 uppercase tracking-wider mb-2 flex items-center gap-1 font-sans">
-              <ArrowUpDown className="w-3 h-3 text-gold-500" /> Sort by
+              <ArrowUpDown className="w-3 h-3 text-gold-500" /> {t("Sort by")}
             </p>
             <div className="w-full overflow-x-auto scrollbar-hide flex gap-2 py-1 scroll-snap-x snap-mandatory">
               {[
-                { value: undefined, label: "Latest Listings" },
-                { value: "price_asc", label: "Price: Low to High" },
-                { value: "price_desc", label: "Price: High to Low" },
+                { value: undefined, label: t("Latest Listings") },
+                { value: "price_asc", label: t("Price: Low to High") },
+                { value: "price_desc", label: t("Price: High to Low") },
               ].map(({ value, label }) => (
                 <Link
                   key={label}
@@ -175,7 +179,7 @@ export default async function PropertiesPage({
           <aside className="hidden md:block w-full md:w-1/4 shrink-0">
             <div className="bg-white p-6 rounded-card border border-[#E4DED2] shadow-sm sticky top-24">
               <h2 className="font-display font-bold text-lg text-navy-900 mb-5 pb-3 border-b border-[#E4DED2] flex items-center gap-2">
-                <SlidersHorizontal className="w-4 h-4 text-gold-500" /> Filters
+                <SlidersHorizontal className="w-4 h-4 text-gold-500" /> {t("Filters")}
               </h2>
 
               <form method="get" className="space-y-4">
@@ -184,14 +188,14 @@ export default async function PropertiesPage({
 
                 <div>
                   <label className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-2 font-sans">
-                    City
+                    {t("City")}
                   </label>
                   <select
                     name="city"
                     defaultValue={city || ""}
                     className="w-full h-11 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                   >
-                    <option value="">All Cities</option>
+                    <option value="">{t("All Cities")}</option>
                     {TN_CITIES.map((c) => (
                       <option key={c} value={c}>
                         {c}
@@ -202,35 +206,38 @@ export default async function PropertiesPage({
 
                 <div>
                   <label className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-2 font-sans">
-                    Property Type
+                    {t("Property Type")}
                   </label>
                   <select
                     name="type"
                     defaultValue={type || ""}
                     className="w-full h-11 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                   >
-                    <option value="">All Types</option>
-                    {PROPERTY_TYPES.map((t) => (
-                      <option key={t} value={t}>
-                        {t.replace("_", " ")}
-                      </option>
-                    ))}
+                    <option value="">{t("All Types")}</option>
+                    {PROPERTY_TYPES.map((tKey) => {
+                      const formatted = tKey.replace("_", " ");
+                      return (
+                        <option key={tKey} value={tKey}>
+                          {t(formatted) || formatted}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-2 font-sans">
-                    Listing Type
+                    {t("Listing Type")}
                   </label>
                   <select
                     name="listingType"
                     defaultValue={listingType || ""}
                     className="w-full h-11 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                   >
-                    <option value="">All Listings</option>
-                    {LISTING_TYPES.map((t) => (
-                      <option key={t} value={t}>
-                        {LISTING_TYPE_LABEL[t]}
+                    <option value="">{t("All Listings")}</option>
+                    {LISTING_TYPES.map((lKey) => (
+                      <option key={lKey} value={lKey}>
+                        {t(LISTING_TYPE_LABEL[lKey] || lKey)}
                       </option>
                     ))}
                   </select>
@@ -238,14 +245,14 @@ export default async function PropertiesPage({
 
                 <div>
                   <label className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-2 font-sans">
-                    Bedrooms (BHK)
+                    {t("Bedrooms (BHK)")}
                   </label>
                   <select
                     name="bhk"
                     defaultValue={bhk?.toString() || ""}
                     className="w-full h-11 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500"
                   >
-                    <option value="">Any</option>
+                    <option value="">{t("Any")}</option>
                     {[1, 2, 3, 4, 5].map((n) => (
                       <option key={n} value={n}>
                         {n} BHK
@@ -256,7 +263,7 @@ export default async function PropertiesPage({
 
                 <div>
                   <label className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-2 font-sans">
-                    Price Range (₹)
+                    {t("Price Range (₹)")}
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     <input
@@ -264,7 +271,7 @@ export default async function PropertiesPage({
                       name="minPrice"
                       defaultValue={minPrice?.toString() || ""}
                       min="0"
-                      placeholder="Min"
+                      placeholder={t("Min")}
                       className="h-11 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500"
                     />
                     <input
@@ -272,7 +279,7 @@ export default async function PropertiesPage({
                       name="maxPrice"
                       defaultValue={maxPrice?.toString() || ""}
                       min="0"
-                      placeholder="Max"
+                      placeholder={t("Max")}
                       className="h-11 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-1 focus:ring-gold-500"
                     />
                   </div>
@@ -283,7 +290,7 @@ export default async function PropertiesPage({
                     type="submit"
                     className="w-full h-11 bg-navy-900 text-gold-500 hover:bg-navy-950 hover:text-gold-400 font-sans font-bold shadow-sm rounded-btn transition-colors"
                   >
-                    Apply Filters
+                    {t("Apply Filters")}
                   </Button>
                   <Link href="/properties" className="block w-full text-center">
                     <Button
@@ -291,7 +298,7 @@ export default async function PropertiesPage({
                       variant="outline"
                       className="w-full h-11 border-[#E4DED2] text-navy-800 hover:bg-navy-50 font-sans"
                     >
-                      Clear Filters
+                      {t("Clear Filters")}
                     </Button>
                   </Link>
                 </div>
@@ -310,14 +317,14 @@ export default async function PropertiesPage({
             {serializedProperties.length === 0 && (
               <div className="text-center py-12 md:py-20 bg-white rounded-card border border-[#E4DED2] shadow-xs">
                 <h3 className="font-display font-semibold text-base md:text-xl text-navy-900">
-                  No properties found
+                  {t("No properties found")}
                 </h3>
                 <p className="text-gray-500 mt-2 font-sans text-xs md:text-sm">
-                  Try adjusting your filters or search keywords
+                  {t("Try adjusting your filters or search keywords")}
                 </p>
                 <Link href="/properties" className="mt-6 inline-block">
                   <Button className="bg-navy-900 text-gold-500 hover:bg-navy-950 font-sans">
-                    View All Properties
+                    {t("View All Properties")}
                   </Button>
                 </Link>
               </div>
@@ -330,18 +337,18 @@ export default async function PropertiesPage({
                     href={buildUrl({ page: String(page - 1) })}
                     className="h-10 px-4 rounded-btn border border-[#E4DED2] text-navy-800 bg-white hover:bg-navy-50 text-xs font-bold flex items-center"
                   >
-                    Previous
+                    {t("Previous")}
                   </Link>
                 )}
                 <span className="text-xs text-navy-700 font-sans px-3">
-                  Page {page} of {totalPages}
+                  {t("Page {page} of {totalPages}", { page, totalPages })}
                 </span>
                 {page < totalPages && (
                   <Link
                     href={buildUrl({ page: String(page + 1) })}
                     className="h-10 px-4 rounded-btn bg-navy-900 text-gold-500 hover:bg-navy-950 text-xs font-bold flex items-center"
                   >
-                    Next
+                    {t("Next")}
                   </Link>
                 )}
               </div>

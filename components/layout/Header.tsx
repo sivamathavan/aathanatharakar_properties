@@ -8,6 +8,8 @@ import { useSession } from "@/components/providers/auth-provider";
 import { signOut } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { NavLanguageSwitch } from "@/components/i18n/NavLanguageSwitch";
+import { useT } from "@/components/i18n/I18nProvider";
 import { UserRole } from "@/types";
 
 const NAV = [
@@ -20,6 +22,7 @@ const NAV = [
 export function Header() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const t = useT();
   const [open, setOpen] = useState(false);
 
   const setMenu = (next: boolean) => {
@@ -31,9 +34,16 @@ export function Header() {
     document.body.style.overflow = "";
   }, []);
 
+  const navItems = [
+    { href: "/for-agents", label: t("For agents"), icon: Briefcase },
+    { href: "/properties", label: t("Properties"), icon: Home },
+    { href: "/blog", label: t("Blog"), icon: FileText },
+    { href: "/about", label: t("About"), icon: Info },
+  ];
+
   const role = session?.user.role;
   const accountHref = role === UserRole.ADMIN ? "/admin" : role === UserRole.AGENT ? "/dashboard" : "/login";
-  const accountLabel = role ? "Dashboard" : "Agent login";
+  const accountLabel = role ? t("Dashboard") : t("Agent login");
   const isAdminRoute = pathname?.startsWith("/admin");
 
   // Agent share pages carry the agent's own branding and contact.
@@ -50,7 +60,7 @@ export function Header() {
 
           {!isAdminRoute && (
             <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium">
-              {NAV.map((item) => {
+              {navItems.map((item) => {
                 const active = pathname === item.href || pathname?.startsWith(`${item.href}/`);
                 return (
                   <Link key={item.href} href={item.href} className={`transition-colors ${active ? "text-gold-400" : "text-gray-200 hover:text-gold-400"}`}>
@@ -62,6 +72,7 @@ export function Header() {
           )}
 
           <div className="hidden md:flex items-center gap-2">
+            <NavLanguageSwitch />
             <Link href={accountHref}>
               <Button variant="ghost" className="text-white hover:bg-navy-800 text-sm">
                 <LayoutDashboard className="w-4 h-4 mr-1" /> {accountLabel}
@@ -69,44 +80,53 @@ export function Header() {
             </Link>
             {session ? (
               <Button variant="outline" onClick={() => signOut()} className="border-navy-700 text-white bg-transparent hover:bg-navy-800 text-sm h-9">
-                Sign out
+                {t("Sign out")}
               </Button>
             ) : (
               <Link href="/register">
-                <Button className="bg-gold-500 hover:bg-gold-400 text-navy-900 font-semibold text-sm px-4 h-9 rounded-btn">Start free</Button>
+                <Button className="bg-gold-500 hover:bg-gold-400 text-navy-900 font-semibold text-sm px-4 h-9 rounded-btn">{t("Start free")}</Button>
               </Link>
             )}
           </div>
 
-          <button
-            className="md:hidden p-2 text-gold-500 hover:text-gold-400 z-50 h-10 w-10 flex items-center justify-center"
-            onClick={() => setMenu(!open)}
-            aria-label={open ? "Close menu" : "Open menu"}
-          >
-            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          <div className="md:hidden flex items-center gap-1.5">
+            <NavLanguageSwitch />
+            <button
+              className="p-2 text-gold-500 hover:text-gold-400 z-50 h-10 w-10 flex items-center justify-center"
+              onClick={() => setMenu(!open)}
+              aria-label={open ? "Close menu" : "Open menu"}
+            >
+              {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
       </header>
 
       {open && (
-        <div className="md:hidden fixed inset-0 bg-navy-900 z-40 pt-20 px-6 flex flex-col justify-between pb-safe-bottom">
-          <nav className="flex flex-col space-y-5 text-lg font-medium text-white">
-            {[...NAV, { href: accountHref, label: accountLabel, icon: LayoutDashboard }].map((item) => (
-              <Link key={item.label} href={item.href} onClick={() => setMenu(false)} className="flex items-center gap-3 py-2 border-b border-navy-800 hover:text-gold-500">
-                <item.icon className="w-5 h-5 text-gold-500" />
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </nav>
-          <div className="space-y-3 mb-10">
+        <div className="md:hidden fixed inset-0 bg-navy-900 z-40 pt-20 px-6 flex flex-col justify-between pb-safe-bottom overflow-y-auto">
+          <div className="space-y-6">
+            <nav className="flex flex-col space-y-4 text-lg font-medium text-white">
+              {[...navItems, { href: accountHref, label: accountLabel, icon: LayoutDashboard }].map((item) => (
+                <Link key={item.label} href={item.href} onClick={() => setMenu(false)} className="flex items-center gap-3 py-2 border-b border-navy-800 hover:text-gold-500">
+                  <item.icon className="w-5 h-5 text-gold-500" />
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </nav>
+            <div className="pt-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">{t("Language / மொழி")}</p>
+              <NavLanguageSwitch mobile onSelect={() => setMenu(false)} />
+            </div>
+          </div>
+          <div className="space-y-3 mb-10 pt-4">
             {session ? (
               <Button variant="outline" onClick={() => { signOut(); setMenu(false); }} className="w-full border-navy-700 text-white bg-transparent hover:bg-navy-800 h-12">
-                Sign out
+                {t("Sign out")}
               </Button>
             ) : (
               <Link href="/register" onClick={() => setMenu(false)} className="block">
                 <Button className="w-full bg-gold-500 hover:bg-gold-400 text-navy-900 font-bold h-12 flex items-center justify-center gap-2">
-                  <Rocket className="w-5 h-5" /> Start your free trial
+                  <Rocket className="w-5 h-5" /> {t("Start your free trial")}
                 </Button>
               </Link>
             )}

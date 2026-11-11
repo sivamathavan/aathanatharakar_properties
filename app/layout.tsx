@@ -12,6 +12,8 @@ import { IOSInstallPrompt } from "@/components/layout/IOSInstallPrompt";
 import { HideOnAgentPages } from "@/components/layout/HideOnAgentPages";
 import { ServiceWorker } from "@/components/layout/ServiceWorker";
 import { AppLaunchMark } from "@/components/app/AppLaunchMark";
+import { getLang } from "@/lib/i18n/server";
+import { I18nProvider } from "@/components/i18n/I18nProvider";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -44,8 +46,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const lang = getLang();
   return (
-    <html lang="en" className={`${playfair.variable} ${dmSans.variable} ${notoTamil.variable}`}>
+    <html lang={lang} className={`${playfair.variable} ${dmSans.variable} ${notoTamil.variable}`}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content={BRAND.themeColor} />
@@ -59,18 +62,20 @@ export default function RootLayout({
           Skip to content
         </a>
         <AuthProvider>
-          <Header />
-          <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
-            {children}
-          </main>
-          <HideOnAgentPages alsoApp>
-            <Footer />
-          </HideOnAgentPages>
-          <MobileBottomNav />
-          <IOSInstallPrompt />
-          <ServiceWorker />
-          <AppLaunchMark />
-          <Toaster position="top-center" richColors />
+          <I18nProvider lang={lang}>
+            <Header />
+            <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
+              {children}
+            </main>
+            <HideOnAgentPages alsoApp>
+              <Footer />
+            </HideOnAgentPages>
+            <MobileBottomNav />
+            <IOSInstallPrompt />
+            <ServiceWorker />
+            <AppLaunchMark />
+            <Toaster position="top-center" richColors />
+          </I18nProvider>
         </AuthProvider>
       </body>
     </html>

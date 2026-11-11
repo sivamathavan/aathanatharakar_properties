@@ -11,6 +11,7 @@ import { SharePropertyButton } from "@/components/property/SharePropertyButton";
 import { EmiCalculator } from "@/components/property/EmiCalculator";
 import { TapLink } from "@/components/agent/TapLink";
 import type { PropertyDoc } from "@/types";
+import { serverT } from "@/lib/i18n/server";
 
 export interface DetailContact {
   name: string;
@@ -23,16 +24,16 @@ export interface DetailContact {
 
 const AREA_LABEL: Record<string, string> = { SQFT: "Sq.Ft", CENT: "Cents", ACRE: "Acres", GROUND: "Grounds" };
 
-function listingBadge(type: string) {
+function listingBadge(type: string, t: (k: string) => string) {
   switch (type) {
     case "BUY":
-      return { label: "For Sale", cls: "bg-gold-500 text-navy-900" };
+      return { label: t("For Sale"), cls: "bg-gold-500 text-navy-900" };
     case "RENT":
-      return { label: "For Rent", cls: "bg-navy-700 text-white" };
+      return { label: t("For Rent"), cls: "bg-navy-700 text-white" };
     case "LEASE":
-      return { label: "For Lease", cls: "bg-purple-600 text-white" };
+      return { label: t("For Lease"), cls: "bg-purple-600 text-white" };
     default:
-      return { label: "For Sale", cls: "bg-navy-600 text-white" };
+      return { label: t("For Sale"), cls: "bg-navy-600 text-white" };
   }
 }
 
@@ -53,8 +54,9 @@ export function PropertyDetail({
   breadcrumbs: { label: string; href: string }[];
   privacyNote: string;
 }) {
+  const t = serverT();
   const price = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumSignificantDigits: 3 }).format(Number(property.price));
-  const badge = listingBadge(property.listingType);
+  const badge = listingBadge(property.listingType, t);
   const waText = encodeURIComponent(`Hi ${contact.name}, I'm interested in "${property.title}" (${shareUrl}). Please share more details.`);
   const whatsappUrl = `https://wa.me/${contact.phone}?text=${waText}`;
   const visitUrl = `https://wa.me/${contact.phone}?text=${encodeURIComponent(`Hi ${contact.name}, I'd like to book a site visit for "${property.title}" (${shareUrl}).`)}`;
@@ -68,11 +70,11 @@ export function PropertyDetail({
   const areaLabel = AREA_LABEL[property.areaUnit || "SQFT"] || "Sq.Ft";
 
   const facts = [
-    { icon: Square, label: "Area", value: `${property.area} ${areaLabel}` },
-    property.bedrooms ? { icon: Bed, label: "Bedrooms", value: `${property.bedrooms} BHK` } : null,
-    property.bathrooms ? { icon: Bath, label: "Bathrooms", value: `${property.bathrooms}` } : null,
-    property.floors ? { icon: Layers, label: "Floors", value: `${property.floors}` } : null,
-    property.roadFacing ? { icon: Route, label: "Road", value: property.roadFacing } : null,
+    { icon: Square, label: t("Area"), value: `${property.area} ${areaLabel}` },
+    property.bedrooms ? { icon: Bed, label: t("Bedrooms"), value: `${property.bedrooms} BHK` } : null,
+    property.bathrooms ? { icon: Bath, label: t("Bathrooms"), value: `${property.bathrooms}` } : null,
+    property.floors ? { icon: Layers, label: t("Floors"), value: `${property.floors}` } : null,
+    property.roadFacing ? { icon: Route, label: t("Road"), value: property.roadFacing } : null,
   ].filter(Boolean) as { icon: typeof Square; label: string; value: string }[];
 
   const contactCard = (
@@ -96,7 +98,7 @@ export function PropertyDetail({
         <FaWhatsapp className="w-4 h-4" /> WhatsApp
       </TapLink>
       <TapLink kind="call" agentId={contact.agentId || ""} propertyId={property.id} href={`tel:+${contact.phone}`} className="bg-navy-900 hover:bg-navy-950 text-gold-500 h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2 shadow-sm">
-        <Phone className="w-4 h-4" /> Call
+        <Phone className="w-4 h-4" /> {t("Call")}
       </TapLink>
     </div>
   );
@@ -147,13 +149,13 @@ export function PropertyDetail({
                 ))}
               </div>
 
-              <h2 className="text-base font-display font-semibold text-navy-900 mb-3">Description</h2>
+              <h2 className="text-base font-display font-semibold text-navy-900 mb-3">{t("Description")}</h2>
               <p className="text-navy-800 font-sans text-sm whitespace-pre-wrap leading-relaxed">{property.description}</p>
             </div>
 
             {property.amenities?.length > 0 && (
               <div className="bg-white p-6 rounded-card border border-[#E4DED2] shadow-xs">
-                <h2 className="text-base font-display font-semibold text-navy-900 mb-4">Amenities</h2>
+                <h2 className="text-base font-display font-semibold text-navy-900 mb-4">{t("Amenities")}</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   {property.amenities.map((a) => (
                     <div key={a} className="flex items-center text-navy-800 text-sm font-sans">
@@ -166,14 +168,14 @@ export function PropertyDetail({
             )}
 
             <div className="bg-white p-6 rounded-card border border-[#E4DED2] shadow-xs space-y-4">
-              <h2 className="text-base font-display font-semibold text-navy-900">Location</h2>
+              <h2 className="text-base font-display font-semibold text-navy-900">{t("Location")}</h2>
               {mapsApiKey && property.latitude && property.longitude ? (
                 <div className="w-full h-80 bg-navy-50 rounded-lg overflow-hidden border border-[#E4DED2]">
                   <iframe title="Map" width="100%" height="100%" style={{ border: 0 }} loading="lazy" src={`https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${property.latitude},${property.longitude}`}></iframe>
                 </div>
               ) : null}
               <a href={mapsHref} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-navy-900 underline underline-offset-4">
-                <MapPin className="w-4 h-4 text-gold-600" /> Open in Google Maps
+                <MapPin className="w-4 h-4 text-gold-600" /> {t("Open in Google Maps")}
               </a>
             </div>
           </div>
@@ -184,7 +186,7 @@ export function PropertyDetail({
               {contactCard}
               {actionButtons}
               <a href={visitUrl} target="_blank" rel="noopener noreferrer" className="w-full border border-navy-700 text-navy-800 hover:bg-navy-50 h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2">
-                <Calendar className="w-4 h-4 text-gold-500" /> Book a site visit
+                <Calendar className="w-4 h-4 text-gold-500" /> {t("Book a site visit")}
               </a>
               <SharePropertyButton title={property.title} url={shareUrl} agentId={contact.agentId} propertyId={property.id} />
             </div>
@@ -197,12 +199,12 @@ export function PropertyDetail({
                 {contactCard}
                 {actionButtons}
                 <div className="border-t border-[#E4DED2] pt-5">
-                  <h2 className="font-display font-bold text-base text-navy-900 mb-3">Send an enquiry</h2>
+                  <h2 className="font-display font-bold text-base text-navy-900 mb-3">{t("Send an enquiry")}</h2>
                   <EnquiryForm propertyId={property.id} source={source} privacyNote={privacyNote} idPrefix="side" />
                 </div>
                 <div className="flex flex-col gap-3">
                   <a href={visitUrl} target="_blank" rel="noopener noreferrer" className="w-full border border-navy-700 text-navy-800 hover:bg-navy-50 h-11 text-xs font-bold rounded-btn flex items-center justify-center gap-2">
-                    <Calendar className="w-4 h-4 text-gold-500" /> Book a site visit
+                    <Calendar className="w-4 h-4 text-gold-500" /> {t("Book a site visit")}
                   </a>
                   <SharePropertyButton title={property.title} url={shareUrl} agentId={contact.agentId} propertyId={property.id} />
                   <div className="p-3 bg-navy-50 rounded-btn border border-navy-100 flex items-start gap-2.5">

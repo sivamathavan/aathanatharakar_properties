@@ -13,6 +13,18 @@ export const AGENT_SOURCES = [
   "components/property/PropertyForm.tsx",
   "components/ui/FirebaseUpload.tsx",
   "lib/reminders.ts",
+  "components/layout/Header.tsx",
+  "components/layout/Footer.tsx",
+  "components/layout/MobileBottomNav.tsx",
+  "components/home/HomeSearch.tsx",
+  "components/property/PropertyCard.tsx",
+  "components/property/PropertyDetail.tsx",
+  "components/property/MobileFilterDrawer.tsx",
+  "components/property/EnquiryForm.tsx",
+  "components/auth/LoginForm.tsx",
+  "components/auth/RegisterForm.tsx",
+  "app/page.tsx",
+  "app/properties/page.tsx",
 ];
 
 function files(path: string): string[] {

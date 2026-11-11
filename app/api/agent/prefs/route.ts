@@ -5,7 +5,7 @@ import { agentsCol } from "@/lib/firestore";
 import { UserRole } from "@/types";
 
 const schema = z.object({
-  uiLang: z.enum(["en", "ta"]).optional(),
+  uiLang: z.enum(["en", "ta", "hi", "ml", "kn"]).optional(),
   // Recorded when the agent first copies or sends their link (onboarding + funnel).
   shared: z.literal(true).optional(),
 });

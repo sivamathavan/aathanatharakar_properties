@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Loader2, ShieldCheck } from "lucide-react";
+import { useT } from "@/components/providers/i18n-provider";
 
 // Ends with a space so anything the visitor adds starts as a new sentence (the server trims it).
 const DEFAULT_MESSAGE = "I am interested in this property. Please share more details. ";
@@ -14,7 +15,7 @@ const DEFAULT_MESSAGE = "I am interested in this property. Please share more det
 export function EnquiryForm({
   propertyId,
   source = "WEB",
-  privacyNote = "Owner contact details are never shared publicly.",
+  privacyNote,
   idPrefix = "enq",
 }: {
   propertyId: string;
@@ -22,6 +23,8 @@ export function EnquiryForm({
   privacyNote?: string;
   idPrefix?: string;
 }) {
+  const t = useT();
+  const note = privacyNote || t("Owner contact details are never shared publicly.");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: DEFAULT_MESSAGE, website: "" });
@@ -55,10 +58,10 @@ export function EnquiryForm({
   if (sent) {
     return (
       <div className="rounded-btn border border-green-200 bg-green-50 p-4 text-sm text-green-900 space-y-2">
-        <p className="font-semibold">Enquiry sent.</p>
-        <p>You&apos;ll get a call back shortly.</p>
+        <p className="font-semibold">{t("Enquiry sent.")}</p>
+        <p>{t("You'll get a call back shortly.")}</p>
         <button type="button" className="text-xs underline" onClick={() => setSent(false)}>
-          Send another enquiry
+          {t("Send another enquiry")}
         </button>
       </div>
     );
@@ -67,19 +70,19 @@ export function EnquiryForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}-name`}>Your name</Label>
-        <Input id={`${idPrefix}-name`} value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required placeholder="Full name" autoComplete="name" />
+        <Label htmlFor={`${idPrefix}-name`}>{t("Your name")}</Label>
+        <Input id={`${idPrefix}-name`} value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required placeholder={t("Full name")} autoComplete="name" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}-phone`}>Phone number</Label>
+        <Label htmlFor={`${idPrefix}-phone`}>{t("Phone number")}</Label>
         <Input id={`${idPrefix}-phone`} type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} required placeholder="98765 43210" autoComplete="tel" inputMode="tel" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}-email`}>Email (optional)</Label>
+        <Label htmlFor={`${idPrefix}-email`}>{t("Email (optional)")}</Label>
         <Input id={`${idPrefix}-email`} type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="you@example.com" autoComplete="email" inputMode="email" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}-message`}>Message</Label>
+        <Label htmlFor={`${idPrefix}-message`}>{t("Message")}</Label>
         <Textarea id={`${idPrefix}-message`} value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} rows={3} maxLength={2000} />
       </div>
       {/* Hidden from people; bots fill it in and get silently dropped. */}
@@ -87,15 +90,15 @@ export function EnquiryForm({
       <Button type="submit" className="w-full h-11 bg-navy-900 text-gold-500 hover:bg-navy-950 hover:text-gold-400 font-bold rounded-btn shadow-sm disabled:opacity-60" disabled={loading}>
         {loading ? (
           <>
-            <Loader2 className="w-4 h-4 animate-spin mr-2" /> Sending…
+            <Loader2 className="w-4 h-4 animate-spin mr-2" /> {t("Sending…")}
           </>
         ) : (
-          "Send enquiry"
+          t("Send enquiry")
         )}
       </Button>
       <p className="text-[11px] text-navy-700 flex items-start gap-1.5 leading-relaxed">
         <ShieldCheck className="w-3.5 h-3.5 text-gold-600 shrink-0 mt-0.5" />
-        {privacyNote}
+        {note}
       </p>
     </form>
   );

@@ -6,6 +6,7 @@ import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
 import { LISTING_TYPE_LABEL } from "@/lib/constants";
+import { useT } from "@/components/providers/i18n-provider";
 
 interface MobileFilterDrawerProps {
   city?: string;
@@ -24,6 +25,7 @@ export function MobileFilterDrawer({
   propertyTypes,
   listingTypes,
 }: MobileFilterDrawerProps) {
+  const t = useT();
   const [isOpen, setIsOpen] = useState(false);
   const params = useSearchParams();
 
@@ -52,14 +54,14 @@ export function MobileFilterDrawer({
           className="bg-navy-900 hover:bg-navy-800 text-gold-500 font-sans font-semibold px-6 py-3 rounded-full shadow-lg border border-gold-500/30 flex items-center gap-2 whitespace-nowrap h-12 active:scale-95 transition-transform"
         >
           <SlidersHorizontal className="w-4 h-4 text-gold-500" />
-          <span>Filters</span>
+          <span>{t("Filters")}</span>
         </Button>
       </div>
 
       <BottomSheet
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title="Filter Properties"
+        title={t("Filter Properties")}
       >
         <form method="get" className="space-y-5 pb-6">
           {/* Preserve existing query params */}
@@ -68,14 +70,14 @@ export function MobileFilterDrawer({
 
           <div>
             <label className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-2">
-              City
+              {t("City")}
             </label>
             <select
               name="city"
               defaultValue={city || ""}
               className="w-full h-12 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
             >
-              <option value="">All Cities</option>
+              <option value="">{t("All Cities")}</option>
               {tnCities.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -86,35 +88,38 @@ export function MobileFilterDrawer({
 
           <div>
             <label className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-2">
-              Property Type
+              {t("Property Type")}
             </label>
             <select
               name="type"
               defaultValue={type || ""}
               className="w-full h-12 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
             >
-              <option value="">All Types</option>
-              {propertyTypes.map((t) => (
-                <option key={t} value={t}>
-                  {t.replace("_", " ")}
-                </option>
-              ))}
+              <option value="">{t("All Types")}</option>
+              {propertyTypes.map((tKey) => {
+                const formatted = tKey.replace("_", " ");
+                return (
+                  <option key={tKey} value={tKey}>
+                    {t(formatted) || formatted}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-2">
-              Listing Type
+              {t("Listing Type")}
             </label>
             <select
               name="listingType"
               defaultValue={listingType || ""}
               className="w-full h-12 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
             >
-              <option value="">All Listings</option>
-              {listingTypes.map((t) => (
-                <option key={t} value={t}>
-                  {LISTING_TYPE_LABEL[t] || t}
+              <option value="">{t("All Listings")}</option>
+              {listingTypes.map((lKey) => (
+                <option key={lKey} value={lKey}>
+                  {t(LISTING_TYPE_LABEL[lKey] || lKey)}
                 </option>
               ))}
             </select>
@@ -122,14 +127,14 @@ export function MobileFilterDrawer({
 
           <div>
             <label className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-2">
-              Bedrooms (BHK)
+              {t("Bedrooms (BHK)")}
             </label>
             <select
               name="bhk"
               defaultValue={bhk}
               className="w-full h-12 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
             >
-              <option value="">Any</option>
+              <option value="">{t("Any")}</option>
               {[1, 2, 3, 4, 5].map((n) => (
                 <option key={n} value={n}>
                   {n} BHK
@@ -140,7 +145,7 @@ export function MobileFilterDrawer({
 
           <div>
             <label className="block text-xs font-semibold text-navy-800 uppercase tracking-wider mb-2">
-              Price Range (₹)
+              {t("Price Range (₹)")}
             </label>
             <div className="grid grid-cols-2 gap-2">
               <input
@@ -149,7 +154,7 @@ export function MobileFilterDrawer({
                 name="minPrice"
                 defaultValue={minPrice}
                 min="0"
-                placeholder="Min"
+                placeholder={t("Min")}
                 className="h-12 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500"
               />
               <input
@@ -158,7 +163,7 @@ export function MobileFilterDrawer({
                 name="maxPrice"
                 defaultValue={maxPrice}
                 min="0"
-                placeholder="Max"
+                placeholder={t("Max")}
                 className="h-12 px-3 border border-[#E4DED2] rounded-btn bg-white font-sans text-sm text-navy-900 focus:outline-none focus:ring-2 focus:ring-gold-500"
               />
             </div>
@@ -169,7 +174,7 @@ export function MobileFilterDrawer({
               type="submit"
               className="w-full h-12 bg-navy-900 text-gold-500 hover:bg-navy-950 hover:text-gold-400 font-sans font-bold shadow-md rounded-btn"
             >
-              Apply Filters
+              {t("Apply Filters")}
             </Button>
             <a href="/properties" className="block w-full text-center">
               <Button
@@ -177,7 +182,7 @@ export function MobileFilterDrawer({
                 variant="outline"
                 className="w-full h-12 border-[#E4DED2] text-navy-800 hover:bg-navy-50 font-sans"
               >
-                Clear Filters
+                {t("Clear Filters")}
               </Button>
             </a>
           </div>

@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getOptimizedCloudinaryUrl } from "@/lib/utils";
+import { useT } from "@/components/providers/i18n-provider";
 
 interface PropertyCardProps {
   property: {
@@ -34,6 +35,7 @@ interface PropertyCardProps {
 }
 
 export function PropertyCard({ property, href, contact, showViews = true }: PropertyCardProps) {
+  const t = useT();
   const phone = contact?.phone || "";
   const label = contact?.label || "";
   const [isSaved, setIsSaved] = useState(false);
@@ -68,7 +70,7 @@ export function PropertyCard({ property, href, contact, showViews = true }: Prop
   };
 
   const formatIndianPrice = (num: number) => {
-    if (!Number.isFinite(num) || num <= 0) return "Price on Request";
+    if (!Number.isFinite(num) || num <= 0) return t("Price on Request");
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
@@ -91,7 +93,7 @@ export function PropertyCard({ property, href, contact, showViews = true }: Prop
     }
   };
 
-  const listingLabel = property.listingType === "RENT" ? "For Rent" : property.listingType === "LEASE" ? "For Lease" : "For Sale";
+  const listingLabel = property.listingType === "RENT" ? t("For Rent") : property.listingType === "LEASE" ? t("For Lease") : t("For Sale");
 
   const waMessage = encodeURIComponent(
     `Hi, I'm interested in "${property.title}" in ${property.locality}, ${property.city} (ID: ${property.id}). Please share more details.`
@@ -151,7 +153,7 @@ export function PropertyCard({ property, href, contact, showViews = true }: Prop
         {property.isFeatured && (
           <div className="absolute top-12 right-3 z-10">
             <span className="text-[10px] font-bold px-2.5 py-1 rounded-pill bg-[#E39614] text-navy-900 shadow-xs uppercase tracking-wide">
-              Featured
+              {t("Featured")}
             </span>
           </div>
         )}
@@ -172,11 +174,11 @@ export function PropertyCard({ property, href, contact, showViews = true }: Prop
           <p className="font-display font-semibold text-navy-900 text-lg mb-3">
             {formatIndianPrice(Number(property.price))}
             {property.listingType === "RENT" || property.priceUnit === "PER_MONTH" ? (
-              <span className="text-xs font-sans text-navy-700 ml-1">/ month</span>
+              <span className="text-xs font-sans text-navy-700 ml-1">{t("/ month")}</span>
             ) : property.listingType === "LEASE" || property.priceUnit === "PER_YEAR" ? (
-              <span className="text-xs font-sans text-navy-700 ml-1">/ year</span>
+              <span className="text-xs font-sans text-navy-700 ml-1">{t("/ year")}</span>
             ) : property.priceUnit === "PER_SQFT" ? (
-              <span className="text-xs font-sans text-navy-700 ml-1">/ sqft</span>
+              <span className="text-xs font-sans text-navy-700 ml-1">{t("/ sqft")}</span>
             ) : null}
           </p>
         </div>
@@ -187,7 +189,7 @@ export function PropertyCard({ property, href, contact, showViews = true }: Prop
             <span>{property.area} {(property.areaUnit || "SQFT").toLowerCase()}</span>
             {showViews && (
               <span className="ml-auto text-[#8A95A3]">
-                {property.viewCount} views
+                {t("{count} views", { count: property.viewCount })}
               </span>
             )}
           </div>
@@ -198,7 +200,7 @@ export function PropertyCard({ property, href, contact, showViews = true }: Prop
             aria-label={`View details of ${property.title}`}
           >
             <span className="btn-primary w-full text-center block text-xs h-10 py-0 leading-10">
-              View Details
+              {t("View Details")}
             </span>
           </Link>
 
@@ -234,7 +236,7 @@ export function PropertyCard({ property, href, contact, showViews = true }: Prop
               aria-label={`Call ${label.toLowerCase()}`}
             >
               <Phone className="w-3.5 h-3.5 shrink-0" />
-              Call {label}
+              {label ? t("Call {label}", { label }) : t("Call")}
             </a>
           </div>
           )}
